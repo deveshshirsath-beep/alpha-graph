@@ -1,0 +1,75 @@
+/* Graph explorer panel (Figma 396:45367): intro, Entities | Relationships tabs, then search, layer cards
+   and the layer tree. One 12px gutter for every block, 36px rows, 15/13px type, and the chat list's row states. */
+#app #controls-panel { --panel-gutter: 12px; --panel-row: 36px; }
+#app #controls-panel .explorer-tabpanel > section { margin: 0; border: 0; box-shadow: none; background: none; }
+
+/* Intro */
+#app .explorer-intro { flex-shrink: 0; padding: 6px var(--panel-gutter) 10px; }
+#app .explorer-intro h2 { margin: 0; color: var(--text); font-size: .9375rem; font-weight: 600; line-height: 1.375rem; letter-spacing: -.01em; }
+#app .explorer-intro p { margin: 3px 0 0; color: var(--ui-secondary); font-size: .8125rem; font-weight: 400; line-height: 1.25rem; }
+
+/* Entities | Relationships: equal underline tabs; the active one carries the darker rule. */
+#app .explorer-tabs { display: flex; flex-shrink: 0; padding: 0 var(--panel-gutter); }
+#app .explorer-tab { flex: 1 1 0; min-width: 0; padding: 4px 8px 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; color: var(--text); cursor: pointer; font-size: .9375rem; font-weight: 600; line-height: 1.375rem; white-space: nowrap; transition: border-color .15s ease; }
+#app .explorer-tab:hover:not(.active) { border-bottom-color: color-mix(in srgb, var(--text) 28%, transparent); }
+#app .explorer-tab.active { border-bottom-color: var(--ui-secondary); }
+#app .explorer-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 8px 8px 0 0; }
+#app .explorer-tabpanel { display: flex; flex-direction: column; gap: 12px; padding: 18px 0 10px; }
+#app .explorer-tabpanel[hidden] { display: none; }
+
+/* Search and layer cards sit on the 12px gutter; the tree insets 4px so its rows' hover reaches the same edge. */
+#app #controls-panel .search-section { position: relative; padding: 0 var(--panel-gutter); }
+#app #controls-panel .layer-section { padding: 0 var(--panel-gutter); }
+#app #controls-panel :is(.entity-section, .edge-filter-section) { padding: 0 4px; }
+#app #controls-panel .panel-search { background: color-mix(in srgb, var(--text) 4%, transparent); }
+#app #controls-panel .search-section .search-results { top: calc(100% + 6px); left: var(--panel-gutter); right: var(--panel-gutter); }
+
+/* The entity-type picker reads as a label inside the field, without a pill of its own. */
+#app .panel-search .select-control .select-trigger,
+#app .panel-search .select-control .select-trigger:is(:hover:not(:disabled), [aria-expanded="true"]) { background: transparent; }
+#app .panel-search .select-control .select-trigger { gap: 4px; padding: 0 2px 0 6px; color: var(--ui-secondary); font-weight: 500; }
+#app .panel-search .select-control .select-trigger:is(:hover:not(:disabled), [aria-expanded="true"]) { color: var(--text); }
+
+/* Architecture layers: three cards, icon beside a name over its count. */
+#app .layer-tabs { display: grid; grid-template-columns: repeat(var(--layer-columns, 3), minmax(0, 1fr)); gap: 8px; }
+#app .layer-tab { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; height: auto; min-height: 58px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: none; text-align: left; transition: background-color .15s ease, border-color .15s ease; }
+#app .layer-tab span { max-width: 100%; overflow: hidden; color: var(--text); font-size: .8125rem; font-weight: 600; line-height: 1.125rem; text-overflow: ellipsis; white-space: nowrap; }
+#app .layer-tab small { color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; font-variant-numeric: tabular-nums; }
+#app .layer-tab:hover:not(:disabled) { background: var(--ui-hover); }
+#app .layer-tab.active { border-color: color-mix(in srgb, var(--text) 24%, transparent); background: var(--ui-hover); box-shadow: none; }
+
+/* The layer tree: the chat entity map's rows, guides and marks; each layer is marked by its colored stack. */
+#app #controls-panel :is(.entity-tree, #edge-filters) { max-height: none; padding: 0; overflow: visible; }
+#app #controls-panel .planner-type-row { --indent: .875rem; min-height: var(--panel-row); padding: 0 .25rem 0 calc(.5rem + var(--depth, 0) * var(--indent)); transition: background-color .15s ease; }
+#app #controls-panel .planner-type-row::before { left: calc(.5rem + 7.5px); }
+#app #controls-panel .planner-type-toggle { color: var(--ui-secondary); }
+#app .entity-folder { width: 100%; height: auto; border: 0; border-radius: 8px; background: transparent; cursor: pointer; text-align: left; }
+#app .entity-children { margin: 0; padding: 0; }
+#app .entity-children::before { display: none; }
+#app .tree-joint { display: none; }
+#app .folder-mark { width: 14px; height: 14px; flex: 0 0 14px; display: grid; place-items: center; color: var(--layer-color, var(--ui-secondary)); }
+#app .folder-mark .ui-icon { width: 100%; height: 100%; flex-basis: auto; }
+#app .entity-folder .folder-selected { flex: 0 0 auto; }
+
+/* A hidden type dims its mark and label, as sigma's map does, instead of hollowing a checkbox. */
+#app #controls-panel .filter-item { height: auto; gap: .25rem; cursor: pointer; }
+#app #controls-panel .filter-item input:not(:checked) ~ .planner-type-mark { opacity: .4; }
+#app #controls-panel .filter-item input:not(:checked) ~ .planner-type-label { color: var(--ui-secondary); }
+#app #controls-panel .filter-item input:focus-visible ~ .planner-type-mark { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 50%; }
+#app #edge-filters .relationship-dot { width: 10px; height: 10px; flex-basis: 10px; margin: 0 1px; border-radius: 50%; background: currentColor; }
+
+/* Recommended paths: entity names joined by relationship pills that wrap whole. */
+#app .relationship-rule-heading { margin: 14px 0 6px; padding-left: 8px; color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; letter-spacing: 0; line-height: 1.25rem; text-transform: none; }
+#app .relationship-rules { max-height: none; padding: 0; border: 0; }
+#app .relationship-rule { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-height: var(--panel-row); padding: 7px 8px; border-radius: 8px; color: var(--text); font-family: var(--ui-font); font-size: .8125rem; line-height: 1.25rem; }
+#app .relationship-rule:hover { background: var(--ui-hover); }
+#app .relationship-rule .rule-node { overflow-wrap: anywhere; }
+#app .relationship-rule .rule-edge { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px 1px 7px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: .75rem; font-weight: 500; white-space: nowrap; }
+#app .relationship-rule .rule-edge .ui-icon { width: .75rem; height: .75rem; flex-basis: .75rem; }
+
+/* The query builder's entity field takes the same field language as every other input. */
+#app .condition-entity-input { height: 2.5rem; padding: 0 12px; border: 0; border-radius: 10px; background: var(--control-fill); box-shadow: none; color: var(--text); font-size: .9375rem; }
+#app .condition-entity-input::placeholder { color: var(--ui-secondary); }
+#app .condition-entity-input:focus { background: var(--panel); box-shadow: inset 0 0 0 1px var(--field-focus); }
+#app .condition-entity-input.entity-selected { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+#app .condition-entity-wrap { border-radius: 10px; }

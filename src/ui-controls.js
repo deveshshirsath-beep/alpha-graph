@@ -52,14 +52,11 @@ export function setButtonContent(button, name, label) {
   button.classList.add('icon-action');
 }
 
+// Zoom, query and traversal controls carry their own markup, as in sigma.
 const actions = {
-  'reset-view': ['reset', 'Reset'], 'view-all-entities': ['layers', 'View all'],
   'empty-reset': ['reset', 'Reset filters'],
-  'zoom-in': ['plus', 'Zoom in'], 'zoom-out': ['minus', 'Zoom out'], 'zoom-fit': ['fit', 'Fit'],
   'focus-neighbors': ['focus', 'Focus network'], 'add-to-traversal': ['plus', 'Add to traversal'],
   'close-inspector': ['close', 'Close'], 'close-shortcuts': ['close', 'Close'], 'open-shortcuts': ['help', 'Keyboard shortcuts'],
-  'add-condition': ['plus', 'Add condition'], 'apply-conditions': ['play', 'Run query'],
-  'clear-conditions': ['reset', 'Clear'], 'run-traversal': ['route', 'Trace paths'], 'clear-traversal': ['reset', 'Clear'],
 };
 
 function decorateButtons() {
@@ -70,10 +67,6 @@ function decorateButtons() {
     } else if (button.matches('[data-theme-choice]')) {
       const name = { light: 'sun', dark: 'moon', ocean: 'waves', sunset: 'sunset' }[button.getAttribute('data-theme-choice')];
       setButtonContent(button, name, button.textContent.trim());
-    } else if (button.matches('.condition-card-header button')) {
-      setButtonContent(button, 'close', 'Remove');
-    } else if (button.matches('[data-dock-target]')) {
-      setButtonContent(button, button.getAttribute('data-dock-target') === 'conditions' ? 'filter' : 'route', button.textContent.trim());
     } else if (button.matches('.layer-tab, .search-result, .search-type-suggestion, .condition-suggestions button, .connection-row, .selection-chip')) {
       const marker = button.querySelector('i');
       if (marker) {
@@ -88,9 +81,6 @@ function optionIcon(select, option) {
   if (select.id === 'theme-select') return { light: 'sun', dark: 'moon', ocean: 'waves', sunset: 'sunset' }[option.value] || 'sun';
   if (select.id === 'text-size-select') return 'text-size';
   if (select.id === 'graph-select') return 'database';
-  if (select.id === 'layout-mode') return option.value === 'hierarchy' ? 'layers' : 'network';
-  if (select.id === 'traversal-direction') return option.value === 'both' ? 'arrows' : 'route';
-  if (select.id === 'traversal-depth') return 'depth';
   if (select.classList.contains('condition-relationship')) return 'link';
   if (select.getAttribute('aria-label') === 'Condition operator') return 'filter';
   if (/SECURITY|PCI|PII/.test(option.value)) return 'shield';

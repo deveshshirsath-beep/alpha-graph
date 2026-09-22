@@ -43,33 +43,44 @@
             </div>
           </div>
 
-          <section class="search-section" data-panel="discover">
-            <div class="panel-search">
-              <svg data-icon="magnifying-glass" class="search-icon"></svg>
-              <input id="graph-search" type="search" placeholder="Search entities" aria-label="Search entities" autocomplete="off" disabled />
-              <select id="search-entity-type" aria-label="Entity type to search" disabled><option value="">All types</option></select>
-            </div>
-            <div id="search-results" class="search-results" hidden></div>
-          </section>
+          <div class="explorer-intro">
+            <h2>Explore the graph</h2>
+            <p>Search entities, switch layers, and choose what the canvas shows.</p>
+          </div>
 
-          <section class="layer-section" data-panel="layers">
-            <div class="section-heading"><span>Architecture Layers</span><button id="reset-view" class="text-button" disabled>Reset</button></div>
-            <div id="layer-tabs" class="layer-tabs" role="tablist" aria-label="Architecture layer">
-              <button class="layer-tab active" data-layer="BUSINESS" role="tab" aria-selected="true" disabled><i></i><span>Business</span><small>731</small></button>
-              <button class="layer-tab" data-layer="API" role="tab" aria-selected="false" disabled><i></i><span>API</span><small>73.6K</small></button>
-              <button class="layer-tab" data-layer="RUNTIME" role="tab" aria-selected="false" disabled><i></i><span>Runtime</span><small>1.9K</small></button>
-            </div>
-          </section>
+          <div class="explorer-tabs" role="tablist" aria-label="Graph filters">
+            <button id="explorer-tab-entities" class="explorer-tab active" type="button" role="tab" aria-selected="true" aria-controls="explorer-entities">Entities</button>
+            <button id="explorer-tab-relationships" class="explorer-tab" type="button" role="tab" aria-selected="false" aria-controls="explorer-relationships" tabindex="-1">Relationships</button>
+          </div>
 
-          <section class="entity-section" data-panel="entities">
-            <div class="section-heading"><span>Graph Entities</span><button id="view-all-entities" class="text-button" aria-pressed="false" disabled>View all</button></div>
-            <div id="type-filters" class="entity-tree skeleton-list"><span></span><span></span><span></span><span></span><span></span></div>
-          </section>
+          <div id="explorer-entities" class="explorer-tabpanel" role="tabpanel" aria-labelledby="explorer-tab-entities">
+            <section class="search-section" data-panel="discover">
+              <div class="panel-search">
+                <svg data-icon="magnifying-glass" class="search-icon"></svg>
+                <input id="graph-search" type="search" placeholder="Search entities" aria-label="Search entities" autocomplete="off" disabled />
+                <select id="search-entity-type" aria-label="Entity type to search" disabled><option value="">All types</option></select>
+              </div>
+              <div id="search-results" class="search-results" hidden></div>
+            </section>
+            <section class="layer-section" data-panel="layers">
+              <div id="layer-tabs" class="layer-tabs" role="tablist" aria-label="Architecture layer">
+                <button class="layer-tab active" data-layer="BUSINESS" role="tab" aria-selected="true" disabled><span>Business</span><small>731</small></button>
+                <button class="layer-tab" data-layer="API" role="tab" aria-selected="false" disabled><span>API</span><small>73.6K</small></button>
+                <button class="layer-tab" data-layer="RUNTIME" role="tab" aria-selected="false" disabled><span>Runtime</span><small>1.9K</small></button>
+              </div>
+            </section>
+            <section class="entity-section" data-panel="entities">
+              <div id="type-filters" class="entity-tree skeleton-list"><span></span><span></span><span></span><span></span><span></span></div>
+            </section>
+          </div>
 
-          <section class="filter-section edge-filter-section" data-panel="relationships">
-            <button id="edge-section-toggle" class="section-heading disclosure" aria-expanded="false" disabled><span>Relationships</span><svg data-icon="caret-down"></svg></button>
-            <div id="edge-filter-wrap" hidden><div id="edge-filters" class="filter-list compact"></div><div class="relationship-rule-heading">Recommended paths</div><div id="relationship-rules" class="relationship-rules"></div></div>
-          </section>
+          <div id="explorer-relationships" class="explorer-tabpanel" role="tabpanel" aria-labelledby="explorer-tab-relationships" hidden>
+            <section class="edge-filter-section" data-panel="relationships">
+              <div id="edge-filters" class="filter-list compact"></div>
+              <div class="relationship-rule-heading">Recommended paths</div>
+              <div id="relationship-rules" class="relationship-rules"></div>
+            </section>
+          </div>
 
         </aside>
         <div class="panel-resizer panel-resizer-left" role="separator" tabindex="0" aria-label="Resize explorer panel" aria-orientation="vertical" aria-controls="controls-panel" title="Drag to resize explorer · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
@@ -80,14 +91,24 @@
           <div class="stage-ambient" aria-hidden="true"><i></i><i></i><i></i></div>
           <div id="sigma-container"></div>
           <div class="stage-grid" aria-hidden="true"></div>
-          <div class="stage-title"><span id="view-kicker">System Constellation</span><strong id="view-title">Architecture Landscape</strong><small id="view-instructions">Drag to explore · Scroll to zoom · Select a node for context</small></div>
 
           <div id="loading-panel" class="loading-panel"><div class="loader-orbit"><i></i><i></i><i></i></div><div><span id="loading-label">Reading graph source</span><div class="progress-track"><span id="loading-progress"></span></div><small id="loading-detail">Large graphs are prepared off the main browser thread.</small></div></div>
 
-          <div class="layout-controls"><select id="layout-mode" aria-label="Graph layout" disabled><option value="donut">Constellation Donut</option><option value="constellation-v1">Constellation V1</option><option value="hierarchy">Organizational</option></select></div>
-          <div class="stage-tools"><button id="zoom-in" aria-label="Zoom in" disabled>+</button><button id="zoom-out" aria-label="Zoom out" disabled>−</button><button id="zoom-fit" aria-label="Fit graph to screen" disabled><svg data-icon="corners-out"></svg></button></div>
-          <div id="minimap" class="minimap"><div><span>Navigator</span><small>Click to reposition</small></div><canvas id="minimap-canvas" width="380" height="220" aria-label="Graph minimap navigation"></canvas></div>
-          <div class="layer-legend" aria-label="Layer colors"><span><i class="business"></i>Business</span><span><i class="api"></i>API</span><span><i class="runtime"></i>Runtime</span></div>
+          <div class="view-switcher">
+            <div class="view-options" role="radiogroup" aria-label="Graph layout">
+              <button class="view-option active" type="button" role="radio" aria-checked="true" data-layout="donut" aria-label="Constellation Donut" title="Constellation Donut" disabled><svg data-icon="circle-notch"></svg><span class="view-option-label">Constellation Donut</span></button>
+              <button class="view-option" type="button" role="radio" aria-checked="false" data-layout="constellation-v1" aria-label="Constellation V1" title="Constellation V1" disabled><svg data-icon="graph"></svg><span class="view-option-label">Constellation V1</span></button>
+              <button class="view-option" type="button" role="radio" aria-checked="false" data-layout="hierarchy" aria-label="Organizational" title="Organizational" disabled><svg data-icon="tree-structure"></svg><span class="view-option-label">Organizational</span></button>
+            </div>
+          </div>
+          <div class="map-corner">
+            <div id="minimap" class="minimap" title="Click to move the view"><canvas id="minimap-canvas" width="380" height="220" aria-label="Graph minimap navigation"></canvas></div>
+            <div class="zoom-controls">
+              <button id="zoom-in" type="button" aria-label="Zoom in" title="Zoom in" disabled><svg data-icon="plus"></svg></button>
+              <button id="zoom-out" type="button" aria-label="Zoom out" title="Zoom out" disabled><svg data-icon="minus"></svg></button>
+              <button id="zoom-fit" type="button" aria-label="Fit graph to screen" title="Fit graph" disabled><svg data-icon="corners-out"></svg></button>
+            </div>
+          </div>
           <div id="empty-state" class="empty-state" hidden><span>No entities match this view</span><button id="empty-reset">Reset filters</button></div>
 
           <aside id="inspector" class="inspector" aria-live="polite" aria-hidden="true">
@@ -101,33 +122,30 @@
 
         <div class="panel-resizer panel-resizer-right" role="separator" tabindex="0" aria-label="Resize query panel" aria-orientation="vertical" aria-controls="query-panel" title="Drag to resize query panel · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
         <aside id="query-panel" class="query-dock" aria-label="Graph query and traversal">
-          <div class="query-dock-header">
-            <div class="dock-tabs"><button class="active" data-dock-target="conditions">Query</button><button data-dock-target="traversal" title="Jump to Path explorer — trace graph connections">Paths</button></div>
-            <div class="panel-header-actions"><div class="dock-status"><i></i> Graph ready</div><button id="query-panel-toggle" class="side-panel-toggle" type="button" aria-label="Collapse query panel" data-panel-icon="panel-right-close"></button></div>
-          </div>
-          <div class="query-dock-intro">
-            <span>Graph Workspace</span>
-            <h2>Ask the Architecture</h2>
-            <p>Build precise graph conditions, then trace relationships in either direction.</p>
-          </div>
-          <section class="conditional-section" data-panel="conditions">
-            <div class="section-heading"><span>Query Builder</span><strong id="condition-count">0 conditions</strong></div>
-            <p class="section-help">Add and complete each numbered condition. AND narrows; OR adds alternatives, in order. The graph updates only when you run.</p>
+          <div class="query-card">
+          <section class="conditional-section sidebar-section" data-panel="conditions" aria-labelledby="query-heading">
+            <div class="section-head">
+              <div class="section-title-row"><h2 id="query-heading" class="sidebar-heading">Query builder</h2><button id="query-panel-toggle" class="side-panel-toggle" type="button" aria-label="Collapse query panel" data-panel-icon="panel-right-close"></button></div>
+              <p id="query-empty" class="sidebar-hint">Add conditions, then run them to filter the graph.</p>
+            </div>
             <div id="condition-list" class="condition-list"></div>
-            <button id="add-condition" class="condition-add" disabled>＋ Add condition</button>
-            <div class="conditional-actions"><button id="apply-conditions" class="primary-action" disabled>Run query</button><button id="clear-conditions" class="secondary-action" disabled>Clear</button></div>
-            <div id="conditional-status" class="traversal-status" aria-live="polite"></div>
+            <button id="add-condition" class="control-row" type="button" disabled><span class="control-lead"><svg data-icon="plus"></svg></span><span class="control-label">Add condition</span></button>
+            <button id="apply-conditions" class="primary-action" type="button" disabled>Run query</button>
+            <div class="status-row"><span id="condition-count" class="status-line"></span><button id="clear-conditions" class="link-button" type="button" disabled>Clear</button></div>
+            <div id="conditional-status" class="status-line" aria-live="polite"></div>
           </section>
 
-          <section class="traversal-section" data-panel="traversal">
-            <div class="section-heading"><span>Path Explorer</span><strong id="selection-count">0 selected</strong></div>
-            <p class="section-help">Add entities from the detail panel, then trace how they connect. Paths are temporary in this browser tab, not saved history.</p>
-            <div id="selection-chips" class="selection-chips"><span class="empty-chip">No starting entities</span></div>
-            <div class="traversal-controls"><label>Direction<select id="traversal-direction" aria-label="Traversal direction" disabled><option value="out">Top-down</option><option value="in">Backwards</option><option value="both" selected>Both ways</option></select></label><label>Depth<select id="traversal-depth" aria-label="Traversal depth" disabled><option value="1">1 hop</option><option value="2" selected>2 hops</option><option value="3">3 hops</option><option value="4">4 hops</option><option value="6">6 hops</option></select></label></div>
-            <div class="traversal-actions"><button id="run-traversal" class="primary-action" disabled>Trace paths</button><button id="clear-traversal" class="secondary-action" disabled>Clear</button></div>
-            <div id="traversal-status" class="traversal-status" aria-live="polite"></div>
+          <section class="traversal-section sidebar-section" data-panel="traversal" aria-labelledby="traversal-heading">
+            <div class="section-head">
+              <h2 id="traversal-heading" class="sidebar-heading">Traversal</h2>
+              <p id="traversal-empty" class="sidebar-hint">Add entities or Shift-click nodes to trace paths from them.</p>
+            </div>
+            <div id="selection-chips" class="entity-list" role="list" aria-label="Traversal starting entities"></div>
+            <button id="add-traversal-entity" class="control-row" type="button" data-token="name_or_text" aria-haspopup="dialog" aria-expanded="false" disabled><span class="control-lead"><svg data-icon="plus"></svg></span><span class="control-label">Add entity</span></button>
+            <div id="traversal-range" class="traversal-range"></div>
+            <div id="traversal-footer" class="status-row" hidden><span id="traversal-status" class="status-line" aria-live="polite"></span><button id="clear-traversal" class="link-button" type="button">Clear</button></div>
           </section>
-          <div class="query-dock-tip"><kbd>⌘</kbd><kbd>K</kbd><span>Search any entity from the graph</span></div>
+          </div>
         </aside>
       </main>
 

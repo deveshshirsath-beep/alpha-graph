@@ -1,0 +1,110 @@
+/* Graph view after sigma: the canvas keeps only a layout switch (bottom left) and the map corner (bottom right),
+   and the right panel is sigma's "Query builder" and "Traversal" sections on Alpha's tokens. */
+#app .view-options { box-shadow: 0 0 0 1px rgba(5, 5, 5, .06), 0 4px 12px -2px rgba(18, 35, 66, .12); }
+:root:not([data-theme="light"]) #app .view-options { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 4px 12px -2px rgba(0, 0, 0, .45); }
+
+/* Layout switch: a segmented control whose active option shows its name. */
+#app .view-switcher { position: absolute; z-index: 6; left: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px; width: max-content; }
+#app .view-options { display: flex; gap: 2px; padding: 4px; border-radius: 14px; background: var(--panel); }
+#app .view-options > button { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: var(--ui-secondary); cursor: pointer; font-size: .9375rem; line-height: 1.375rem; white-space: nowrap; transition: background-color .15s ease, color .15s ease; }
+#app .view-options > button .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .view-option-label { display: none; }
+#app .view-options > button.active .view-option-label { display: inline; }
+#app .view-options > button:hover:not(:disabled):not(.active) { background: var(--ui-hover); color: var(--text); }
+#app .view-options > button.active { background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); font-weight: 500; }
+
+/* Map corner: the minimap with zoom controls beside it, quiet until hovered. */
+#app .map-corner { position: absolute; z-index: 6; right: 12px; bottom: 12px; display: flex; align-items: flex-end; gap: 8px; }
+#app .map-corner .minimap { position: static; inset: auto; width: auto; height: auto; padding: 0; border: 0; border-radius: 10px; background: none; box-shadow: none; backdrop-filter: none; }
+#app .map-corner .minimap canvas { display: block; width: 124px; height: 72px; border-radius: 8px; background: var(--panel); box-shadow: 0 0 0 1px var(--line); cursor: crosshair; }
+#app .zoom-controls { display: grid; gap: 2px; padding: 4px; border-radius: 12px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .06), 0 4px 12px -2px rgba(18, 35, 66, .12); }
+:root:not([data-theme="light"]) #app .zoom-controls { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 4px 12px -2px rgba(0, 0, 0, .45); }
+#app .zoom-controls button { display: grid; place-items: center; width: 32px; height: 32px; min-height: 0; padding: 0; border: 0; border-radius: 8px; background: transparent; box-shadow: none; color: var(--text); cursor: pointer; }
+#app .zoom-controls button .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .zoom-controls button:hover:not(:disabled) { background: var(--ui-hover); color: var(--text); }
+#app .zoom-controls button:disabled { opacity: .4; }
+
+/* Right panel: one white card hanging in the column with the chat entity panel's inset, radius and shadow. */
+#app #query-panel { padding: 12px; background: var(--planner-content-bg, var(--bg)); overflow: hidden; }
+#app #query-panel .query-card { display: flex; flex-direction: column; max-height: 100%; overflow-y: auto; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); scrollbar-width: thin; }
+[data-theme="light"] #app #query-panel .query-card { background: #fff; }
+:root:not([data-theme="light"]) #app #query-panel .query-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 4px 10px -2px rgba(0, 0, 0, .45); }
+#app #query-panel .section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#app #query-panel .section-title-row .side-panel-toggle { flex-shrink: 0; margin: -4px -4px -4px 0; }
+#app #query-panel .sidebar-section { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 14px 12px 16px; border: 0; background: none; }
+#app #query-panel .sidebar-section + .sidebar-section { border-top: 1px solid var(--line); }
+#app #query-panel .section-head { display: grid; gap: 2px; padding-bottom: 2px; }
+#app #query-panel .sidebar-heading { margin: 0; color: var(--text); font-size: .9375rem; font-weight: 600; line-height: 1.375rem; }
+#app #query-panel .sidebar-hint { margin: 0; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; }
+#app #query-panel :is(.sidebar-hint, .status-row, .primary-action)[hidden] { display: none; }
+
+/* Sigma's controls: a filled "add" row, a status line with a quiet Clear, and icon buttons. */
+#app #query-panel .control-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 2.5rem; padding: 0 8px 0 12px; border: 0; border-radius: 10px; background: var(--control-fill); box-shadow: none; color: var(--text); cursor: pointer; font-size: .9375rem; font-weight: 500; letter-spacing: 0; line-height: 1.375rem; text-align: left; text-transform: none; }
+#app #query-panel .control-row:hover:not(:disabled) { background: var(--control-fill-hover); }
+#app #query-panel .control-row:disabled { color: var(--ui-secondary); cursor: default; }
+#app #query-panel .control-lead { display: grid; place-items: center; flex: 0 0 auto; width: 18px; height: 18px; color: var(--ui-secondary); }
+#app #query-panel .control-lead .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app #query-panel .control-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app #query-panel .status-row { display: flex; align-items: center; gap: 8px; min-height: 32px; }
+#app #query-panel .status-line { margin: 0; padding: 0; color: var(--ui-secondary); font-size: .8125rem; letter-spacing: 0; line-height: 1.25rem; text-transform: none; }
+#app #query-panel .status-line:empty { display: none; }
+#app #query-panel .status-row .status-line { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app #query-panel .link-button { flex: 0 0 auto; margin-left: auto; height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; box-shadow: none; color: var(--ui-secondary); cursor: pointer; font-size: .8125rem; font-weight: 500; }
+#app #query-panel .link-button:hover:not(:disabled) { background: var(--ui-hover); color: var(--text); }
+#app #query-panel .link-button:disabled { opacity: .45; cursor: default; }
+#app #query-panel .icon-button { display: inline-grid; place-items: center; flex: 0 0 auto; width: 32px; height: 32px; min-height: 0; padding: 0; border: 0; border-radius: 8px; background: transparent; box-shadow: none; color: var(--ui-secondary); cursor: pointer; }
+#app #query-panel .icon-button:hover:not(:disabled) { background: var(--ui-hover); color: var(--text); }
+#app #query-panel .icon-button .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app #query-panel .primary-action { width: 100%; height: 2.5rem; min-height: 2.5rem; margin: 0; padding: 0 16px; border: 0; border-radius: 10px; background: var(--text); box-shadow: none; color: var(--panel); cursor: pointer; font-size: .9375rem; font-weight: 500; }
+#app #query-panel .primary-action:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 86%, var(--panel)); }
+#app #query-panel .primary-action:disabled { opacity: .35; cursor: default; }
+
+/* Query conditions: compact cards in sentence case, 36px fields. */
+#app #query-panel .condition-list { display: grid; gap: 8px; }
+#app #query-panel .condition-list:empty { display: none; }
+#app #query-panel .condition-card { display: grid; gap: 8px; margin: 0; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: none; }
+#app #query-panel .condition-card-header { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; min-height: 32px; margin: 0; }
+#app #query-panel .condition-card-header > span { flex: 1; color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; letter-spacing: 0; line-height: 1.25rem; text-transform: none; }
+#app #query-panel .condition-card-header > .select-control { width: auto; }
+#app #query-panel .condition-card-header .select-trigger { height: 32px; min-height: 32px; padding: 0 6px 0 10px; font-size: .8125rem; }
+#app #query-panel .condition-card-header .select-trigger > .ui-icon:first-child { display: none; }
+#app #query-panel .condition-card-header .icon-button { width: 28px; height: 28px; }
+#app #query-panel .condition-card .select-trigger { height: 2.25rem; min-height: 2.25rem; font-size: .875rem; }
+#app #query-panel .condition-card .condition-entity-input { height: 2.25rem; font-size: .875rem; }
+#app #query-panel .condition-suggestions { border-radius: 10px; }
+#app #query-panel .condition-suggestion-heading { font-size: .75rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
+#app #query-panel .condition-suggestions b { font-size: .875rem; font-weight: 500; }
+#app #query-panel .condition-suggestions small { font-size: .75rem; }
+
+/* Traversal: sigma's entity rows and two-sided distance slider. */
+#app #query-panel .entity-list { display: grid; gap: 2px; }
+#app #query-panel .entity-list:empty { display: none; }
+#app #query-panel .entity-row { position: relative; display: flex; align-items: flex-start; gap: 10px; min-height: 52px; padding: 7px 12px; border-radius: 10px; background: color-mix(in srgb, var(--text) 3%, transparent); }
+#app #query-panel .entity-row:is(:hover, :focus-within) { background: var(--control-fill); }
+#app #query-panel .entity-row > .planner-type-mark { margin: 5px 3px 0; }
+#app #query-panel .entity-row-text { display: grid; flex: 1; min-width: 0; }
+#app #query-panel .entity-row-name { overflow: hidden; color: var(--text); font-size: .9375rem; line-height: 1.375rem; text-overflow: ellipsis; white-space: nowrap; }
+#app #query-panel .entity-row-detail { overflow: hidden; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; text-overflow: ellipsis; white-space: nowrap; }
+#app #query-panel .entity-row-remove { position: absolute; top: 50%; right: 4px; margin-top: -16px; background: var(--control-fill); opacity: 0; }
+#app #query-panel .entity-row:is(:hover, :focus-within) .entity-row-remove { opacity: 1; }
+#app .traversal-range { display: grid; gap: 8px; padding: 8px 0 0; }
+#app .range-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+#app .range-caption { color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; line-height: 1.25rem; }
+#app .range-readout { color: var(--text); font-size: .9375rem; font-weight: 600; line-height: 1.375rem; font-variant-numeric: tabular-nums; }
+#app .range-legend { display: flex; justify-content: space-between; color: var(--ui-secondary); font-size: .75rem; line-height: 1rem; }
+#app .range-slider { --thumb-size: 22px; display: grid; gap: 10px; padding: 2px calc(var(--thumb-size) / 2) 0; user-select: none; }
+#app .range-track { position: relative; height: var(--thumb-size); cursor: pointer; touch-action: none; }
+#app :is(.range-rail, .range-fill) { position: absolute; top: 50%; height: 6px; border-radius: 999px; transform: translateY(-50%); }
+#app .range-rail { left: calc(var(--thumb-size) / -2); right: calc(var(--thumb-size) / -2); background: color-mix(in srgb, var(--text) 10%, transparent); }
+#app .range-fill { background: var(--text); transition: left 200ms cubic-bezier(.22, 1, .36, 1), width 200ms cubic-bezier(.22, 1, .36, 1); }
+#app .range-stop { position: absolute; top: 50%; width: 4px; height: 4px; border-radius: 50%; background: color-mix(in srgb, var(--text) 30%, transparent); transform: translate(-50%, -50%); pointer-events: none; }
+#app .range-stop.in-range { background: color-mix(in srgb, var(--panel) 70%, transparent); }
+#app .range-stop.is-origin { width: 8px; height: 8px; background: var(--text); }
+#app .range-stop.is-origin.in-range { background: var(--panel); }
+#app .range-thumb { position: absolute; top: 50%; z-index: 1; width: var(--thumb-size); height: var(--thumb-size); border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(5, 5, 5, .14), 0 2px 6px rgba(18, 35, 66, .18); cursor: grab; transform: translate(-50%, -50%); transition: left 200ms cubic-bezier(.22, 1, .36, 1), box-shadow 160ms ease, transform 160ms cubic-bezier(.22, 1, .36, 1); }
+#app .range-thumb:hover { transform: translate(-50%, -50%) scale(1.06); }
+#app .range-thumb:focus-visible { outline: none; box-shadow: 0 0 0 1px rgba(5, 5, 5, .2), 0 2px 6px rgba(18, 35, 66, .18), 0 0 0 3px var(--ui-focus); }
+#app .range-thumb.is-active { cursor: grabbing; transform: translate(-50%, -50%) scale(1.12); box-shadow: 0 0 0 1px rgba(5, 5, 5, .16), 0 4px 12px rgba(18, 35, 66, .22), 0 0 0 6px rgba(22, 22, 22, .08); }
+#app .range-slider.is-dragging :is(.range-thumb.is-active, .range-fill) { transition: box-shadow 160ms ease, transform 160ms cubic-bezier(.22, 1, .36, 1); }
+#app .range-scale { display: none; }
+@media (prefers-reduced-motion: reduce) { #app :is(.range-fill, .range-thumb) { transition: none; } }

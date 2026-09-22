@@ -10,6 +10,9 @@ import { connectPanelToggle } from "./panel-toggle.js";
 import { workspaceFocus } from "./workspace-focus.js";
 import { initializeTextSizeSettings, textScale } from "./text-size.js";
 import { conditionReadiness, evaluateGraphConditions, traceGraphPaths } from "./graph-query.js";
+import { entityTypeLabel, typeMark } from "./planner-entity-map.js";
+import { PlannerSlotPicker } from "./planner-slot-picker.js";
+import { createRangeSlider } from "./range-slider.js";
 import "./fonts.css";
 import "./styles.css";
 import "./workspace-polish.css";
@@ -23,6 +26,8 @@ import "./shell.css";
 import "./planner-context.css";
 import "./planner-chat.css";
 import "./controls.css";
+import "./explorer-panel.css";
+import "./graph-view.css";
 import "./query-planner.js";
 
 initializeObservability({
@@ -67,17 +72,25 @@ let layoutAnimation = null;
 let minimapDirty = true;
 const minimapBase = document.createElement("canvas");
 const traversalSelections = new Set();
-const expandedLayers = new Set(["BUSINESS"]);
+/** Names and types of traversal starts, which may come from the picker before their layer is loaded. */
+const traversalMeta = new Map();
+const traversalRange = { from: -2, to: 2 };
+let traversalAutoRunTimer = 0;
+let traversalRunId = 0;
+/** Sigma's entity picker, the same one the chat composer uses, for traversal starts. */
+const traversalPicker = new PlannerSlotPicker({
+  getContext: () => ({ definitions: {}, meta: graphMeta }),
+  loadEntities: async (type) => {
+    await ensureCatalogTypes([type]);
+    return (searchIndexByType.get(type) || []).map((item) => ({ id: item.id, name: item.name, type }));
+  },
+  onPick: (_anchor, entity) => addTraversalEntity(entity),
+});
+const expandedLayers = new Set();
 const conditionalConditions = [];
 let conditionRevision = 0;
 let conditionalBusy = false;
 let nextConditionId = 1;
-const VIEW_COPY = {
-  donut: ["System constellation", "Architecture landscape", "Drag to explore · Scroll to zoom · Select a node for context"],
-  "constellation-v1": ["Legacy constellation", "Constellation V1", "Original clustered system layout"],
-  hierarchy: ["Organization map", "Organizational hierarchy", "Entities arranged by architecture layer and type"],
-};
-
 const state = {
   nodeTypes: new Set(),
   edgeTypes: new Set(),
@@ -195,6 +208,11 @@ const ENTITY_LABELS = {
   EVENT: "Event",
 };
 const LAYER_LABELS = { BUSINESS: "Business", API: "API", RUNTIME: "Runtime" };
+
+/** Relationship names in the same Title Case the chat module gives entity types. */
+function relationshipLabel(type) {
+  return String(type || "").replaceAll("-", " ").replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
 
 function layerLabel(layer) {
   return LAYER_LABELS[layer] || layer.replaceAll("-", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -333,15 +351,17 @@ function themeColor(attributes) {
   return palette?.[0] || attributes.darkColor || attributes.color;
 }
 
-function setViewChrome(mode) {
-  const [kicker, title, instructions] = VIEW_COPY[mode] || VIEW_COPY.donut;
-  $("#view-kicker").textContent = kicker;
-  $("#view-title").textContent = title;
-  $("#view-instructions").textContent = instructions;
+/** Sigma's segmented layout switch: the active option shows its name. */
+function setLayoutSwitch(mode) {
+  $$(".view-option").forEach((option) => {
+    const active = option.dataset.layout === mode;
+    option.classList.toggle("active", active);
+    option.setAttribute("aria-checked", String(active));
+  });
 }
 
 function changeVisualizationMode(mode) {
-  setViewChrome(mode);
+  setLayoutSwitch(mode);
   morphLayout(mode);
 }
 
@@ -545,13 +565,10 @@ function applyLayerDonutLayout(layer, shouldFit = true) {
   });
 
   currentLayout = "donut";
-  const layoutPicker = $("#layout-mode");
-  if (layoutPicker) layoutPicker.value = "donut";
-  syncDropdowns();
+  setLayoutSwitch("donut");
   const stage = document.querySelector(".stage");
   stage?.classList.add("layer-donut");
   stage?.setAttribute("data-active-layer", layer);
-  setViewChrome("donut");
   minimapDirty = true;
   renderer.refresh();
   if (shouldFit) fitVisibleGraph();
@@ -595,17 +612,10 @@ function updateFilterUI() {
   $$("#edge-filters input").forEach((input) => {
     input.checked = state.edgeTypes.has(input.value);
   });
-  const allTypes = Object.values(LAYERS).flat();
-  const allSelected = allTypes.every((type) => state.nodeTypes.has(type));
-  const viewAll = $("#view-all-entities");
-  if (viewAll) {
-    viewAll.setAttribute("aria-pressed", String(allSelected));
-    setButtonContent(viewAll, "layers", allSelected ? "Layer view" : "View all");
-  }
   $$(".entity-folder").forEach((folder) => {
     const types = LAYERS[folder.dataset.layer];
     const selected = types.filter((type) => state.nodeTypes.has(type)).length;
-    folder.querySelector(".folder-selected").textContent = selected ? `${selected}/${types.length}` : `${types.length}`;
+    folder.querySelector(".folder-selected").textContent = `${selected}/${types.length}`;
   });
 }
 
@@ -616,10 +626,27 @@ function renderEntityTree() {
     const group = document.createElement("div");
     group.className = "entity-group";
     const folder = document.createElement("button");
-    folder.className = "entity-folder";
+    folder.className = "entity-folder planner-type-row";
+    folder.style.setProperty("--depth", "0");
     folder.dataset.layer = layer;
     folder.setAttribute("aria-expanded", String(expandedLayers.has(layer)));
-    folder.innerHTML = `<span class="folder-chevron">⌄</span><i class="folder-icon"></i><span class="folder-name">${escapeHtml(layerLabel(layer))} layer</span><small class="folder-selected">${layerTypes.length}</small>`;
+    const folderToggle = document.createElement("span");
+    folderToggle.className = "planner-type-toggle";
+    folderToggle.append(icon("chevron"));
+    const folderEntry = document.createElement("span");
+    folderEntry.className = "planner-type-entry";
+    const folderMark = document.createElement("span");
+    folderMark.className = "folder-mark";
+    folderMark.style.setProperty("--layer-color", themeColor(sampleForType(layerTypes[0]) || { layer, color: "#7068ff" }));
+    folderMark.append(icon("stack"));
+    const folderName = document.createElement("span");
+    folderName.className = "planner-type-label";
+    folderName.textContent = `${layerLabel(layer)} layer`;
+    const folderCount = document.createElement("span");
+    folderCount.className = "planner-type-count folder-selected";
+    folderCount.textContent = String(layerTypes.length);
+    folderEntry.append(folderMark, folderName, folderCount);
+    folder.append(folderToggle, folderEntry);
     const children = document.createElement("div");
     children.className = "entity-children";
     children.hidden = !expandedLayers.has(layer);
@@ -632,10 +659,11 @@ function renderEntityTree() {
 
     for (const type of layerTypes) {
       const count = graphMeta.counts[type] || 0;
-      const sample = sampleForType(type);
       const label = document.createElement("label");
-      label.className = "filter-item entity-leaf";
-      label.innerHTML = `<span class="tree-joint"></span><input type="checkbox" value="${escapeHtml(type)}"><span class="checkmark" style="--dark-color:${safeCssColor(sample?.darkColor || sample?.color)};--light-color:${safeCssColor(sample?.lightColor || sample?.color, "#65747e")};--ocean-color:${safeCssColor(sample?.oceanColor || sample?.color, "#3d8ec9")};--sunset-color:${safeCssColor(sample?.sunsetColor || sample?.color, "#d45d84")}"></span><span class="filter-name">${escapeHtml(type.replaceAll("-", " "))}</span><span class="filter-count">${formatNumber.format(count)}</span>`;
+      label.className = "filter-item entity-leaf planner-type-row";
+      label.style.setProperty("--depth", "1");
+      label.innerHTML = `<span class="planner-type-toggle"></span><span class="planner-type-entry"><input type="checkbox" value="${escapeHtml(type)}"><span class="planner-type-label">${escapeHtml(entityTypeLabel(type))}</span><span class="planner-type-count">${formatNumber.format(count)}</span></span>`;
+      label.querySelector("input").after(typeMark(type, graphMeta));
       label.querySelector("input").addEventListener("change", async (event) => {
         const input = /** @type {HTMLInputElement} */ (event.currentTarget);
         input.checked ? state.nodeTypes.add(type) : state.nodeTypes.delete(type);
@@ -654,39 +682,6 @@ function renderEntityTree() {
   updateFilterUI();
 }
 
-async function toggleAllEntities() {
-  const allTypes = Object.values(LAYERS).flat();
-  const allSelected = allTypes.every((type) => state.nodeTypes.has(type));
-  if (allSelected) {
-    state.nodeTypes = new Set(LAYERS[activeLayer]);
-    expandedLayers.clear();
-    expandedLayers.add(activeLayer);
-  } else {
-    state.nodeTypes = new Set(allTypes);
-    for (const layer of Object.keys(LAYERS)) expandedLayers.add(layer);
-    $$(".layer-tab").forEach((button) => {
-      button.classList.remove("active");
-      button.setAttribute("aria-selected", "false");
-    });
-  }
-  focusedNeighborhood = null;
-  traversalEdges = null;
-  conditionalNodes = null;
-  conditionalEdges = null;
-  if (els.conditionalStatus) els.conditionalStatus.textContent = "";
-  clearSelection(false);
-  renderEntityTree();
-  updateCounts();
-  await loadGraphView(allSelected ? [activeLayer] : Object.keys(LAYERS));
-  if (allSelected) applyLayerDonutLayout(activeLayer);
-  else {
-    const stage = document.querySelector(".stage");
-    stage?.classList.remove("layer-donut");
-    stage?.removeAttribute("data-active-layer");
-    fitVisibleGraph();
-  }
-}
-
 function renderLayerTabs() {
   const tabs = $("#layer-tabs");
   tabs.replaceChildren();
@@ -700,7 +695,7 @@ function renderLayerTabs() {
     button.setAttribute("role", "tab");
     button.setAttribute("aria-selected", String(layer === activeLayer));
     button.style.setProperty("--layer-color", themeColor(sample || { layer, color: "#7068ff" }));
-    button.innerHTML = `<i></i><span>${escapeHtml(layerLabel(layer))}</span><small>${formatNumber.format(count)}</small>`;
+    button.innerHTML = `<span>${escapeHtml(layerLabel(layer))}</span><small>${formatNumber.format(count)}</small>`;
     tabs.append(button);
   }
 }
@@ -716,10 +711,11 @@ function makeFilters() {
     .sort((a, b) => b[1] - a[1]);
   for (const [index, [type, count]] of edgeTypes.entries()) {
     const label = document.createElement("label");
-    label.className = "filter-item";
+    label.className = "filter-item planner-type-row";
+    label.style.setProperty("--depth", "0");
     // Stable, distinct colors, with accessible contrast in every theme.
     const hue = Math.round(index * 137.508) % 360;
-    label.innerHTML = `<input type="checkbox" value="${escapeHtml(type)}"><span class="checkmark relationship-dot" style="--dark-color:hsl(${hue} 65% 66%);--light-color:hsl(${hue} 65% 38%);--ocean-color:hsl(${hue} 70% 62%);--sunset-color:hsl(${hue} 75% 70%)"></span><span class="filter-name">${escapeHtml(type.replaceAll("-", " "))}</span><span class="filter-count">${formatNumber.format(count)}</span>`;
+    label.innerHTML = `<span class="planner-type-toggle"></span><span class="planner-type-entry"><input type="checkbox" value="${escapeHtml(type)}"><span class="planner-type-mark relationship-dot" style="--mark-dark:hsl(${hue} 65% 66%);--mark-light:hsl(${hue} 65% 38%);--mark-ocean:hsl(${hue} 70% 62%);--mark-sunset:hsl(${hue} 75% 70%)"></span><span class="planner-type-label">${escapeHtml(relationshipLabel(type))}</span><span class="planner-type-count">${formatNumber.format(count)}</span></span>`;
     label.querySelector("input").addEventListener("change", (event) => {
       const input = /** @type {HTMLInputElement} */ (event.currentTarget);
       input.checked ? state.edgeTypes.add(type) : state.edgeTypes.delete(type);
@@ -731,7 +727,9 @@ function makeFilters() {
   rules.replaceChildren();
   for (const [source, relationship, target] of RELATIONSHIP_RULES) {
     const row = document.createElement("div");
-    row.innerHTML = `<span>${escapeHtml(source)}</span><b>—[${escapeHtml(relationship)}]→</b><span>${escapeHtml(target)}</span>`;
+    row.className = "relationship-rule";
+    row.innerHTML = `<span class="rule-node">${escapeHtml(entityTypeLabel(source))}</span><b class="rule-edge">${escapeHtml(relationshipLabel(relationship))}</b><span class="rule-node">${escapeHtml(entityTypeLabel(target))}</span>`;
+    row.querySelector(".rule-edge").append(icon("arrow-right"));
     rules.append(row);
   }
   renderConditionalFilters();
@@ -752,8 +750,8 @@ function conditionRelationshipOptions(condition) {
   const outgoing = [];
   const incoming = [];
   RELATIONSHIP_RULES.forEach(([source, relationship, target], index) => {
-    if (source === condition.entityType) outgoing.push(`<option value="out:${index}"${condition.ruleKey === `out:${index}` ? " selected" : ""}>${escapeHtml(relationship.replaceAll("-", " "))} → ${escapeHtml(entityLabel(target))}</option>`);
-    if (target === condition.entityType) incoming.push(`<option value="in:${index}"${condition.ruleKey === `in:${index}` ? " selected" : ""}>${escapeHtml(relationship.replaceAll("-", " "))} ← ${escapeHtml(entityLabel(source))}</option>`);
+    if (source === condition.entityType) outgoing.push(`<option value="out:${index}"${condition.ruleKey === `out:${index}` ? " selected" : ""}>${escapeHtml(relationshipLabel(relationship))} → ${escapeHtml(entityLabel(target))}</option>`);
+    if (target === condition.entityType) incoming.push(`<option value="in:${index}"${condition.ruleKey === `in:${index}` ? " selected" : ""}>${escapeHtml(relationshipLabel(relationship))} ← ${escapeHtml(entityLabel(source))}</option>`);
   });
   let html = '<option value="">Choose relationship…</option>';
   if (outgoing.length) html += `<optgroup label="Outgoing">${outgoing.join("")}</optgroup>`;
@@ -821,12 +819,11 @@ function updateConditionState(changed = false) {
 
 function renderConditionalFilters() {
   els.conditionList.replaceChildren();
-  if (!conditionalConditions.length) {
-    const empty = document.createElement("p");
-    empty.className = "condition-empty";
-    empty.textContent = "No conditions yet. Add a condition, then choose its entity type, entity and relationship.";
-    els.conditionList.append(empty);
-  }
+  // Until there is a condition, the section is just its heading, a hint and "Add condition".
+  const empty = !conditionalConditions.length;
+  $("#query-empty").hidden = !empty;
+  $("#apply-conditions").hidden = empty;
+  $(".conditional-section .status-row").hidden = empty;
   conditionalConditions.forEach((condition, index) => {
     const card = document.createElement("div");
     card.className = "condition-card";
@@ -835,12 +832,14 @@ function renderConditionalFilters() {
     const header = document.createElement("div");
     header.className = "condition-card-header";
     if (index === 0) {
-      header.innerHTML = `<span>Condition 1 · Where</span><button type="button" aria-label="Remove condition">×</button>`;
+      header.innerHTML = `<span>Condition 1</span><button type="button" class="icon-button" aria-label="Remove condition" title="Remove condition"></button>`;
     } else {
-      header.innerHTML = `<span>Condition ${index + 1}</span><select aria-label="Condition operator"><option value="AND"${condition.operator === "AND" ? " selected" : ""}>AND</option><option value="OR"${condition.operator === "OR" ? " selected" : ""}>OR</option></select><button type="button" aria-label="Remove condition">×</button>`;
+      header.innerHTML = `<span>Condition ${index + 1}</span><select aria-label="Condition operator"><option value="AND"${condition.operator === "AND" ? " selected" : ""}>AND</option><option value="OR"${condition.operator === "OR" ? " selected" : ""}>OR</option></select><button type="button" class="icon-button" aria-label="Remove condition" title="Remove condition"></button>`;
       header.querySelector("select").addEventListener("change", (event) => { condition.operator = /** @type {HTMLSelectElement} */ (event.currentTarget).value; updateConditionState(true); });
     }
-    header.querySelector("button").addEventListener("click", () => removeConditionalCondition(condition.id));
+    const remove = header.querySelector("button");
+    remove.append(icon("x"));
+    remove.addEventListener("click", () => removeConditionalCondition(condition.id));
 
     const typeSelect = document.createElement("select");
     typeSelect.className = "condition-type";
@@ -1128,29 +1127,85 @@ function focusNeighborhood() {
   showToast(`${focusedNeighborhood.size.toLocaleString()} connected entities in focus`);
 }
 
+/** A picked or selected entity as sigma's list row: mark, name, type, and a remove button on hover. */
+function entityRow(meta, { detail, removeLabel, onRemove }) {
+  const row = document.createElement("div");
+  row.className = "entity-row";
+  row.setAttribute("role", "listitem");
+  row.title = meta.name;
+  const text = document.createElement("span");
+  text.className = "entity-row-text";
+  const name = document.createElement("span");
+  name.className = "entity-row-name";
+  name.textContent = meta.name;
+  const type = document.createElement("span");
+  type.className = "entity-row-detail";
+  type.textContent = detail;
+  text.append(name, type);
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "icon-button entity-row-remove";
+  remove.setAttribute("aria-label", removeLabel);
+  remove.append(icon("x"));
+  remove.addEventListener("click", onRemove);
+  row.append(typeMark(meta.type, graphMeta), text, remove);
+  return row;
+}
+
+function rangeLabel(from, to) {
+  const hops = (count) => `${count} ${count === 1 ? "hop" : "hops"}`;
+  const parts = [];
+  if (from < 0) parts.push(`${hops(-from)} in`);
+  if (to > 0) parts.push(`${hops(to)} out`);
+  return parts.join(" · ") || "Starting entities only";
+}
+
+/** Distance from the starting entities: incoming hops to the left of the origin, outgoing to the right. */
+function mountTraversalRange() {
+  const host = $("#traversal-range");
+  if (!host || host.childElementCount) return;
+  const head = document.createElement("div");
+  head.className = "range-head";
+  const caption = document.createElement("span");
+  caption.className = "range-caption";
+  caption.textContent = "Distance";
+  const readout = document.createElement("span");
+  readout.className = "range-readout";
+  head.append(caption, readout);
+  const draw = ({ from, to }) => { readout.textContent = rangeLabel(from, to); };
+  const slider = createRangeSlider({
+    min: -4,
+    max: 4,
+    from: traversalRange.from,
+    to: traversalRange.to,
+    label: "Hops",
+    origin: 0,
+    scaleLabel: () => "",
+    formatValue: (value) => (value === 0 ? "the starting entities" : `${Math.abs(value)} ${Math.abs(value) === 1 ? "hop" : "hops"} ${value < 0 ? "in" : "out"}`),
+    onInput: draw,
+    onChange: (range) => {
+      draw(range);
+      if (range.from === traversalRange.from && range.to === traversalRange.to) return;
+      traversalRange.from = range.from;
+      traversalRange.to = range.to;
+      if (traversalSelections.size) scheduleTraversal(160);
+    },
+  });
+  const legend = document.createElement("div");
+  legend.className = "range-legend";
+  legend.innerHTML = "<span>Incoming</span><span>Entity</span><span>Outgoing</span>";
+  draw(traversalRange);
+  host.replaceChildren(head, slider.element, legend);
+}
+
 function updateTraversalUI() {
-  const chips = $("#selection-chips");
-  chips.replaceChildren();
-  $("#selection-count").textContent = `${traversalSelections.size} selected`;
-  if (!traversalSelections.size) {
-    const empty = document.createElement("span");
-    empty.className = "empty-chip";
-    empty.textContent = "No starting entities";
-    chips.append(empty);
-  } else {
-    for (const node of traversalSelections) {
-      const attrs = graph.getNodeAttributes(node);
-      const chip = document.createElement("button");
-      chip.className = "selection-chip";
-      chip.innerHTML = `<i style="--node-color:${safeCssColor(themeColor(attrs))}"></i><span></span><b>×</b>`;
-      chip.querySelector("span").textContent = attrs.name;
-      chip.setAttribute("aria-label", `Remove ${attrs.name} from traversal`);
-      chip.addEventListener("click", () => toggleTraversalNode(node));
-      chips.append(chip);
-    }
-  }
-  $("#run-traversal").disabled = traversalSelections.size === 0;
-  $("#clear-traversal").disabled = traversalSelections.size === 0 && !traversalEdges;
+  const list = $("#selection-chips");
+  list.replaceChildren(...[...traversalSelections].map((node) => {
+    const meta = traversalMeta.get(node) || { name: node, type: "" };
+    return entityRow(meta, { detail: entityLabel(meta.type), removeLabel: `Remove ${meta.name} from traversal`, onRemove: () => toggleTraversalNode(node) });
+  }));
+  $("#traversal-empty").hidden = traversalSelections.size > 0;
+  $("#traversal-footer").hidden = traversalSelections.size === 0;
   if (selectedNode) {
     const included = traversalSelections.has(selectedNode);
     setButtonContent($("#add-to-traversal"), included ? "check" : "plus", included ? "Added to traversal" : "Add to traversal");
@@ -1159,45 +1214,78 @@ function updateTraversalUI() {
   }
 }
 
-function toggleTraversalNode(node) {
-  if (!graph.hasNode(node)) return;
-  traversalSelections.has(node) ? traversalSelections.delete(node) : traversalSelections.add(node);
-  const attrs = graph.getNodeAttributes(node);
-  state.nodeTypes.add(attrs.entityType);
-  traversalEdges = null;
-  focusedNeighborhood = null;
+/** The traversal applies itself, as in sigma: it re-runs whenever its entities or distance change. */
+function scheduleTraversal(delay = 0) {
+  window.clearTimeout(traversalAutoRunTimer);
+  if (traversalSelections.size) {
+    traversalAutoRunTimer = window.setTimeout(runTraversal, delay);
+    return;
+  }
+  traversalRunId += 1;
+  $("#traversal-status").textContent = "";
+  if (traversalEdges) {
+    traversalEdges = null;
+    focusedNeighborhood = null;
+    selectLayer(activeLayer);
+  } else refresh();
+}
+
+function addTraversalEntity(entity) {
+  const id = String(entity.id);
+  if (traversalSelections.has(id)) return;
+  traversalSelections.add(id);
+  traversalMeta.set(id, { name: String(entity.name || id), type: entity.type || "" });
   updateTraversalUI();
-  refresh();
+  scheduleTraversal();
+}
+
+function toggleTraversalNode(node) {
+  if (traversalSelections.has(node)) {
+    traversalSelections.delete(node);
+    traversalMeta.delete(node);
+  } else {
+    if (!graph.hasNode(node)) return;
+    const attrs = graph.getNodeAttributes(node);
+    traversalSelections.add(node);
+    traversalMeta.set(node, { name: attrs.name, type: attrs.entityType });
+  }
+  updateTraversalUI();
+  scheduleTraversal(120);
 }
 
 async function runTraversal() {
   if (!traversalSelections.size) return;
+  const runId = ++traversalRunId;
   const graphId = currentGraphId;
-  const roots = [...traversalSelections];
-  const direction = $("#traversal-direction").value;
-  const depth = Number($("#traversal-depth").value);
-  $("#run-traversal").disabled = true;
+  const { from, to } = traversalRange;
+  $("#traversal-status").textContent = "Tracing paths…";
   try {
-    $("#traversal-status").textContent = "Loading relationship layers…";
     const loaded = await loadGraphView(Object.keys(LAYERS));
-    if (graphId !== currentGraphId || loaded.cancelled || roots.some(node => !traversalSelections.has(node))) return;
+    if (runId !== traversalRunId || graphId !== currentGraphId || loaded.cancelled) return;
     if (loaded.error) throw new Error(loaded.error);
     conditionalNodes = null;
     conditionalEdges = null;
     els.conditionalStatus.textContent = "";
-    const { nodes, edges, truncated } = traceGraphPaths(graph, roots, direction, depth, state.edgeTypes);
+    const starts = [...traversalSelections].filter((node) => graph.hasNode(node));
+    if (!starts.length) throw new Error("these entities aren't in this graph");
+    const outward = to > 0 ? traceGraphPaths(graph, starts, "out", to, state.edgeTypes) : null;
+    const inward = from < 0 ? traceGraphPaths(graph, starts, "in", -from, state.edgeTypes) : null;
+    const nodes = new Set([...starts, ...(outward?.nodes || []), ...(inward?.nodes || [])]);
+    const edges = new Set([...(outward?.edges || []), ...(inward?.edges || [])]);
+    const truncated = Boolean(outward?.truncated || inward?.truncated);
     for (const node of nodes) state.nodeTypes.add(graph.getNodeAttribute(node, "entityType"));
     focusedNeighborhood = nodes;
     traversalEdges = edges;
     clearSelection(false);
-    $("#traversal-status").textContent = `${nodes.size.toLocaleString()} ${nodes.size === 1 ? "entity" : "entities"} · ${edges.size.toLocaleString()} ${edges.size === 1 ? "relationship" : "relationships"}${truncated ? " · limited to 5,000 entities" : ""}`;
-    trackEvent("traversal_completed", { direction, depth, startingNodes: traversalSelections.size, matchedNodes: nodes.size, matchedEdges: edges.size, truncated });
-    updateTraversalUI();
+    const reached = nodes.size - starts.length;
+    $("#traversal-status").textContent = `${reached.toLocaleString()} ${reached === 1 ? "entity" : "entities"} within ${rangeLabel(from, to).toLowerCase()}${truncated ? " · limited to 5,000" : ""}`;
+    trackEvent("traversal_completed", { from, to, startingNodes: starts.length, matchedNodes: reached, matchedEdges: edges.size, truncated });
     updateCounts();
     updateFilterUI();
     minimapDirty = true;
     fitVisibleGraph();
   } catch (error) {
+    if (runId !== traversalRunId) return;
     $("#traversal-status").textContent = `Paths could not run: ${error.message}`;
     captureException(error, { source: "path-explorer" });
   } finally {
@@ -1207,7 +1295,10 @@ async function runTraversal() {
 }
 
 function clearTraversal() {
+  window.clearTimeout(traversalAutoRunTimer);
+  traversalRunId += 1;
   traversalSelections.clear();
+  traversalMeta.clear();
   traversalEdges = null;
   focusedNeighborhood = null;
   $("#traversal-status").textContent = "";
@@ -1429,30 +1520,49 @@ function handleSearch(query) {
   els.searchResults.hidden = false;
 }
 
+/** Entities and Relationships are the explorer panel's two tabs, with arrow keys between them. */
+function wireExplorerTabs() {
+  const tabs = /** @type {HTMLButtonElement[]} */ ($$(".explorer-tab"));
+  const select = (tab) => {
+    for (const item of tabs) {
+      const active = item === tab;
+      item.classList.toggle("active", active);
+      item.setAttribute("aria-selected", String(active));
+      item.tabIndex = active ? 0 : -1;
+      $(`#${item.getAttribute("aria-controls")}`).hidden = !active;
+    }
+  };
+  tabs.forEach((tab, index) => {
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+      event.preventDefault();
+      const next = tabs[(index + (event.key === "ArrowRight" ? 1 : -1) + tabs.length) % tabs.length];
+      select(next);
+      next.focus();
+    });
+  });
+}
+
 function wireControls() {
   $$("button, input, select").forEach((element) => { element.disabled = false; });
   $$(".layer-tab").forEach((button) => button.addEventListener("click", () => selectLayer(button.dataset.layer)));
-  $("#reset-view").addEventListener("click", () => selectLayer(activeLayer));
+  $("#reset-view")?.addEventListener("click", () => selectLayer(activeLayer));
   $("#empty-reset").addEventListener("click", () => selectLayer(activeLayer));
-  $("#view-all-entities").addEventListener("click", toggleAllEntities);
   $("#add-condition").addEventListener("click", addConditionalCondition);
   $("#apply-conditions").addEventListener("click", applyConditionalFilters);
   $("#clear-conditions").addEventListener("click", clearConditionalFilters);
-  $("#edge-section-toggle").addEventListener("click", (event) => {
-    const expanded = event.currentTarget.getAttribute("aria-expanded") === "true";
-    event.currentTarget.setAttribute("aria-expanded", String(!expanded));
-    $("#edge-filter-wrap").hidden = expanded;
-  });
+  wireExplorerTabs();
   $("#zoom-in").addEventListener("click", () => renderer.getCamera().animatedZoom({ duration: 250 }));
   $("#zoom-out").addEventListener("click", () => renderer.getCamera().animatedUnzoom({ duration: 250 }));
   $("#zoom-fit").addEventListener("click", fitVisibleGraph);
   $("#close-inspector").addEventListener("click", () => clearSelection());
   $("#focus-neighbors").addEventListener("click", focusNeighborhood);
   $("#add-to-traversal").addEventListener("click", () => selectedNode && toggleTraversalNode(selectedNode));
-  $("#run-traversal").addEventListener("click", runTraversal);
+  $("#add-traversal-entity").addEventListener("click", (event) => traversalPicker.open(/** @type {HTMLElement} */ (event.currentTarget)));
   $("#clear-traversal").addEventListener("click", clearTraversal);
   $("#theme-select").addEventListener("change", (event) => setTheme(/** @type {HTMLSelectElement} */ (event.currentTarget).value));
-  $("#layout-mode").addEventListener("change", (event) => changeVisualizationMode(/** @type {HTMLSelectElement} */ (event.currentTarget).value));
+  $$(".view-option").forEach((option) => option.addEventListener("click", () => changeVisualizationMode(option.dataset.layout)));
   $("#minimap-canvas").addEventListener("click", (event) => {
     const rect = /** @type {HTMLCanvasElement} */ (event.currentTarget).getBoundingClientRect();
     renderer.getCamera().animate({ x: (event.clientX - rect.left) / rect.width, y: 1 - (event.clientY - rect.top) / rect.height }, { duration: 450 });
@@ -1509,13 +1619,13 @@ function wireControls() {
   $("#shortcut-modal").addEventListener("click", (event) => {
     if (/** @type {Element} */ (event.target).id === "shortcut-modal") /** @type {HTMLElement} */ (event.currentTarget).hidden = true;
   });
+  mountTraversalRange();
   updateTraversalUI();
   renderConditionalFilters();
 }
 
 function wireWorkspaceShell() {
   $$('[data-panel-icon]').forEach(button => button.replaceChildren(icon(button.dataset.panelIcon)));
-  const dockTabButtons = $$(".dock-tabs [data-dock-target]");
   const sidebar = $(".sidebar");
   const queryDock = $(".query-dock");
   // Sigma's sidebar never collapses on desktop, so an old saved "collapsed" state must not strand it closed.
@@ -1542,14 +1652,6 @@ function wireWorkspaceShell() {
   });
   workspaceFocus.register(explorerPanel);
   workspaceFocus.register(queryPanel);
-
-  for (const tab of dockTabButtons) {
-    tab.addEventListener("click", () => {
-      const panel = $(`[data-panel="${tab.dataset.dockTarget}"]`);
-      dockTabButtons.forEach((item) => item.classList.toggle("active", item === tab));
-      if (panel && queryDock) queryDock.scrollTo({ top: panel.offsetTop - 48, behavior: "smooth" });
-    });
-  }
 }
 
 function initializeRenderer() {
@@ -1625,8 +1727,9 @@ function finalizeSearchIndex() {
 function configureDynamicSchema(meta) {
   if (meta.layers && Object.keys(meta.layers).length) LAYERS = meta.layers;
   activeLayer = LAYERS.BUSINESS ? "BUSINESS" : Object.keys(LAYERS)[0];
+  // Every layer starts open in the tree.
   expandedLayers.clear();
-  expandedLayers.add(activeLayer);
+  for (const layer of Object.keys(LAYERS)) expandedLayers.add(layer);
   const merged = new Map();
   for (const rule of RECOMMENDED_RELATIONSHIP_RULES) merged.set(rule.join("\u0000"), rule);
   for (const entry of meta.relationshipSchema || []) {
