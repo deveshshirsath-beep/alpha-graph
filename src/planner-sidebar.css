@@ -1,0 +1,64 @@
+/* Ask-mode sidebar: sigma's structure, spacing and radii on Alpha's color tokens. */
+#app #planner-workspace { --planner-rail-width: 0px; background: var(--planner-side-bg); }
+
+/* Center section sits inset on the sidebar color with sigma's rounded corner. */
+#app .planner-conversation { border-top: 1px solid var(--line); border-left: 1px solid var(--line); border-top-left-radius: 16px; }
+#app .planner-panel-resizer-left::before { background: transparent; }
+#app #planner-workspace.library-collapsed .planner-conversation { border-left: 0; border-top-left-radius: 0; }
+
+#app .planner-nav { flex-shrink: 0; display: grid; gap: 2px; padding: .25rem .75rem 0; }
+#app .planner-nav-row { width: 100%; min-height: 2.5rem; display: flex; align-items: center; gap: .625rem; padding: 0 .75rem; border: 0; border-radius: 10px; background: transparent; color: var(--text); cursor: pointer; font-size: .9375rem; line-height: 1.375rem; text-align: left; }
+#app .planner-nav-row:hover { background: var(--ui-hover); }
+#app .planner-nav-row > svg, #app .planner-nav-row > [data-planner-heading-icon] { display: grid; color: var(--ui-secondary); }
+#app .planner-nav-row .ui-icon { width: 1.25rem; height: 1.25rem; flex-basis: 1.25rem; }
+#app .planner-nav-row.has-context::after { content: ""; width: 6px; height: 6px; margin-left: auto; border-radius: 50%; background: var(--accent); }
+
+/* Questions and Search open Alpha's existing panels as a drill-in view. */
+#app .planner-library[data-view="home"] .planner-discovery,
+#app .planner-library:not([data-view="home"]) :is(.planner-nav, .planner-workspaces-panel) { display: none; }
+#app .planner-library:not([data-view="home"]) .planner-discovery { flex: 1 1 auto; max-height: none; }
+#app .planner-drill-header { flex-shrink: 0; display: flex; align-items: center; gap: .375rem; padding: 0 .75rem .25rem; }
+#app .planner-drill-header button { width: 2rem; height: 2rem; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); cursor: pointer; }
+#app .planner-drill-header button:hover { background: var(--ui-hover); color: var(--text); }
+#app .planner-drill-header .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; transform: rotate(90deg); }
+#app .planner-drill-header h3 { margin: 0; font-size: .9375rem; font-weight: 600; line-height: 1.375rem; }
+
+#app .planner-workspaces-panel { flex: 1 1 auto; min-height: 0; padding: 0 .75rem .75rem; border-top: 0; }
+#app .planner-workspace-actions { min-height: 0; margin-top: 1rem; padding: 2px .25rem 2px .75rem; align-items: center; }
+#app .planner-sidebar-heading { margin: 0; font-size: .9375rem; font-weight: 600; line-height: 1.375rem; }
+#app .planner-workspace-tools { margin: 0; }
+#app .planner-document-tree { flex: 1 1 auto; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 2px; padding: 0; }
+#app :is(.planner-project-row, .planner-chat-row) { display: flex; align-items: center; min-width: 0; min-height: 2.5rem; border-radius: 10px; color: var(--text); font-size: .9375rem; line-height: 1.375rem; }
+#app .planner-project-row { gap: .625rem; padding: 0 .25rem 0 .75rem; }
+#app .planner-chat-row { gap: .25rem; padding: 0 .25rem 0 2.5rem; }
+#app :is(.planner-project-row, .planner-chat-row):hover, #app .planner-project-row.active { background: var(--ui-hover); }
+#app .planner-project-row.active { font-weight: 500; }
+#app .planner-chat-row.active { background: color-mix(in srgb, var(--accent) 9%, var(--planner-side-bg)); }
+#app :is(.planner-project-open, .planner-chat-open) { display: flex; align-items: center; gap: .625rem; flex: 1; min-width: 0; min-height: 2.5rem; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+#app .planner-chat-open { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app .planner-project-open > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app .planner-project-open .ui-icon { width: 1.25rem; height: 1.25rem; flex-basis: 1.25rem; color: var(--ui-secondary); }
+#app .planner-row-action { width: 1.75rem; height: 1.75rem; flex: 0 0 1.75rem; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); cursor: pointer; opacity: 0; }
+#app .planner-row-action .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; }
+#app :is(.planner-project-row, .planner-chat-row):is(:hover, :focus-within) .planner-row-action { opacity: 1; }
+#app .planner-row-action:hover { background: var(--ui-hover); color: var(--text); }
+#app .planner-chat-empty { margin: 0; padding: .25rem .75rem .5rem 2.5rem; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; }
+#app .planner-row-menu { position: fixed; z-index: 400; min-width: 10rem; padding: 4px; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--panel); box-shadow: 0 18px 38px rgba(18, 35, 66, .12); }
+[data-theme="light"] #app .planner-row-menu { background: #fff; }
+#app .planner-row-menu button { width: 100%; height: 2.25rem; display: flex; align-items: center; padding: 0 .75rem; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; font-size: .875rem; text-align: left; }
+#app .planner-row-menu button:is(:hover, :focus-visible) { background: var(--ui-hover); outline: 0; }
+
+/* The conversation header is gone: panel toggles float over the chat, as in sigma. */
+#app .planner-conversation { position: relative; }
+#app .planner-float-button { position: absolute; top: .75rem; z-index: 5; width: 2rem; height: 2rem; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); cursor: pointer; }
+#app .planner-float-button:hover { background: var(--ui-hover); color: var(--text); }
+#app .planner-float-button[hidden] { display: none; }
+#app .planner-float-button .ui-icon { width: 1.25rem; height: 1.25rem; flex-basis: 1.25rem; }
+#app .planner-float-left { left: .75rem; }
+#app .planner-float-right { right: .75rem; }
+@media (min-width: 781px) { #app #planner-library-toggle { display: none; } }
+#app .planner-panel-resizer .resize-grip { display: none; }
+
+@media (max-width: 780px) {
+  #app .planner-conversation { border-left: 0; border-top-left-radius: 0; }
+}

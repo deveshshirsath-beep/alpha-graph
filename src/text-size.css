@@ -1,0 +1,88 @@
+/* Only typography scales; graph geometry, camera and preferred panel widths do not. */
+:root { font-size: 100%; }
+:root[data-text-size="small"] { font-size: 90%; }
+:root[data-text-size="medium"] { font-size: 110%; }
+:root[data-text-size="large"] { font-size: 125%; }
+:root[data-text-size="xlarge"] { font-size: 150%; }
+
+#app .settings-section { scroll-margin-top: 16px; }
+#app .settings-section[hidden] { display: none; }
+#app .settings-local { color: var(--ui-secondary); font-weight: 400; letter-spacing: 0; text-transform: none; }
+#app .text-size-fieldset { min-width: 0; margin: 0; padding: 0; border: 0; }
+#app .text-size-fieldset legend { margin-bottom: 10px; font-size: .9375rem; font-weight: 650; }
+#app .text-size-options { display: grid; gap: 7px; }
+#app .text-size-option { position: relative; display: grid; grid-template-columns: 36px minmax(0, 1fr) 17px; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--ui-border); border-radius: 10px; background: var(--ui-field); cursor: pointer; }
+#app .text-size-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+#app .text-size-option:has(input:checked) { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, var(--ui-field)); }
+#app .text-size-option:has(input:focus-visible) { outline: 2px solid var(--accent); outline-offset: 3px; }
+#app .text-size-option:hover { border-color: var(--accent); }
+#app .text-size-option > .ui-icon { color: var(--accent); opacity: 0; }
+#app .text-size-option:has(input:checked) > .ui-icon { opacity: 1; }
+#app .text-size-sample { font-size: 1.125rem; font-weight: 600; color: var(--accent); letter-spacing: -.05em; }
+#app .text-size-option strong { display: block; font-size: .8125rem; font-weight: 600; color: var(--text); }
+#app .text-size-option small { display: block; margin-top: 3px; font-size: .6875rem; color: var(--ui-secondary); }
+#app .text-size-preview { display: grid; gap: 8px; margin-top: 18px; padding: 15px; border: 1px dashed var(--ui-border); border-radius: 10px; }
+#app .text-size-preview > span { color: var(--accent); font-size: .625rem; text-transform: uppercase; letter-spacing: .07em; }
+#app .text-size-preview strong { font-size: 1rem; line-height: 1.4; }
+#app .text-size-preview p, #app .text-size-status { color: var(--ui-secondary); font-size: .75rem; line-height: 1.6; margin: 0; }
+#app .text-size-status { margin-top: 12px; }
+
+/* Let control surfaces accommodate the larger copy instead of cropping it. */
+#app .topbar { height: max(54px, 3.375rem); }
+#app .workspace { height: calc(100% - max(54px, 3.375rem)); --rail-width: max(58px, 3.625rem); }
+#app .tool-rail { overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; }
+#app .rail-button { width: 100%; flex-shrink: 0; }
+#app .rail-button span { overflow-wrap: anywhere; }
+#app .theme-switch { height: 100%; }
+#app .theme-switch button { white-space: nowrap; }
+#app :is(.select-trigger, .condition-card-header .select-trigger, .condition-entity-input) { height: auto; min-height: max(40px, 2.5rem); padding-block: 8px; }
+#app :is(.graph-picker, .layout-controls) .select-trigger { min-height: max(36px, 2.25rem); }
+#app .condition-card-header .select-trigger { min-height: max(32px, 2rem); }
+#app .search-box { height: max(44px, 2.75rem); }
+#app .search-section { grid-template-columns: minmax(0, 1fr); }
+#app .search-section > * { min-width: 0; }
+#app .entity-folder { height: auto; min-height: max(38px, 2.375rem); padding-block: 8px; }
+#app .layer-tab { height: auto; min-height: max(65px, 4.0625rem); }
+#app .layer-tabs { grid-template-columns: repeat(var(--layer-columns, 3), minmax(0, 1fr)); }
+#app .layer-tab span { overflow-wrap: normal; }
+#app .section-heading { gap: 8px; flex-wrap: wrap; }
+#app :is(.filter-name, .relationship-rules span, .relationship-rules b) { min-width: 0; overflow-wrap: anywhere; }
+#app .traversal-controls { grid-template-columns: minmax(0, 1fr) minmax(126px, 8.25rem); }
+#app .traversal-controls .select-trigger { gap: 6px; padding-inline: 9px; }
+#app .stage-title { max-width: calc(100% - 40px); }
+#app .stage-title small { white-space: normal; }
+#app .layout-controls { top: calc(20px + 4.75rem); flex-wrap: wrap; }
+#app #sigma-container { top: calc(20px + 7.875rem); }
+#app :is(.stage-tools button, .close-button, .condition-card-header button) { height: auto; min-height: max(30px, 1.875rem); }
+#app .inspector-header { height: auto; min-height: max(48px, 3rem); gap: 12px; padding-block: 10px; }
+#app .minimap > div { height: auto; min-height: 18px; }
+#app .query-dock-header { gap: 12px; height: auto; min-height: max(48px, 3rem); flex-wrap: wrap; padding-block: 10px; }
+#app .dock-tabs { min-height: 28px; }
+#app .dock-tabs button { min-height: 28px; }
+
+/* At the largest sizes, stacking is clearer than splitting short control labels. */
+:root:is([data-text-size="large"], [data-text-size="xlarge"]) #app .layer-tabs { grid-template-columns: 1fr; }
+:root:is([data-text-size="large"], [data-text-size="xlarge"]) #app .layer-tab { grid-template-columns: 16px minmax(0, 1fr) auto; grid-template-rows: auto; min-height: 46px; padding-inline: 10px; align-items: center; }
+:root:is([data-text-size="large"], [data-text-size="xlarge"]) #app .layer-tab i { grid-row: auto; }
+:root:is([data-text-size="large"], [data-text-size="xlarge"]) #app .layer-tab :is(span, small) { grid-column: auto; grid-row: auto; align-self: center; text-align: left; }
+:root:is([data-text-size="large"], [data-text-size="xlarge"]) #app .traversal-controls { grid-template-columns: 1fr; }
+:root:is([data-text-size="large"], [data-text-size="xlarge"]) #app .layout-controls .select-control { width: min(20rem, 100%); }
+:root:is([data-text-size="large"], [data-text-size="xlarge"]) #app .layout-controls .select-trigger .action-label { white-space: normal; }
+
+@media (max-width: 1500px) {
+  :root:is([data-text-size="large"], [data-text-size="xlarge"]) #app .header-stats { display: none; }
+}
+@media (max-width: 1280px) {
+  #app .workspace { --rail-width: max(54px, 3.375rem); }
+  :root:is([data-text-size="large"], [data-text-size="xlarge"]) #app :is(.product-name, .product-divider) { display: none; }
+}
+@media (max-width: 1050px) {
+  #app .graph-picker { width: clamp(150px, 22vw, 210px); }
+}
+@media (max-width: 760px) {
+  #app .topbar { height: max(98px, 6.125rem); }
+  #app .workspace { height: calc(100% - max(98px, 6.125rem)); --rail-width: max(52px, 3.25rem); }
+  #app .theme-switch { height: max(34px, 2.125rem); }
+  #app .layout-controls { top: calc(20px + 3.75rem); }
+  #app #sigma-container { top: calc(20px + 6.875rem); }
+}

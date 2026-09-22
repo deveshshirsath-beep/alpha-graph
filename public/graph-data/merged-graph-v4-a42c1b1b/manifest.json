@@ -1,0 +1,835 @@
+{
+  "formatVersion": 11,
+  "sourceFingerprint": "307d10d3f9c2173f3429f6f4f6467af560b2349f78ab872055149f157a589c67",
+  "sourceName": "merged-graph-v4.json",
+  "name": "merged-graph-v4",
+  "generatedAt": "2026-09-22T04:47:17.182Z",
+  "sourceDigest": "238f085984e212d31a1c42e8a6a0448c6257eff0452c9b12804b63953e0749a3",
+  "meta": {
+    "generatedAt": "2026-08-31T02:06:27.325201+00:00",
+    "graphVersion": "2.0.0",
+    "counts": {
+      "API-VERSION": 1842,
+      "API": 1842,
+      "APPLICATION": 26,
+      "BUSINESS-AREA": 14,
+      "BUSINESS-CAPABILITY": 338,
+      "BUSINESS-DOMAIN": 54,
+      "CONSUMER": 100,
+      "ENDPOINT": 1842,
+      "EXPOSURE": 3,
+      "OPERATION": 1932,
+      "GATEWAY": 1,
+      "HEADER": 7810,
+      "HTTP-METHOD": 5,
+      "MICROSERVICE": 1,
+      "PATH-PARAMETER": 1214,
+      "PCI": 1,
+      "PII": 1,
+      "QUERY-PARAMETER": 58,
+      "SCHEMA": 3909,
+      "SECURITY": 1,
+      "SERVICE-DOMAIN": 325,
+      "STATUS-CODE": 1978,
+      "TEAMS": 68,
+      "WORKFLOW": 1,
+      "DATABASE": 9,
+      "EVENT": 5,
+      "FIELD": 52935
+    },
+    "edgeCounts": {
+      "ACCEPTS": 6105,
+      "CLASSIFIED-AS": 1509,
+      "CONTAINS": 6334,
+      "DEPLOYED-TO": 1977,
+      "EXPOSES": 2048,
+      "HAS-EXPOSURE": 1930,
+      "HAS-PROPERTY": 52935,
+      "IMPLEMENTS": 2522,
+      "OWNS": 552,
+      "RETURNS": 9063,
+      "SUBSCRIBES": 8483,
+      "SUPPORTS": 1930,
+      "ROUTES-TO": 106,
+      "CONNECTS-TO": 1429,
+      "WRITES-TO": 3541,
+      "UPDATES-TO": 1707,
+      "PRODUCES": 1732,
+      "READS-FROM": 1642,
+      "CALLS": 286,
+      "CONSUMES": 2
+    },
+    "layers": {
+      "BUSINESS": [
+        "BUSINESS-AREA",
+        "BUSINESS-DOMAIN",
+        "SERVICE-DOMAIN",
+        "BUSINESS-CAPABILITY",
+        "TEAMS"
+      ],
+      "API": [
+        "APPLICATION",
+        "API",
+        "API-VERSION",
+        "ENDPOINT",
+        "HTTP-METHOD",
+        "SECURITY",
+        "EXPOSURE",
+        "PCI",
+        "PII",
+        "GATEWAY",
+        "MICROSERVICE",
+        "WORKFLOW",
+        "QUERY-PARAMETER",
+        "PATH-PARAMETER",
+        "HEADER",
+        "STATUS-CODE",
+        "SCHEMA",
+        "FIELD",
+        "CONSUMER"
+      ],
+      "RUNTIME": [
+        "OPERATION",
+        "DATABASE",
+        "EVENT"
+      ]
+    },
+    "layerOrder": [
+      "BUSINESS",
+      "API",
+      "RUNTIME"
+    ],
+    "relationshipSchema": [
+      {
+        "source": "FIELD",
+        "relationship": "HAS-PROPERTY",
+        "target": "FIELD",
+        "count": 33954
+      },
+      {
+        "source": "SCHEMA",
+        "relationship": "HAS-PROPERTY",
+        "target": "FIELD",
+        "count": 18981
+      },
+      {
+        "source": "STATUS-CODE",
+        "relationship": "RETURNS",
+        "target": "HEADER",
+        "count": 5076
+      },
+      {
+        "source": "CONSUMER",
+        "relationship": "SUBSCRIBES",
+        "target": "OPERATION",
+        "count": 4337
+      },
+      {
+        "source": "CONSUMER",
+        "relationship": "SUBSCRIBES",
+        "target": "API",
+        "count": 4146
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "WRITES-TO",
+        "target": "DATABASE",
+        "count": 3539
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "ACCEPTS",
+        "target": "HEADER",
+        "count": 2822
+      },
+      {
+        "source": "APPLICATION",
+        "relationship": "EXPOSES",
+        "target": "API",
+        "count": 2048
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "RETURNS",
+        "target": "STATUS-CODE",
+        "count": 2018
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "ACCEPTS",
+        "target": "SCHEMA",
+        "count": 1975
+      },
+      {
+        "source": "STATUS-CODE",
+        "relationship": "RETURNS",
+        "target": "SCHEMA",
+        "count": 1969
+      },
+      {
+        "source": "ENDPOINT",
+        "relationship": "CONTAINS",
+        "target": "OPERATION",
+        "count": 1930
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "HAS-EXPOSURE",
+        "target": "EXPOSURE",
+        "count": 1930
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "IMPLEMENTS",
+        "target": "SECURITY",
+        "count": 1930
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "SUPPORTS",
+        "target": "HTTP-METHOD",
+        "count": 1930
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "DEPLOYED-TO",
+        "target": "MICROSERVICE",
+        "count": 1844
+      },
+      {
+        "source": "API-VERSION",
+        "relationship": "CONTAINS",
+        "target": "ENDPOINT",
+        "count": 1842
+      },
+      {
+        "source": "API",
+        "relationship": "CONTAINS",
+        "target": "API-VERSION",
+        "count": 1842
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "PRODUCES",
+        "target": "EVENT",
+        "count": 1731
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "UPDATES-TO",
+        "target": "DATABASE",
+        "count": 1706
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "READS-FROM",
+        "target": "DATABASE",
+        "count": 1640
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "CLASSIFIED-AS",
+        "target": "PII",
+        "count": 1483
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "CONNECTS-TO",
+        "target": "DATABASE",
+        "count": 1427
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "ACCEPTS",
+        "target": "PATH-PARAMETER",
+        "count": 1250
+      },
+      {
+        "source": "APPLICATION",
+        "relationship": "IMPLEMENTS",
+        "target": "BUSINESS-CAPABILITY",
+        "count": 592
+      },
+      {
+        "source": "TEAMS",
+        "relationship": "OWNS",
+        "target": "BUSINESS-CAPABILITY",
+        "count": 552
+      },
+      {
+        "source": "SERVICE-DOMAIN",
+        "relationship": "CONTAINS",
+        "target": "BUSINESS-CAPABILITY",
+        "count": 339
+      },
+      {
+        "source": "BUSINESS-DOMAIN",
+        "relationship": "CONTAINS",
+        "target": "SERVICE-DOMAIN",
+        "count": 325
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "CALLS",
+        "target": "OPERATION",
+        "count": 273
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "DEPLOYED-TO",
+        "target": "GATEWAY",
+        "count": 133
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "ROUTES-TO",
+        "target": "OPERATION",
+        "count": 106
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "ACCEPTS",
+        "target": "QUERY-PARAMETER",
+        "count": 58
+      },
+      {
+        "source": "BUSINESS-AREA",
+        "relationship": "CONTAINS",
+        "target": "BUSINESS-DOMAIN",
+        "count": 56
+      },
+      {
+        "source": "OPERATION",
+        "relationship": "CLASSIFIED-AS",
+        "target": "PCI",
+        "count": 26
+      },
+      {
+        "source": "EVENT",
+        "relationship": "CALLS",
+        "target": "OPERATION",
+        "count": 12
+      },
+      {
+        "source": "EVENT",
+        "relationship": "READS-FROM",
+        "target": "DATABASE",
+        "count": 2
+      },
+      {
+        "source": "EVENT",
+        "relationship": "WRITES-TO",
+        "target": "DATABASE",
+        "count": 2
+      },
+      {
+        "source": "EVENT",
+        "relationship": "CONSUMES",
+        "target": "EVENT",
+        "count": 2
+      },
+      {
+        "source": "DATABASE",
+        "relationship": "CALLS",
+        "target": "OPERATION",
+        "count": 1
+      },
+      {
+        "source": "DATABASE",
+        "relationship": "CONNECTS-TO",
+        "target": "DATABASE",
+        "count": 1
+      },
+      {
+        "source": "EVENT",
+        "relationship": "CONNECTS-TO",
+        "target": "DATABASE",
+        "count": 1
+      },
+      {
+        "source": "EVENT",
+        "relationship": "UPDATES-TO",
+        "target": "DATABASE",
+        "count": 1
+      },
+      {
+        "source": "EVENT",
+        "relationship": "PRODUCES",
+        "target": "EVENT",
+        "count": 1
+      }
+    ],
+    "totalNodes": 76315,
+    "totalEdges": 105833,
+    "typeStyles": {
+      "API-VERSION": {
+        "entityType": "API-VERSION",
+        "layer": "API",
+        "color": "#6c69f8",
+        "darkColor": "#6c69f8",
+        "lightColor": "#5040c9",
+        "oceanColor": "#11a0e4",
+        "sunsetColor": "#9151db"
+      },
+      "API": {
+        "entityType": "API",
+        "layer": "API",
+        "color": "#5c84ff",
+        "darkColor": "#5c84ff",
+        "lightColor": "#3660cd",
+        "oceanColor": "#268cf5",
+        "sunsetColor": "#785eed"
+      },
+      "APPLICATION": {
+        "entityType": "APPLICATION",
+        "layer": "API",
+        "color": "#906bff",
+        "darkColor": "#906bff",
+        "lightColor": "#6a42d9",
+        "oceanColor": "#4272f7",
+        "sunsetColor": "#9c5cfa"
+      },
+      "BUSINESS-AREA": {
+        "entityType": "BUSINESS-AREA",
+        "layer": "BUSINESS",
+        "color": "#f8bf50",
+        "darkColor": "#f8bf50",
+        "lightColor": "#bf6c04",
+        "oceanColor": "#2acade",
+        "sunsetColor": "#ffc451"
+      },
+      "BUSINESS-CAPABILITY": {
+        "entityType": "BUSINESS-CAPABILITY",
+        "layer": "BUSINESS",
+        "color": "#ff7c55",
+        "darkColor": "#ff7c55",
+        "lightColor": "#bd3820",
+        "oceanColor": "#3c7cd7",
+        "sunsetColor": "#f75272"
+      },
+      "BUSINESS-DOMAIN": {
+        "entityType": "BUSINESS-DOMAIN",
+        "layer": "BUSINESS",
+        "color": "#f8a63f",
+        "darkColor": "#f8a63f",
+        "lightColor": "#c86500",
+        "oceanColor": "#1eaace",
+        "sunsetColor": "#fc933c"
+      },
+      "CONSUMER": {
+        "entityType": "CONSUMER",
+        "layer": "API",
+        "color": "#f25cff",
+        "darkColor": "#f25cff",
+        "lightColor": "#ae25c0",
+        "oceanColor": "#7c54ca",
+        "sunsetColor": "#ff8d54"
+      },
+      "ENDPOINT": {
+        "entityType": "ENDPOINT",
+        "layer": "API",
+        "color": "#00b8f8",
+        "darkColor": "#00b8f8",
+        "lightColor": "#037fb0",
+        "oceanColor": "#00b5d1",
+        "sunsetColor": "#ba4ac9"
+      },
+      "EXPOSURE": {
+        "entityType": "EXPOSURE",
+        "layer": "API",
+        "color": "#56e7a9",
+        "darkColor": "#56e7a9",
+        "lightColor": "#107e55",
+        "oceanColor": "#4cbe84",
+        "sunsetColor": "#ff6274"
+      },
+      "OPERATION": {
+        "entityType": "OPERATION",
+        "layer": "RUNTIME",
+        "color": "#00deba",
+        "darkColor": "#00deba",
+        "lightColor": "#007c75",
+        "oceanColor": "#02b9ac",
+        "sunsetColor": "#ff6189"
+      },
+      "GATEWAY": {
+        "entityType": "GATEWAY",
+        "layer": "API",
+        "color": "#ffd95b",
+        "darkColor": "#ffd95b",
+        "lightColor": "#ad7a04",
+        "oceanColor": "#59a4b2",
+        "sunsetColor": "#faa845"
+      },
+      "HEADER": {
+        "entityType": "HEADER",
+        "layer": "API",
+        "color": "#509dff",
+        "darkColor": "#509dff",
+        "lightColor": "#2269b7",
+        "oceanColor": "#2887be",
+        "sunsetColor": "#ca5ac1"
+      },
+      "HTTP-METHOD": {
+        "entityType": "HTTP-METHOD",
+        "layer": "API",
+        "color": "#00c9df",
+        "darkColor": "#00c9df",
+        "lightColor": "#02879c",
+        "oceanColor": "#00c6b9",
+        "sunsetColor": "#d946aa"
+      },
+      "MICROSERVICE": {
+        "entityType": "MICROSERVICE",
+        "layer": "API",
+        "color": "#ffae52",
+        "darkColor": "#ffae52",
+        "lightColor": "#b65d10",
+        "oceanColor": "#4793be",
+        "sunsetColor": "#fb7e4b"
+      },
+      "PATH-PARAMETER": {
+        "entityType": "PATH-PARAMETER",
+        "layer": "API",
+        "color": "#668afa",
+        "darkColor": "#668afa",
+        "lightColor": "#4464c2",
+        "oceanColor": "#2c9cca",
+        "sunsetColor": "#aa54d1"
+      },
+      "PCI": {
+        "entityType": "PCI",
+        "layer": "API",
+        "color": "#91e275",
+        "darkColor": "#91e275",
+        "lightColor": "#49892e",
+        "oceanColor": "#6fb566",
+        "sunsetColor": "#fb7455"
+      },
+      "PII": {
+        "entityType": "PII",
+        "layer": "API",
+        "color": "#c1d758",
+        "darkColor": "#c1d758",
+        "lightColor": "#75851e",
+        "oceanColor": "#96b65c",
+        "sunsetColor": "#fc8f4d"
+      },
+      "QUERY-PARAMETER": {
+        "entityType": "QUERY-PARAMETER",
+        "layer": "API",
+        "color": "#1dcfc8",
+        "darkColor": "#1dcfc8",
+        "lightColor": "#008883",
+        "oceanColor": "#10b3ab",
+        "sunsetColor": "#d14ea2"
+      },
+      "SCHEMA": {
+        "entityType": "SCHEMA",
+        "layer": "API",
+        "color": "#a263ff",
+        "darkColor": "#a263ff",
+        "lightColor": "#6f30c1",
+        "oceanColor": "#5470d1",
+        "sunsetColor": "#f15c8e"
+      },
+      "SECURITY": {
+        "entityType": "SECURITY",
+        "layer": "API",
+        "color": "#10cdab",
+        "darkColor": "#10cdab",
+        "lightColor": "#04836f",
+        "oceanColor": "#1abb9f",
+        "sunsetColor": "#f25090"
+      },
+      "SERVICE-DOMAIN": {
+        "entityType": "SERVICE-DOMAIN",
+        "layer": "BUSINESS",
+        "color": "#fa9b4c",
+        "darkColor": "#fa9b4c",
+        "lightColor": "#a94e00",
+        "oceanColor": "#1992c2",
+        "sunsetColor": "#ff734b"
+      },
+      "STATUS-CODE": {
+        "entityType": "STATUS-CODE",
+        "layer": "API",
+        "color": "#1bbfe1",
+        "darkColor": "#1bbfe1",
+        "lightColor": "#0f81a2",
+        "oceanColor": "#11a5a9",
+        "sunsetColor": "#dd5699"
+      },
+      "TEAMS": {
+        "entityType": "TEAMS",
+        "layer": "BUSINESS",
+        "color": "#ff527e",
+        "darkColor": "#ff527e",
+        "lightColor": "#c22d51",
+        "oceanColor": "#6859da",
+        "sunsetColor": "#d94fff"
+      },
+      "WORKFLOW": {
+        "entityType": "WORKFLOW",
+        "layer": "API",
+        "color": "#ff8668",
+        "darkColor": "#ff8668",
+        "lightColor": "#bd412a",
+        "oceanColor": "#517ecf",
+        "sunsetColor": "#f45a72"
+      },
+      "DATABASE": {
+        "entityType": "DATABASE",
+        "layer": "RUNTIME",
+        "color": "#00d09a",
+        "darkColor": "#00d09a",
+        "lightColor": "#058565",
+        "oceanColor": "#18a887",
+        "sunsetColor": "#e4539c"
+      },
+      "EVENT": {
+        "entityType": "EVENT",
+        "layer": "RUNTIME",
+        "color": "#70da6d",
+        "darkColor": "#70da6d",
+        "lightColor": "#2d802f",
+        "oceanColor": "#5fa76c",
+        "sunsetColor": "#c75cb3"
+      },
+      "FIELD": {
+        "entityType": "FIELD",
+        "layer": "API",
+        "color": "#d34cfc",
+        "darkColor": "#d34cfc",
+        "lightColor": "#9b33bd",
+        "oceanColor": "#635bc6",
+        "sunsetColor": "#fd686e"
+      }
+    }
+  },
+  "catalogChunks": {
+    "API-VERSION": {
+      "file": "catalog-api-version-3fb5f380.json.gz",
+      "entities": 1842,
+      "layer": "API",
+      "uncompressedBytes": 570170
+    },
+    "API": {
+      "file": "catalog-api-c8e5998f.json.gz",
+      "entities": 1842,
+      "layer": "API",
+      "uncompressedBytes": 579879
+    },
+    "APPLICATION": {
+      "file": "catalog-application-9ce1051c.json.gz",
+      "entities": 26,
+      "layer": "API",
+      "uncompressedBytes": 5581
+    },
+    "BUSINESS-AREA": {
+      "file": "catalog-business-area-4e24989c.json.gz",
+      "entities": 14,
+      "layer": "BUSINESS",
+      "uncompressedBytes": 3258
+    },
+    "BUSINESS-CAPABILITY": {
+      "file": "catalog-business-capability-9e320c30.json.gz",
+      "entities": 338,
+      "layer": "BUSINESS",
+      "uncompressedBytes": 84427
+    },
+    "BUSINESS-DOMAIN": {
+      "file": "catalog-business-domain-7a7e35d6.json.gz",
+      "entities": 54,
+      "layer": "BUSINESS",
+      "uncompressedBytes": 12115
+    },
+    "CONSUMER": {
+      "file": "catalog-consumer-5b5bef1e.json.gz",
+      "entities": 100,
+      "layer": "API",
+      "uncompressedBytes": 20617
+    },
+    "ENDPOINT": {
+      "file": "catalog-endpoint-1f4bc069.json.gz",
+      "entities": 1842,
+      "layer": "API",
+      "uncompressedBytes": 656705
+    },
+    "EXPOSURE": {
+      "file": "catalog-exposure-871c3063.json.gz",
+      "entities": 3,
+      "layer": "API",
+      "uncompressedBytes": 560
+    },
+    "OPERATION": {
+      "file": "catalog-operation-26f1d845.json.gz",
+      "entities": 1932,
+      "layer": "RUNTIME",
+      "uncompressedBytes": 669031
+    },
+    "GATEWAY": {
+      "file": "catalog-gateway-c4cb1e84.json.gz",
+      "entities": 1,
+      "layer": "API",
+      "uncompressedBytes": 184
+    },
+    "HEADER": {
+      "file": "catalog-header-f7e99605.json.gz",
+      "entities": 7810,
+      "layer": "API",
+      "uncompressedBytes": 2988433
+    },
+    "HTTP-METHOD": {
+      "file": "catalog-http-method-4826e69c.json.gz",
+      "entities": 5,
+      "layer": "API",
+      "uncompressedBytes": 928
+    },
+    "MICROSERVICE": {
+      "file": "catalog-microservice-409998f6.json.gz",
+      "entities": 1,
+      "layer": "API",
+      "uncompressedBytes": 204
+    },
+    "PATH-PARAMETER": {
+      "file": "catalog-path-parameter-f2836cbc.json.gz",
+      "entities": 1214,
+      "layer": "API",
+      "uncompressedBytes": 453875
+    },
+    "PCI": {
+      "file": "catalog-pci-835aada7.json.gz",
+      "entities": 1,
+      "layer": "API",
+      "uncompressedBytes": 168
+    },
+    "PII": {
+      "file": "catalog-pii-baf86149.json.gz",
+      "entities": 1,
+      "layer": "API",
+      "uncompressedBytes": 168
+    },
+    "QUERY-PARAMETER": {
+      "file": "catalog-query-parameter-01cba4f1.json.gz",
+      "entities": 58,
+      "layer": "API",
+      "uncompressedBytes": 18159
+    },
+    "SCHEMA": {
+      "file": "catalog-schema-fec18743.json.gz",
+      "entities": 3909,
+      "layer": "API",
+      "uncompressedBytes": 1675567
+    },
+    "SECURITY": {
+      "file": "catalog-security-c3a409ae.json.gz",
+      "entities": 1,
+      "layer": "API",
+      "uncompressedBytes": 186
+    },
+    "SERVICE-DOMAIN": {
+      "file": "catalog-service-domain-a25333b4.json.gz",
+      "entities": 325,
+      "layer": "BUSINESS",
+      "uncompressedBytes": 74967
+    },
+    "STATUS-CODE": {
+      "file": "catalog-status-code-d94609d6.json.gz",
+      "entities": 1978,
+      "layer": "API",
+      "uncompressedBytes": 758777
+    },
+    "TEAMS": {
+      "file": "catalog-teams-a3b0e856.json.gz",
+      "entities": 68,
+      "layer": "BUSINESS",
+      "uncompressedBytes": 15919
+    },
+    "WORKFLOW": {
+      "file": "catalog-workflow-d072aa11.json.gz",
+      "entities": 1,
+      "layer": "API",
+      "uncompressedBytes": 188
+    },
+    "DATABASE": {
+      "file": "catalog-database-8e663907.json.gz",
+      "entities": 9,
+      "layer": "RUNTIME",
+      "uncompressedBytes": 1977
+    },
+    "EVENT": {
+      "file": "catalog-event-b3c5c916.json.gz",
+      "entities": 5,
+      "layer": "RUNTIME",
+      "uncompressedBytes": 1130
+    },
+    "FIELD": {
+      "file": "catalog-field-2e9729bd.json.gz",
+      "entities": 52935,
+      "layer": "API",
+      "uncompressedBytes": 12572679
+    }
+  },
+  "layerChunks": {
+    "API": {
+      "file": "nodes-api-c8e5998f.json.gz",
+      "nodes": 73570,
+      "uncompressedBytes": 49720347
+    },
+    "BUSINESS": {
+      "file": "nodes-business-8eb6a764.json.gz",
+      "nodes": 799,
+      "uncompressedBytes": 473125
+    },
+    "RUNTIME": {
+      "file": "nodes-runtime-645e4fc5.json.gz",
+      "nodes": 1946,
+      "uncompressedBytes": 1843394
+    }
+  },
+  "edgeChunks": [
+    {
+      "file": "edges-api-runtime-05ff1380.json.gz",
+      "layers": [
+        "RUNTIME",
+        "API"
+      ],
+      "edges": 23666,
+      "uncompressedBytes": 10957914
+    },
+    {
+      "file": "edges-api-api-f09898da.json.gz",
+      "layers": [
+        "API"
+      ],
+      "edges": 69858,
+      "uncompressedBytes": 32930611
+    },
+    {
+      "file": "edges-business-business-4cedb914.json.gz",
+      "layers": [
+        "BUSINESS"
+      ],
+      "edges": 1272,
+      "uncompressedBytes": 415120
+    },
+    {
+      "file": "edges-api-business-9b8d17e1.json.gz",
+      "layers": [
+        "API",
+        "BUSINESS"
+      ],
+      "edges": 592,
+      "uncompressedBytes": 196317
+    },
+    {
+      "file": "edges-runtime-runtime-2d1c94ef.json.gz",
+      "layers": [
+        "RUNTIME"
+      ],
+      "edges": 10445,
+      "uncompressedBytes": 7320976
+    }
+  ]
+}

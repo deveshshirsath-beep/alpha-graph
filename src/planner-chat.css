@@ -1,0 +1,246 @@
+/* Chat module center after sigma: home, composer, suggestions, answers and the Questions page, on Alpha's tokens. */
+#app .planner-landing { display: flex; flex-direction: column; align-items: center; gap: 36px; padding: 56px 56px 32px; }
+#app .planner-empty-chat { width: auto; padding: 0; gap: 36px; }
+/* The mark spins around its white circle, not the image box. */
+#app .planner-hero-mark img { transform-origin: 61.2% 49.8%; }
+#app .chat-greeting { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+#app .chat-title-row { display: flex; align-items: center; gap: 8px; max-width: 100%; color: var(--text); }
+#app .chat-title-icon { width: 22px; height: 22px; flex-basis: 22px; }
+#app .chat-dataset-name { max-width: 560px; overflow: hidden; color: var(--text); font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; font-size: 16px; font-weight: 600; line-height: 24px; letter-spacing: -.1px; text-overflow: ellipsis; white-space: nowrap; }
+#app .chat-intro { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 620px; text-align: center; }
+#app .planner-empty-chat .chat-intro-title { margin: 0; color: var(--text); font-family: "Libre Baskerville", Georgia, serif; font-size: 30px; font-weight: 500; line-height: 40px; letter-spacing: -.6px; text-wrap: balance; }
+#app .planner-empty-chat .chat-intro p { margin: 0; color: var(--ui-secondary); font-size: .9375rem; line-height: 1.6; text-wrap: pretty; }
+#app .chat-title-switch { width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; }
+#app .chat-title-switch:hover { background: var(--planner-hover-bg); }
+#app .chat-title-switch .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .chat-stats { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px; border-block: 1px solid var(--line); color: var(--ui-secondary); font-size: .9375rem; line-height: 1.375rem; white-space: nowrap; }
+#app .chat-stats > span { display: inline-flex; align-items: center; gap: 8px; }
+#app .chat-stats .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .chat-stats .stat-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ui-secondary); }
+
+#app .planner-composer { width: 100%; max-width: 768px; margin: 0 auto; padding: 0; }
+#app .planner-composer-card { display: flex; flex-direction: column; gap: 8px; padding: 12px 10px 10px 16px; overflow: visible; border: 1px solid transparent; border-radius: 16px; background: linear-gradient(var(--planner-card-bg), var(--planner-card-bg)) padding-box, linear-gradient(110deg, #f9ab00, var(--accent) 45%, #f9ab00 90%) border-box; background-size: auto, 260% 100%; background-position: 0 0, 0 0; box-shadow: 0 4px 24px rgba(18, 35, 66, .06); transition: box-shadow 280ms cubic-bezier(.22, 1, .36, 1); }
+#app .planner-composer-card:hover { box-shadow: 4px 4px 32px rgba(249, 171, 0, .18), -4px -4px 32px color-mix(in srgb, var(--accent) 22%, transparent); }
+#app .planner-composer-card:focus-within { border-color: transparent; box-shadow: 4px 4px 36px rgba(249, 171, 0, .22), -4px -4px 36px color-mix(in srgb, var(--accent) 26%, transparent); animation: planner-composer-drift 7s linear infinite; }
+@keyframes planner-composer-drift { to { background-position: 0 0, 260% 0; } }
+#app .planner-prompt-input { min-height: 28px; max-height: 200px; overflow-y: auto; outline: 0; color: var(--text); font-size: 16px; line-height: 28px; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
+#app .planner-prompt-input.is-empty::before { content: attr(data-placeholder); color: var(--ui-secondary); pointer-events: none; }
+/* Sigma's mention tokens: outlined while empty, filled once an entity is chosen. */
+#app .mention { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 26px; margin: 0 1px; padding: 0 6px 0 8px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: .9375rem; font-weight: 500; line-height: 1; vertical-align: 1px; cursor: pointer; user-select: none; }
+#app .mention:hover, #app .mention.is-open { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+#app .mention:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+#app .mention.is-empty { background: transparent; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+#app .mention.is-empty:hover, #app .mention.is-empty.is-open { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+#app .mention-lead { display: inline-flex; }
+#app .mention-lead:empty { display: none; }
+#app .mention-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app .mention .mention-caret { width: 12px; height: 12px; flex-basis: 12px; opacity: .7; }
+#app .planner-composer-toolbar { min-height: 0; padding: 0; }
+#app .planner-prompt-tools { gap: 8px; }
+#app .planner-prompt-tools button { width: 28px; height: 28px; border-radius: 8px; }
+#app .planner-prompt-tools .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .planner-prompt-tools .planner-bank-button { width: auto; height: 32px; display: inline-flex; align-items: center; gap: 6px; padding: 0 12px 0 10px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; line-height: 1; white-space: nowrap; transition: background-color .15s ease, border-color .15s ease, color .15s ease; }
+#app .planner-prompt-tools .planner-bank-button:hover { border-color: var(--ui-border); background: var(--ui-hover); color: var(--text); }
+#app .planner-prompt-tools .planner-bank-button .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+/* Context the question carries but its text doesn't show (a diagram pick, a follow-up): one quiet pill beside the question bank. */
+#app .planner-prompt-context { display: inline-flex; align-items: center; gap: 2px; min-width: 0; max-width: 260px; height: 32px; margin: 0; padding: 0 4px 0 10px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); }
+#app .planner-prompt-context[hidden] { display: none; }
+#app .planner-prompt-context > span { display: block; min-width: 0; overflow: hidden; font-size: .8125rem; font-weight: 500; line-height: 32px; text-overflow: ellipsis; white-space: nowrap; }
+#app .planner-prompt-context .planner-type-mark { display: inline-block; width: 10px; height: 10px; margin-right: 6px; vertical-align: -1px; }
+#app .planner-prompt-tools .planner-prompt-context button { width: 24px; height: 24px; flex: 0 0 24px; border-radius: 999px; color: inherit; opacity: .7; }
+#app .planner-prompt-tools .planner-prompt-context button:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); color: inherit; opacity: 1; }
+#app .planner-prompt-context button .ui-icon { width: 12px; height: 12px; flex-basis: 12px; }
+#app #planner-run { width: 34px; height: 34px; min-height: 34px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: var(--text); color: var(--planner-card-bg); cursor: pointer; transition: opacity .15s ease; }
+#app #planner-run .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .planner-composer:has(.planner-prompt-input.is-empty) #planner-run { opacity: .35; }
+#app .planner-composer-meta { min-height: 0; padding: 6px 4px 0; color: var(--ui-secondary); font-size: 12px; }
+#app .planner-composer-meta:has(#planner-composer-status:empty) { display: none; }
+@media (prefers-reduced-motion: reduce) { #app .planner-composer-card:focus-within { animation: none; } }
+
+#app .planner-suggestions { display: flex; flex-direction: column; width: 100%; max-width: 754px; margin: 0 auto; }
+#app .planner-suggestions[hidden] { display: none; }
+#app .suggestion-layers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+#app .suggestion-layer { display: flex; align-items: center; gap: 12px; min-width: 0; padding: 8px 6px 8px 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--planner-card-bg); color: var(--text); cursor: pointer; font-size: .8125rem; line-height: 1.25rem; text-align: left; transition: background-color .15s ease, border-color .15s ease; }
+#app .suggestion-layer :is(img, svg) { flex: 0 0 auto; width: 61px; height: 48px; }
+#app .suggestion-layer span { min-width: 0; overflow-wrap: anywhere; }
+#app .suggestion-layer:hover { border-color: var(--ui-border); }
+#app .suggestion-layer.active { border-color: var(--ui-border); background: var(--planner-hover-bg); }
+#app .suggestion-head { margin-top: 20px; padding: 4px 0; border-bottom: 1px solid var(--line); color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; }
+#app .suggestion-list { display: flex; flex-direction: column; margin-top: 8px; }
+#app .suggestion-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 35px; padding: 6px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ui-secondary); cursor: pointer; font-size: .875rem; line-height: 1.375rem; text-align: left; }
+#app .suggestion-row:hover { color: var(--text); }
+#app .suggestion-text { min-width: 0; }
+#app .suggestion-path { flex: 0 0 auto; color: var(--ui-secondary); white-space: nowrap; opacity: .75; }
+
+#app .planner-messages { width: 100%; max-width: 768px; gap: 24px; padding: 56px 4px 16px; }
+#app .planner-message { display: block; }
+#app :is(.planner-message-avatar, .planner-message-header, .planner-next-questions) { display: none; }
+#app .planner-message.user { display: flex; justify-content: flex-end; }
+#app .planner-message.user .planner-message-body { max-width: 80%; padding: 10px 16px; border: 0; border-radius: 22px; background: color-mix(in srgb, var(--text) 7%, var(--planner-content-bg)); }
+#app .planner-message .planner-message-content { font-size: 1rem; line-height: 1.5rem; }
+/* Answers use sigma's rich components: headings, lists, tables, quotes, code-style blocks and pill buttons. */
+#app .planner-message.assistant { --answer-body: color-mix(in srgb, var(--text) 80%, transparent); }
+#app .planner-message.assistant .planner-message-content { display: grid; gap: 12px; }
+#app .planner-message.assistant .markdown { display: grid; gap: 12px; }
+#app .planner-message.assistant .markdown :is(p, ul, ol, h3, h4, h5, h6) { margin: 0; }
+#app .planner-message.assistant .markdown p { color: var(--answer-body); }
+#app .answer-heading { color: var(--text); font-size: 1rem; font-weight: 600; line-height: 1.5rem; }
+#app .answer-list { display: grid; gap: 6px; padding-left: 22px; color: var(--answer-body); font-size: .9375rem; line-height: 1.5rem; }
+#app .answer-list li::marker { color: var(--ui-secondary); }
+#app .answer-quote { margin: 0; padding: 2px 0 2px 14px; border-left: 3px solid var(--ui-border); color: var(--ui-secondary); font-size: .9375rem; line-height: 1.5rem; }
+#app .answer-code { overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--planner-hover-bg); }
+#app .answer-code-head { display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 4px 12px; border-bottom: 1px solid var(--line); color: var(--ui-secondary); font-size: 11px; font-weight: 500; letter-spacing: .4px; text-transform: uppercase; }
+#app .answer-code-head > span { display: inline-flex; align-items: center; gap: 6px; }
+#app .answer-code-head .ui-icon { width: 12px; height: 12px; flex-basis: 12px; }
+#app .answer-code-head button { height: 26px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--ui-secondary); cursor: pointer; font-size: 12px; letter-spacing: 0; text-transform: none; }
+#app .answer-code-head button:hover { background: var(--ui-hover); color: var(--text); }
+#app .answer-code pre { margin: 0; padding: 12px 14px; overflow-x: auto; color: var(--text); font: 13px/20px "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
+/* 2. Reasoning takes the code block's place: numbered steps in the answer's own type. */
+#app .answer-reasoning-steps { display: grid; gap: 6px; margin: 0; padding: 12px 14px 12px 34px; color: var(--answer-body); font-size: .875rem; line-height: 1.375rem; }
+#app .answer-reasoning-steps li::marker { color: var(--ui-secondary); font-variant-numeric: tabular-nums; }
+#app .answer-open-graph { justify-self: start; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 12px; border: 0; border-radius: 999px; background: var(--planner-hover-bg); color: var(--answer-body); cursor: pointer; font-size: 1rem; line-height: 1.5rem; white-space: nowrap; }
+#app .answer-open-graph:hover { background: color-mix(in srgb, var(--text) 9%, var(--planner-content-bg)); color: var(--text); }
+#app .answer-open-graph .ui-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--ui-secondary); }
+/* 1. A quiet rule and label introduce the follow-ups. */
+#app .answer-followups-label { display: flex; align-items: center; gap: 12px; margin: 8px 0 -4px; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; }
+#app .answer-followups-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
+#app .answer-followups { display: flex; flex-wrap: wrap; gap: 8px; }
+#app .answer-followup { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 32px; padding: 5px 14px 5px 12px; border: 1px solid var(--line); border-radius: 999px; background: var(--planner-card-bg); color: var(--text); cursor: pointer; font-size: .875rem; line-height: 1.25rem; text-align: left; transition: background-color .15s ease, border-color .15s ease; }
+#app .answer-followup:hover { border-color: var(--ui-border); background: var(--planner-hover-bg); }
+#app .answer-followup .ui-icon { width: 14px; height: 14px; flex-basis: 14px; color: var(--ui-secondary); }
+#app .answer-table { overflow: hidden; border: 1px solid var(--line); border-radius: 10px; }
+#app .answer-table-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 43px; padding: 6px 6px 6px 12px; border-bottom: 1px solid var(--line); }
+#app .answer-table-count { min-width: 0; overflow: hidden; color: var(--ui-secondary); font-size: 13px; line-height: 20px; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+#app .answer-table-search { display: flex; flex: 0 0 auto; align-items: center; gap: 6px; width: 200px; height: 30px; padding: 0 8px; border: 1px solid var(--line); border-radius: 8px; background: var(--planner-card-bg); color: var(--ui-secondary); cursor: text; }
+#app .answer-table-search[hidden] { display: none; }
+#app .answer-table-search:focus-within { border-color: var(--field-focus); }
+#app .answer-table-search .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
+#app .answer-table-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 13px; }
+#app .answer-table-search input::placeholder { color: var(--ui-secondary); }
+#app .answer-table-search input::-webkit-search-cancel-button { display: none; }
+#app .answer-table-scroll { max-height: 336px; overflow: auto; scrollbar-width: thin; }
+#app .answer-table table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 20px; }
+#app .answer-table th { position: sticky; top: 0; z-index: 1; padding: 8px 12px; background: var(--planner-hover-bg); color: var(--ui-secondary); font-size: 11px; font-weight: 500; letter-spacing: .4px; text-align: left; text-transform: uppercase; white-space: nowrap; }
+#app .answer-table td { padding: 8px 12px; border-top: 1px solid var(--line); color: var(--answer-body); }
+#app .answer-table thead + tbody tr:first-child td { border-top: 0; }
+#app .answer-table tr[hidden] { display: none; }
+#app .answer-table .is-numeric { text-align: right; font-variant-numeric: tabular-nums; }
+#app .answer-table .is-mono { overflow: hidden; max-width: 180px; color: var(--ui-secondary); font-family: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+#app .answer-table td:first-child { min-width: 180px; }
+#app .answer-table-name { display: inline-flex; align-items: center; gap: 8px; min-width: 160px; color: var(--text); overflow-wrap: anywhere; }
+#app .answer-table-empty { margin: 0; padding: 12px; color: var(--ui-secondary); font-size: 13px; }
+#app .answer-table-empty[hidden] { display: none; }
+#app .planner-server-pagination { border-top: 0; padding: 4px 0 0; font-size: 13px; }
+#app .planner-server-pagination button { height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); font-size: 13px; font-weight: 500; }
+#app .planner-server-pagination button:hover:not(:disabled) { background: var(--ui-hover); color: var(--text); }
+/* Sigma's thinking state while an answer is on its way. */
+#app .planner-thinking { display: flex; align-items: center; gap: 10px; color: var(--ui-secondary); font-size: 1rem; line-height: 1.5rem; }
+#app .thinking-dots { display: inline-flex; gap: 4px; }
+#app .thinking-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: planner-thinking 1.1s ease-in-out infinite; }
+#app .thinking-dots i:nth-child(2) { animation-delay: .15s; }
+#app .thinking-dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes planner-thinking { 0%, 80%, 100% { opacity: .25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
+@media (prefers-reduced-motion: reduce) { #app .thinking-dots i { animation: none; opacity: .6; } }
+
+#app .planner-composer-dock { padding: 0 24px 20px; border-top: 0; background: transparent; box-shadow: none; }
+
+/* Questions page (Figma 360:23511): layer cards over one section per entity type; the entity map on the right is their table of contents. */
+#app #planner-workspace.questions-open :is(#planner-chat-scroll, #planner-composer-dock) { display: none; }
+#app .planner-questions-page { --qb-muted: color-mix(in srgb, var(--text) 45%, transparent); --qb-soft-line: color-mix(in srgb, var(--line) 55%, transparent); display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; min-width: 0; min-height: 0; padding: 32px 32px 0; container: questions / inline-size; }
+#app .planner-questions-page[hidden] { display: none; }
+#app .qb-header { display: flex; flex-direction: column; gap: 24px; flex: 0 0 auto; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+#app .qb-title-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 24px; }
+#app .qb-title { margin: 0; color: var(--text); font-family: "Libre Baskerville", Georgia, serif; font-size: 20px; font-weight: 600; line-height: 24px; }
+#app .qb-search { display: flex; align-items: center; gap: 8px; height: 36px; margin: -6px 0; padding: 0 9px; border: 1px solid transparent; border-radius: 10px; color: var(--ui-secondary); cursor: text; transition: border-color .15s ease; }
+#app .qb-search .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .qb-search input { width: 0; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 14px; line-height: 20px; transition: width .18s ease; }
+#app .qb-search:focus-within, #app .qb-search:has(input:not(:placeholder-shown)) { border-color: var(--ui-border); }
+#app .qb-search:focus-within input, #app .qb-search input:not(:placeholder-shown) { width: 220px; }
+/* One row of four as in Figma; the cards narrow before they wrap. */
+#app .qb-layers { display: grid; grid-template-columns: repeat(4, minmax(0, 162px)); gap: 8px 12px; }
+@container questions (max-width: 480px) { #app .qb-layers { grid-template-columns: repeat(2, minmax(0, 162px)); } }
+#app .qb-layer { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 8px; border: 1px solid var(--qb-soft-line); border-radius: 12px; background: var(--planner-card-bg); box-shadow: 0 0 .5px rgba(0, 0, 0, .25); color: var(--text); cursor: pointer; text-align: center; transition: border-color .15s ease, box-shadow .15s ease; }
+#app .qb-layer:hover { border-color: var(--ui-border); }
+#app .qb-layer.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+#app .qb-layer-art { display: grid; place-items: center; height: 81px; overflow: hidden; border: 1px solid var(--illo-surface); border-radius: 12px; background: var(--illo-ghost); }
+#app .qb-layer-art :is(img, svg) { display: block; max-width: 100%; }
+#app .qb-layer span { overflow: hidden; font-size: 13px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+#app .qb-filter { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; margin-top: -8px; padding: 4px 4px 4px 12px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); font-size: 13px; font-weight: 500; }
+#app .qb-filter[hidden] { display: none; }
+#app .qb-filter button { width: 24px; height: 24px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+#app .qb-filter .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
+#app .qb-groups { position: relative; display: flex; flex-direction: column; gap: 32px; flex: 1 1 auto; min-height: 0; padding: 0 0 48px; overflow-y: auto; scrollbar-width: thin; }
+#app .qb-group { display: flex; flex-direction: column; }
+#app .qb-group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0 10px; border-bottom: 1px solid var(--line); }
+#app .qb-group-head h3 { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--text); font-size: 17px; font-weight: 600; line-height: 26px; }
+#app .qb-group-head p { margin: 0; color: var(--ui-secondary); font-size: 14px; line-height: 20px; }
+#app .qb-group-meta { flex: 0 0 auto; color: var(--qb-muted); font-size: 14px; line-height: 20px; }
+#app .qb-question { display: flex; align-items: center; width: 100%; padding: 6px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ui-secondary); cursor: pointer; font-size: .875rem; line-height: 1.375rem; text-align: left; transition: color .15s ease; }
+#app .qb-question:hover { color: var(--text); }
+#app .qb-question-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app .qb-question-type { flex: 0 0 auto; max-width: 40%; padding-left: 16px; overflow: hidden; color: var(--ui-secondary); opacity: .75; text-overflow: ellipsis; white-space: nowrap; }
+#app .qb-question-action { display: grid; flex: 0 0 auto; place-items: center; width: 22px; height: 22px; margin-left: 6px; color: var(--ui-secondary); opacity: 0; transition: opacity .12s ease; }
+#app .qb-question-action .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
+#app .qb-question:is(:hover, :focus-visible) .qb-question-action { opacity: 1; }
+#app .qb-slot { color: var(--text); font-weight: 400; text-decoration: none; }
+#app .qb-empty { margin: 0; padding: 24px 0; color: var(--ui-secondary); font-size: 15px; }
+
+#app .planner-context-pill, #app #planner-ask-entities-panel { display: none; }
+#app #planner-workspace.questions-open .planner-context-pill { display: inline-flex; align-items: center; gap: 8px; height: 2.25rem; padding: 0 .75rem; border-radius: 10px; background: var(--planner-section-bg); color: var(--text); font-size: .9375rem; font-weight: 500; white-space: nowrap; }
+#app .planner-context-pill .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; }
+#app #planner-workspace.questions-open .planner-context-tabs { display: none; }
+#app #planner-workspace.questions-open #planner-ask-entities-panel { display: block; }
+#app #planner-workspace.questions-open .planner-context-panel:not(#planner-ask-entities-panel) { display: none; }
+#app #planner-ask-entities-panel .planner-type-row { transition: background-color .15s ease; }
+#app .planner-type-row.is-active { background: color-mix(in srgb, var(--accent) 10%, transparent); }
+#app .planner-type-row.is-active .planner-type-label { font-weight: 500; }
+#app .planner-type-row.is-unavailable:hover { background: transparent; }
+#app .planner-type-row.is-unavailable .planner-type-entry { cursor: default; opacity: .45; }
+#app .planner-nav-row.active { background: var(--ui-hover); }
+
+/* Sigma's entity picker for question placeholders, anchored to the composer. */
+#app .planner-slot-picker { position: fixed; z-index: 450; display: flex; flex-direction: column; max-height: min(420px, 60vh); overflow: hidden; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--panel); box-shadow: 0 18px 38px rgba(18, 35, 66, .14); }
+[data-theme="light"] #app .planner-slot-picker { background: #fff; }
+#app .slot-picker-header { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; min-height: 48px; padding: 8px 16px 0 8px; }
+#app .slot-picker-header.no-back { padding-left: 16px; }
+#app .slot-picker-header[hidden] { display: none; }
+#app .slot-picker-back { width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); cursor: pointer; }
+#app .slot-picker-back:hover { background: var(--ui-hover); color: var(--text); }
+#app .slot-picker-title { flex: 1; min-width: 0; overflow: hidden; color: var(--text); font-size: .9375rem; font-weight: 600; line-height: 1.375rem; text-overflow: ellipsis; white-space: nowrap; }
+#app .slot-picker-count, #app .slot-picker-option-meta { flex: 0 0 auto; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; font-variant-numeric: tabular-nums; }
+#app .slot-picker-search { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; height: 44px; padding: 0 12px 0 18px; border-bottom: 1px solid var(--line); color: var(--ui-secondary); }
+#app .slot-picker-search .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app .slot-picker-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: .9375rem; }
+#app .slot-picker-search input::-webkit-search-cancel-button { display: none; }
+#app .slot-picker-list { flex: 1 1 auto; min-height: 0; padding: 4px 8px 8px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+#app .slot-picker-option { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 40px; padding: 6px 12px; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+#app .slot-picker-option:is(:hover, [aria-selected="true"]) { background: var(--ui-hover); }
+#app .slot-picker-option:has(.slot-picker-option-description) > .planner-type-mark { align-self: flex-start; margin-top: 5px; }
+#app .slot-picker-option-text { display: grid; flex: 1; min-width: 0; }
+#app .slot-picker-option-label { overflow: hidden; font-size: .9375rem; line-height: 1.375rem; text-overflow: ellipsis; white-space: nowrap; }
+#app .slot-picker-option-description { overflow: hidden; color: var(--ui-secondary); font: 12px/1.125rem "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace; text-overflow: ellipsis; white-space: nowrap; }
+#app .slot-picker-empty, #app .slot-picker-footer { margin: 0; padding: 12px; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; }
+#app .slot-picker-footer { flex: 0 0 auto; border-top: 1px solid var(--line); }
+#app .slot-picker-footer[hidden] { display: none; }
+
+/* Sidebar Search: chats only, in sigma's field. */
+#app .planner-chat-search { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+#app .planner-chat-search[hidden] { display: none; }
+#app .planner-chat-search-results { display: flex; flex-direction: column; gap: 2px; min-height: 0; overflow-y: auto; }
+#app .planner-chat-search-row { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; column-gap: 10px; width: 100%; padding: 7px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+#app .planner-chat-search-row:hover { background: var(--ui-hover); }
+#app .planner-chat-search-row .ui-icon { grid-row: span 2; width: 16px; height: 16px; color: var(--ui-secondary); }
+#app .planner-chat-search-row span { overflow: hidden; font-size: .9375rem; line-height: 1.375rem; text-overflow: ellipsis; white-space: nowrap; }
+#app .planner-chat-search-row small { overflow: hidden; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; text-overflow: ellipsis; white-space: nowrap; }
+#app .planner-chat-search-empty { margin: 0; padding: 8px 10px; color: var(--ui-secondary); font-size: .875rem; }
+
+/* 9. Illustration palette: Figma's greys mixed from the theme's text and card colors, so the art follows every theme. */
+#app .planner-conversation {
+  --illo-paper: var(--planner-card-bg);
+  --illo-surface: color-mix(in srgb, var(--text) 3%, var(--planner-card-bg));
+  --illo-ghost: color-mix(in srgb, var(--text) 11%, var(--planner-card-bg));
+  --illo-soft: color-mix(in srgb, var(--text) 21%, var(--planner-card-bg));
+  --illo-line: color-mix(in srgb, var(--text) 32%, var(--planner-card-bg));
+  --illo-muted: color-mix(in srgb, var(--text) 43%, var(--planner-card-bg));
+  --illo-ink: color-mix(in srgb, var(--text) 88%, var(--planner-card-bg));
+}

@@ -1,0 +1,63 @@
+/* A quiet, focused catalog workflow; theme tokens stay inside the Planner. */
+#app .planner-prompt-tools #planner-assist-open {
+  width: auto; padding: 0 8px; margin-left: 6px; display: inline-flex; gap: 5px;
+  border: 1px solid var(--line); color: var(--text); font-size: var(--planner-meta-size);
+}
+#app .planner-assist {
+  width: min(640px, calc(100vw - 32px)); max-width: none; max-height: min(800px, calc(100dvh - 48px));
+  margin: auto; padding: 0; overflow: hidden; color: var(--text); background: var(--planner-side-bg);
+  border: 1px solid var(--ui-border); border-radius: 14px; box-shadow: 0 20px 80px rgb(0 0 0 / 24%);
+  font-family: var(--ui-font); font-size: var(--planner-text-size); line-height: 1.5;
+}
+#app .planner-assist[open] { display: flex; flex-direction: column; }
+.planner-assist::backdrop { background: rgb(0 0 0 / 35%); }
+#app .planner-assist [hidden] { display: none !important; }
+#app .planner-assist :where(button) { min-height: 32px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 6px; background: transparent; color: var(--text); font: inherit; cursor: pointer; }
+#app .planner-assist :where(button):hover { background: var(--planner-section-bg); border-color: var(--ui-border); }
+#app .planner-assist :where(button):disabled { opacity: .45; cursor: not-allowed; }
+#app .planner-assist :is(input, button):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.planner-assist-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 20px 24px 16px; border-bottom: 1px solid var(--line); }
+#app .planner-assist-header h2 { margin: 0; font-size: 1rem; font-weight: 650; }
+.planner-assist-header p { margin: 5px 0 0; color: var(--ui-secondary); }
+#app .planner-assist-header button { display: grid; place-items: center; width: 32px; flex-shrink: 0; padding: 6px; border: 0; }
+.planner-assist-scroll { min-height: 0; overflow-y: auto; padding: 20px 24px; overscroll-behavior: contain; }
+.planner-assist-search-label { display: block; margin-bottom: 8px; font-weight: 600; }
+.planner-assist-search { display: flex; gap: 8px; }
+#app .planner-assist input { min-width: 0; width: 100%; min-height: 40px; padding: 9px 12px; border: 1px solid var(--ui-border); border-radius: 7px; background: var(--ui-field); color: var(--text); font: inherit; }
+#app .planner-assist input::placeholder { color: var(--ui-secondary); }
+.planner-assist-search button { flex-shrink: 0; }
+.planner-assist-topics { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+#app .planner-assist-topics button { color: var(--ui-secondary); font-size: var(--planner-meta-size); min-height: 28px; padding: 4px 8px; }
+.planner-assist-filters { display: flex; gap: 0; border-bottom: 1px solid var(--line); margin-top: 22px; }
+#app .planner-assist-filters button { border: 0; border-radius: 0; padding: 9px 12px; color: var(--ui-secondary); }
+#app .planner-assist-filters button[aria-pressed="true"] { color: var(--text); box-shadow: inset 0 -2px var(--accent); }
+.planner-assist-status { margin: 12px 0; color: var(--ui-secondary); font-size: var(--planner-meta-size); }
+.planner-assist-results { display: grid; gap: 6px; }
+#app .planner-assist-question { padding: 12px; text-align: left; }
+.planner-assist-question span { display: block; }
+.planner-assist :is(.planner-assist-question, .planner-assist-entities) small { display: block; color: var(--ui-secondary); font-size: var(--planner-meta-size); margin-top: 5px; overflow-wrap: anywhere; }
+#app .planner-assist-more { width: 100%; margin-top: 12px; border: 0; color: var(--ui-secondary); }
+#app .planner-assist-back { padding-left: 0; border: 0; color: var(--ui-secondary); }
+.planner-assist-template { margin: 14px 0 8px; font-weight: 600; overflow-wrap: anywhere; }
+.planner-assist-guidance { color: var(--ui-secondary); margin: 0 0 20px; }
+.planner-assist-field { margin: 18px 0; }
+.planner-assist-field label { font-weight: 600; }
+.planner-assist-hint, .planner-assist-error { margin: 5px 0 8px; color: var(--ui-secondary); font-size: var(--planner-meta-size); }
+.planner-assist-error:empty { display: none; }
+.planner-assist-entities { padding: 0 8px; border-left: 2px solid var(--line); margin-top: 8px; }
+#app .planner-assist-entities button { display: block; width: 100%; border: 0; text-align: left; }
+.planner-assist-selected { display: flex; flex-wrap: wrap; gap: 6px; }
+#app .planner-assist-selected button { background: var(--planner-section-bg); margin: 6px 0; max-width: 100%; overflow-wrap: anywhere; text-align: left; }
+.planner-assist-preview { padding: 14px; background: var(--planner-section-bg); border: 1px solid var(--line); border-radius: 8px; margin-top: 24px; }
+.planner-assist-preview strong { color: var(--ui-secondary); font-size: var(--planner-meta-size); font-weight: 500; }
+.planner-assist-preview p { margin: 6px 0 0; overflow-wrap: anywhere; }
+.planner-assist-footer { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 16px 24px; border-top: 1px solid var(--line); }
+.planner-assist-footer span { font-size: var(--planner-meta-size); color: var(--ui-secondary); }
+#app .planner-assist-use { flex-shrink: 0; background: var(--action-bg); color: var(--action-text); border-color: transparent; padding-inline: 16px; }
+#app .planner-assist-use:hover { background: var(--action-hover); }
+@media (max-width: 600px) {
+  .planner-assist-header, .planner-assist-scroll, .planner-assist-footer { padding: 16px; }
+  .planner-assist-search { flex-direction: column; }
+  .planner-assist-footer { align-items: flex-start; }
+  .planner-prompt-tools .planner-mode-label { display: none; }
+}

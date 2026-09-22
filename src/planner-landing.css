@@ -1,0 +1,37 @@
+/* Copy, branding, and controls: retain the existing theme and restrained contrast. */
+#app .planner-panel-header { align-items: flex-start; }
+#app .planner-panel-header h2 { line-height: 1.4; font-size: .9375rem; text-wrap: balance; }
+#app .planner-section-copy h3 { display: flex; align-items: center; gap: 7px; }
+[data-planner-heading-icon] { display: inline-flex; flex: 0 0 auto; color: var(--accent); }
+[data-planner-heading-icon] .ui-icon { width: 16px; height: 16px; }
+#app .planner-section-copy p { line-height: 1.55; }
+#app .planner-hero-mark { width: 58px; height: 58px; border: 0; border-radius: 0; background: none; box-shadow: none; }
+#app .planner-hero-mark img { width: 48px; animation: atlas-wheel-turn 2.4s cubic-bezier(.4,0,.2,1) 2; transform-origin: center; }
+@keyframes atlas-wheel-turn { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+#app .planner-empty-chat h2 { text-wrap: balance; line-height: 1.2; margin-bottom: 14px; }
+#app .planner-empty-chat > p { max-width: 610px; text-wrap: pretty; }
+#app .planner-empty-chat > p + p { margin-top: 9px; }
+#app .planner-starter-prompts button { border-radius: 8px; align-items: start; padding: 12px 14px; }
+#app .planner-starter-prompts small { display: block; color: var(--ui-secondary); font-size: .625rem; font-weight: 600; margin-bottom: 5px; letter-spacing: .025em; }
+#app .planner-starter-prompts button i { padding-top: 2px; }
+#app .side-panel-toggle { flex-basis: 32px; width: 32px; height: 32px; min-height: 32px; padding: 7px; border-color: var(--line); border-radius: 8px; background: color-mix(in srgb, var(--panel) 92%, var(--text)); box-shadow: inset 0 1px 0 color-mix(in srgb, var(--text) 4%, transparent); transition: background .15s ease, border-color .15s ease, color .15s ease; }
+#app .side-panel-toggle:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 40%, var(--line)); background: color-mix(in srgb, var(--accent) 9%, var(--panel)); }
+#app .side-panel-toggle .ui-icon { stroke-width: 1.6; }
+#app .window-controls { width: auto; gap: 2px; flex-shrink: 0; }
+#app .window-controls button { position: relative; display: grid; place-items: center; width: 22px; height: 28px; padding: 0; border: 0; background: transparent; cursor: pointer; }
+#app .window-controls button::before { content: ""; position: absolute; width: 12px; height: 12px; border-radius: 50%; background: var(--window-control-color); box-shadow: inset 0 0 0 1px rgb(0 0 0 / 12%); }
+#workspace-hide { --window-control-color: #ff5f57; }
+#workspace-focus { --window-control-color: #febc2e; }
+#workspace-fullscreen { --window-control-color: #28c840; }
+#app .window-controls .ui-icon { position: relative; width: 9px; height: 9px; stroke-width: 2; color: #242424; opacity: 0; }
+#app .window-controls:hover .ui-icon, #app .window-controls button:focus-visible .ui-icon, #app .window-controls button[aria-pressed="true"] .ui-icon { opacity: 1; }
+#app .window-controls button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 6px; }
+body.workspace-hidden #app > main { visibility: hidden; }
+#workspace-resume { width: min(420px, calc(100vw - 40px)); padding: 32px; color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 16px; text-align: center; box-shadow: 0 24px 80px rgb(0 0 0 / 25%); }
+#workspace-resume::backdrop { background: var(--bg); opacity: .97; }
+#workspace-resume h2 { margin: 20px 0 12px; font-size: 1.25rem; }
+#workspace-resume p { color: var(--ui-secondary); line-height: 1.6; font-size: .875rem; }
+#workspace-resume button { margin-top: 14px; padding: 10px 18px; border: 0; border-radius: 8px; color: var(--action-text); background: var(--action-bg); cursor: pointer; }
+.workspace-control-status { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 100; width: min(460px, calc(100vw - 40px)); padding: 14px 18px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--text); font-size: .875rem; box-shadow: 0 8px 30px var(--shadow-color); }
+@container planner-conversation (max-width: 560px) { #app .planner-starter-prompts { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { #app .planner-hero-mark img { animation: none; } #app .side-panel-toggle { transition: none; } }

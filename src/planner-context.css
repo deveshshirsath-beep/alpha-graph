@@ -1,0 +1,58 @@
+/* Ask-mode right panel: sigma's floating card, pill tabs and entity map on Alpha's tokens. */
+#app .planner-context { --context-line: color-mix(in srgb, var(--planner-content-bg) 88%, var(--text)); padding: .75rem; border-top: 1px solid var(--context-line); background: var(--planner-content-bg); }
+[data-theme="light"] #app .planner-context { --context-line: #d9ddd6; }
+/* The handle covers the seam between the panels, so it carries their top stroke across it. */
+#app .planner-panel-resizer-right { background: var(--planner-content-bg); box-shadow: inset 0 1px 0 var(--line); }
+#app .planner-panel-resizer-right::before { background: transparent; }
+#app .planner-context-card { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; border-radius: 16px; background: var(--planner-side-bg); box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); }
+:root:not([data-theme="light"]) #app .planner-context-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 4px 10px -2px rgba(0, 0, 0, .45); }
+
+#app .planner-context-tabbar { flex-shrink: 0; display: flex; align-items: center; gap: .25rem; padding: .75rem; border-bottom: 1px solid var(--line); }
+#app .planner-context-tabs { display: flex; flex: 1 1 auto; align-items: center; gap: .25rem; min-width: 0; margin: 0; padding: 0; border: 0; overflow-x: auto; scrollbar-width: none; }
+#app .planner-context-tabs button { flex: 0 0 auto; height: 2.25rem; min-height: 2.25rem; display: inline-flex; align-items: center; gap: .5rem; padding: 0 .625rem; border: 0; border-radius: 10px; background: transparent; box-shadow: none; color: var(--ui-secondary); font-size: .8125rem; font-weight: 400; white-space: nowrap; }
+#app .planner-context-tabs button:hover { background: var(--ui-hover); color: var(--text); }
+#app .planner-context-tabs button.active { background: var(--planner-section-bg); box-shadow: none; color: var(--text); font-weight: 500; }
+#app .planner-context-tabs .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; }
+#app .planner-context-tabbar .side-panel-toggle { flex-shrink: 0; margin-left: auto; }
+/* Narrow panels keep every tab reachable: inactive tabs fold to their icons. */
+@container planner-context (max-width: 27rem) {
+  #app .planner-context-tabs button:not(.active) > span { display: none; }
+}
+
+#app .planner-type-map { padding: .5rem .75rem .75rem; }
+#app .planner-type-empty { margin: 0; padding: .5rem .75rem; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; }
+#app .planner-type-mark { width: 12px; height: 12px; flex: 0 0 12px; fill: currentColor; color: var(--mark-dark); }
+[data-theme="light"] #app .planner-type-mark { color: var(--mark-light); }
+[data-theme="ocean"] #app .planner-type-mark { color: var(--mark-ocean); }
+[data-theme="sunset"] #app .planner-type-mark { color: var(--mark-sunset); }
+#app .planner-type-row { --indent: .875rem; position: relative; display: flex; align-items: center; gap: .25rem; min-height: 2.25rem; padding: 0 .25rem 0 calc(.75rem + var(--depth, 0) * var(--indent)); border-radius: 8px; }
+#app .planner-type-row:hover { background: var(--ui-hover); }
+#app .planner-type-row::before { content: ""; position: absolute; top: 0; bottom: 0; left: calc(.75rem + 7.5px); width: calc(var(--depth, 0) * var(--indent)); background: repeating-linear-gradient(to right, var(--line) 0 1px, transparent 1px var(--indent)); pointer-events: none; }
+#app .planner-type-row.guide-lit::after { content: ""; position: absolute; top: 0; bottom: 0; left: calc(.75rem + 7.5px + var(--guide-index, 0) * var(--indent)); width: 1px; background: var(--ui-border); pointer-events: none; }
+#app .planner-type-toggle { position: relative; width: 1rem; height: 1rem; flex: 0 0 1rem; display: grid; place-items: center; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--ui-secondary); cursor: pointer; }
+#app .planner-type-row[aria-expanded="true"] > .planner-type-toggle::after { content: ""; position: absolute; left: 50%; top: calc(100% + 1px); width: 1px; height: 10px; background: var(--line); transform: translateX(-50%); pointer-events: none; }
+#app .planner-type-toggle .ui-icon { width: .875rem; height: .875rem; flex-basis: .875rem; transition: transform 180ms ease; }
+#app .planner-type-toggle[aria-expanded="false"] .ui-icon { transform: rotate(-90deg); }
+#app .planner-type-toggle:hover { color: var(--text); }
+#app .planner-type-entry { display: flex; align-items: center; gap: .5rem; flex: 1; min-width: 0; height: 2.25rem; padding: 0 .25rem 0 0; border: 0; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
+#app .planner-type-label { flex: 1; min-width: 0; overflow: hidden; font-size: .9375rem; line-height: 1.375rem; text-overflow: ellipsis; white-space: nowrap; }
+#app .planner-type-count { color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; font-variant-numeric: tabular-nums; }
+
+#app .planner-type-crumbs { display: flex; align-items: center; gap: 2px; min-width: 0; }
+#app .planner-type-crumb { display: inline-flex; align-items: center; gap: .5rem; min-width: 0; height: 2.25rem; padding: 0 .625rem; border: 0; border-radius: 10px; background: transparent; color: var(--ui-secondary); font-size: .8125rem; }
+#app .planner-type-crumb > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app button.planner-type-crumb { flex-shrink: 0; cursor: pointer; }
+#app button.planner-type-crumb:hover { background: var(--ui-hover); color: var(--text); }
+#app .planner-type-crumb.current { color: var(--text); font-weight: 500; }
+#app .planner-type-crumb .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; }
+#app .planner-type-crumbs > .planner-type-caret { width: .75rem; height: .75rem; flex: 0 0 .75rem; color: var(--ui-secondary); transform: rotate(-90deg); }
+#app .planner-type-head { display: grid; gap: 2px; padding: 1rem .75rem .75rem; }
+#app .planner-type-head-title { display: flex; align-items: center; gap: .625rem; color: var(--text); font-size: 1.0625rem; font-weight: 600; line-height: 1.5rem; }
+#app .planner-type-head-title .planner-type-mark { width: 16px; height: 16px; flex-basis: 16px; }
+#app .planner-type-head p { margin: 0; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; }
+#app .planner-type-group { display: flex; align-items: center; justify-content: space-between; gap: .5rem; margin-top: .5rem; padding: 1rem .75rem .25rem; border-top: 1px solid var(--line); color: var(--ui-secondary); font-size: .8125rem; font-weight: 600; line-height: 1.125rem; }
+#app .planner-type-question { width: 100%; display: flex; align-items: flex-start; gap: .625rem; padding: .5rem .75rem; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; font-size: .9375rem; line-height: 1.375rem; text-align: left; }
+#app .planner-type-question:hover { background: var(--ui-hover); }
+#app .planner-type-question .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; margin-top: 3px; color: var(--ui-secondary); }
+#app .planner-type-question:hover .ui-icon { color: var(--accent); }
+#app .planner-type-slot { display: inline-block; padding: 0 6px; border-radius: 6px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-weight: 500; }

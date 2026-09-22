@@ -1,0 +1,1578 @@
+catalog:
+  title: "Questions answerable by merged-graph-v4"
+  source_file: "merged-graph-v4.json"
+  graph_schema_version: "2.0.0"
+  graph_generated_at: "2026-08-31T02:06:27.325201+00:00"
+  catalog_generated_on: "2026-09-10"
+  question_template_count: 529
+  question_templates_by_layer:
+    business:
+      total: 117
+      blast_radius: 32
+    api:
+      total: 216
+      blast_radius: 49
+    runtime:
+      total: 196
+      blast_radius: 50
+  catalog_purpose: >-
+    A parameterized question catalog for exploring the Business, API, and Runtime
+    layers of the graph. Questions use only node attributes and relationship
+    signatures present in the source graph. Braced terms are parameters to replace
+    with a node id, name, value, set, or traversal depth.
+  placeholders:
+    atomic:
+      "{api}": "One API node, preferably identified by exact node id."
+      "{api_name}": "An API name used to compare distinct API nodes that share that name."
+      "{api_version}": "One API-VERSION node."
+      "{application}": "One APPLICATION node."
+      "{business_area}": "One BUSINESS-AREA node."
+      "{business_capability}": "One BUSINESS-CAPABILITY node."
+      "{business_domain}": "One BUSINESS-DOMAIN node."
+      "{canonical_path}": "A SCHEMA or FIELD properties.canonicalPath value."
+      "{classification}": "The PII or PCI classification node."
+      "{consumer}": "One CONSUMER node."
+      "{database}": "One DATABASE node."
+      "{deployment_target}": "A GATEWAY, MICROSERVICE, or WORKFLOW category node."
+      "{endpoint}": "One ENDPOINT node."
+      "{event}": "One EVENT node."
+      "{exposure}": "An External, Internal, or Partner EXPOSURE node."
+      "{field}": "One FIELD node."
+      "{header}": "One HEADER node."
+      "{host}": "A DATABASE or EVENT properties.host value."
+      "{http_method}": "A DELETE, GET, PATCH, POST, or PUT HTTP-METHOD node/value."
+      "{max_depth}": "A non-negative traversal hop limit."
+      "{name_or_text}": "Text matched against node id or name."
+      "{operation}": "One OPERATION node."
+      "{path_parameter}": "One PATH-PARAMETER node."
+      "{query}": "An exact or normalized query value from a data-access edge."
+      "{query_parameter}": "One QUERY-PARAMETER node."
+      "{schema}": "One SCHEMA node."
+      "{security_control}": "One SECURITY node; OAuth 2 is the only value in this snapshot."
+      "{service}": "An OPERATION properties.service value."
+      "{service_domain}": "One SERVICE-DOMAIN node."
+      "{status_code}": "One STATUS-CODE node."
+      "{table_name}": "A data-access edge properties.tableName value where populated."
+      "{team}": "One TEAMS node."
+    collections:
+      "{api_node_set}": "Two or more exact API-layer node ids used for set-based impact comparison."
+      "{api_version_set}": "Two or more API-VERSION nodes used for structural comparison."
+      "{business_node_set}": "Two or more Business-layer node ids used for set-based impact comparison."
+      "{runtime_node_set}": "Two or more Runtime-layer node ids used for set-based impact comparison."
+    semantic_selectors:
+      "{contract_element}": "One request HEADER, PATH-PARAMETER, QUERY-PARAMETER, SCHEMA, or descendant FIELD."
+      "{response_element}": "One STATUS-CODE, response HEADER, response SCHEMA, or descendant FIELD."
+      "{runtime_target}": "One OPERATION, DATABASE, or EVENT node."
+    composite_entity_selectors:
+      rule: "A name joined by '_or_' accepts exactly one node of any listed type; it is not a free-text union."
+      values:
+        "{api_or_endpoint_or_schema_or_field}": "API, ENDPOINT, SCHEMA, or FIELD."
+        "{api_or_operation}": "API or OPERATION."
+        "{api_or_operation_or_database_or_event}": "API, OPERATION, DATABASE, or EVENT."
+        "{api_or_version_or_endpoint_or_operation}": "API, API-VERSION, ENDPOINT, or OPERATION."
+        "{api_version_or_endpoint_or_operation}": "API-VERSION, ENDPOINT, or OPERATION."
+        "{application_or_api_or_operation}": "APPLICATION, API, or OPERATION."
+        "{business_area_or_capability_or_team}": "BUSINESS-AREA, BUSINESS-CAPABILITY, or TEAMS."
+        "{business_area_or_domain_or_capability_or_team}": "BUSINESS-AREA, BUSINESS-DOMAIN, BUSINESS-CAPABILITY, or TEAMS."
+        "{business_domain_or_service_domain}": "BUSINESS-DOMAIN or SERVICE-DOMAIN."
+        "{business_or_api_root}": "A Business-layer node, APPLICATION, API, API-VERSION, ENDPOINT, CONSUMER, or OPERATION root."
+        "{consumer_or_api}": "CONSUMER or API."
+        "{consumer_or_business_owner}": "CONSUMER, TEAMS, BUSINESS-CAPABILITY, SERVICE-DOMAIN, BUSINESS-DOMAIN, or BUSINESS-AREA."
+        "{database_or_event}": "DATABASE or EVENT."
+        "{database_or_event_or_field}": "DATABASE, EVENT, or FIELD."
+        "{field_or_database_or_event}": "FIELD, DATABASE, or EVENT."
+        "{field_or_schema_or_header_or_parameter_or_status_code}": "FIELD, SCHEMA, HEADER, PATH-PARAMETER, QUERY-PARAMETER, or STATUS-CODE."
+        "{gateway_or_microservice_or_workflow}": "GATEWAY, MICROSERVICE, or WORKFLOW category node."
+        "{operation_or_api}": "OPERATION or API."
+        "{path_parameter_or_query_parameter}": "PATH-PARAMETER or QUERY-PARAMETER."
+        "{schema_or_field}": "SCHEMA or FIELD."
+        "{schema_or_field_or_header_or_parameter}": "SCHEMA, FIELD, HEADER, PATH-PARAMETER, or QUERY-PARAMETER."
+        "{schema_or_field_or_header_or_status_code}": "SCHEMA, FIELD, HEADER, or STATUS-CODE."
+        "{security_control_or_classification_or_exposure}": "SECURITY, PII, PCI, or EXPOSURE."
+        "{security_control_or_exposure_or_classification}": "SECURITY, EXPOSURE, PII, or PCI."
+        "{table_name_or_query}": "A data-access edge tableName or query property value."
+        "{team_or_capability_or_business_area}": "TEAMS, BUSINESS-CAPABILITY, or BUSINESS-AREA."
+  traversal_notation:
+    "A -[R]-> B": "Follow a stored edge from source A to target B."
+    "A <-[R]- B": "Traverse a stored B-to-A edge in reverse, from target A back to source B."
+    "*": "Repeat the adjacent relationship transitively, with cycle protection and a bounded depth."
+    "|": "Choose any of the listed relationship types."
+  traversal_views:
+    forward: >-
+      Follow the direction stored in sourceId -> targetId. This is used for containment,
+      ownership, exposure, API contracts, deployments, data access, production, calls,
+      and routes.
+    reverse: >-
+      Follow incoming edges from targetId back to sourceId. This answers parent,
+      implementer, subscriber, producer, caller, user, and impacted-dependent questions.
+    top_down: >-
+      Start with business intent or an API portfolio and descend toward contracts and
+      runtime dependencies. A semantic top-down journey may cross an incoming IMPLEMENTS
+      edge because APPLICATION -[IMPLEMENTS]-> BUSINESS-CAPABILITY is stored technology-to-business.
+    bottom_up: >-
+      Start with a low-level field, contract element, operation, event, or database and
+      trace incoming/reverse edges to the APIs, applications, capabilities, teams, and
+      business hierarchy that depend on it.
+  blast_radius_definition:
+    meaning: >-
+      Blast radius is the set of directly and transitively reachable impact candidates
+      under an explicit scenario and edge policy. It is structural reachability, not a
+      prediction of actual failure, traffic loss, probability, severity, or recovery time.
+    required_answer_evidence:
+      - "Root node or root-node set and scenario."
+      - "Directly affected nodes separated from transitive effects."
+      - "One evidence path per affected node, including stored and traversed direction."
+      - "Minimum hop depth and counts grouped by layer, node type, and relationship type."
+      - "Affected dependents separated from non-propagating business/API context rollups."
+      - "Maximum traversal depth, result limit, truncation flag, and cycles encountered."
+    scenario_families:
+      outage: "Availability loss propagated to callers, routes, producers/consumers, data users, deployments, subscribers, and contained estate as applicable."
+      contract_change: "Request, response, field, endpoint, API, or event contract incompatibility propagated toward users and subscribers."
+      data_change: "Database, schema, field, payload, or event-data change propagated toward readers, writers, connectors, producers, consumers, and callers."
+      security_change: "Authentication, PII, PCI, or exposure-policy change propagated toward governed operations, callers, and consumers."
+      deployment_change: "Gateway, microservice, workflow, service, call, or route change propagated toward operations and their callers/subscribers."
+      business_change: "Area, domain, capability, team, application, or API portfolio change scoped down to supporting technology and consumers."
+      deprecation: "Broad removal or incompatible-change analysis across containers, contracts, runtime dependencies, callers, and subscribers."
+
+graph_inventory:
+  total_nodes: 76315
+  total_edges: 105833
+  distinct_node_types: 27
+  distinct_populated_relationship_types: 20
+  distinct_populated_edge_signatures: 43
+  nodes_by_layer:
+    BUSINESS: 799
+    API: 73570
+    RUNTIME: 1946
+  nodes_by_type:
+    BUSINESS-AREA: 14
+    BUSINESS-DOMAIN: 54
+    SERVICE-DOMAIN: 325
+    BUSINESS-CAPABILITY: 338
+    TEAMS: 68
+    APPLICATION: 26
+    API: 1842
+    API-VERSION: 1842
+    ENDPOINT: 1842
+    HTTP-METHOD: 5
+    SECURITY: 1
+    EXPOSURE: 3
+    PCI: 1
+    PII: 1
+    GATEWAY: 1
+    MICROSERVICE: 1
+    WORKFLOW: 1
+    QUERY-PARAMETER: 58
+    PATH-PARAMETER: 1214
+    HEADER: 7810
+    STATUS-CODE: 1978
+    SCHEMA: 3909
+    FIELD: 52935
+    CONSUMER: 100
+    OPERATION: 1932
+    DATABASE: 9
+    EVENT: 5
+  populated_edge_types:
+    ACCEPTS: 6105
+    CALLS: 286
+    CLASSIFIED-AS: 1509
+    CONNECTS-TO: 1429
+    CONSUMES: 2
+    CONTAINS: 6334
+    DEPLOYED-TO: 1977
+    EXPOSES: 2048
+    HAS-EXPOSURE: 1930
+    HAS-PROPERTY: 52935
+    IMPLEMENTS: 2522
+    OWNS: 552
+    PRODUCES: 1732
+    READS-FROM: 1642
+    RETURNS: 9063
+    ROUTES-TO: 106
+    SUBSCRIBES: 8483
+    SUPPORTS: 1930
+    UPDATES-TO: 1707
+    WRITES-TO: 3541
+  node_property_keys:
+    OPERATION:
+      - httpMethod
+      - operationId
+      - path
+      - service
+      - serviceCategory
+    DATABASE:
+      - connectionString
+      - host
+      - type
+    EVENT:
+      - host
+      - type
+    SCHEMA:
+      - additionalProperties
+      - canonicalPath
+      - type
+    FIELD:
+      - additionalProperties
+      - canonicalPath
+      - format
+      - required
+      - type
+  runtime_edge_property_keys:
+    common_to_runtime_telemetry_edges:
+      - callCount
+      - depth
+      - errorCount
+      - lastSeen
+    note: "Static containment, contract, control, deployment, ownership, exposure, and subscription edges do not carry these properties."
+    relationship_specific_coverage:
+      CALLS:
+        path: "279 of 286"
+        httpMethod: "279 of 286"
+      ROUTES-TO:
+        path: "106 of 106"
+        httpMethod: "106 of 106"
+      READS-FROM:
+        query: "1642 of 1642"
+        tableName: "1544 of 1642"
+      WRITES-TO:
+        query: "3541 of 3541"
+        tableName: "1836 of 3541"
+      UPDATES-TO:
+        query: "1707 of 1707"
+        tableName: "2 of 1707"
+      PRODUCES:
+        destinationName: "1731 of 1732"
+      CONSUMES:
+        destinationName: "1 of 2"
+  graph_quality_notes:
+    - "No duplicate node ids, duplicate edge ids, or dangling edges were observed."
+    - "Two nodes are orphaned: the OPERATION node GATEWAY-listPaymentsUsers:GET:/v1/payments/users and the classifier node WORKFLOW:WORKFLOW."
+    - "No DELETE-FROM edge is present anywhere in this snapshot."
+    - "No OPERATION -[DEPLOYED-TO]-> WORKFLOW edge is present; the WORKFLOW classifier node is orphaned."
+    - "Less common populated signatures include CALLS from OPERATION, EVENT, and DATABASE; EVENT -[PRODUCES]-> EVENT; and DATABASE -[CONNECTS-TO]-> DATABASE."
+    - "Only OPERATION, DATABASE, EVENT, SCHEMA, and FIELD nodes have a properties object."
+    - "An absent edge means 'not represented in this snapshot', not necessarily 'does not exist in reality'."
+
+layers:
+  business:
+    graph_node_types:
+      - BUSINESS-AREA
+      - BUSINESS-DOMAIN
+      - SERVICE-DOMAIN
+      - BUSINESS-CAPABILITY
+      - TEAMS
+    concern: "Business hierarchy, capability ownership, implementation scope, portfolio dependency, and business-facing impact."
+    scope_precision_note: >-
+      Business hierarchy, team ownership, and application-to-capability edges are exact
+      graph relationships. There is no direct capability-to-API edge. A capability-to-API,
+      operation, consumer, or runtime result joins through every API exposed by an implementing
+      application and is therefore a conservative application-level upper bound, not proof that
+      each returned API specifically implements that capability.
+    observed_structure_notes:
+      - "Cards and Payments each have two parent business areas; preserve all paths and deduplicate node counts."
+      - "Digital Channel has two parent service domains."
+      - "Weather Forecast is the sole capability with no implementing application in this snapshot."
+
+    inventory_and_coverage:
+      questions:
+        - "Which business areas, business domains, service domains, business capabilities, and teams exist?"
+        - "How many nodes of each Business-layer type exist?"
+        - "Which Business-layer nodes match {name_or_text}?"
+        - "What are the id, name, type, and direct relationships of {business_area_or_domain_or_capability_or_team}?"
+        - "Which business domains belong to more than one business area?"
+        - "Which service domains have no parent business domain, or more than one parent?"
+        - "Which business capabilities have no parent service domain, or more than one parent?"
+        - "Which business capabilities have no owning team, exactly one owner, or multiple owning teams?"
+        - "Which teams own no capabilities?"
+        - "Which capabilities have no implementing application?"
+        - "Which applications implement no business capability?"
+        - "What percentage of each business hierarchy level is linked to its expected parent and child types?"
+        - "Which Business-layer nodes are orphaned or disconnected from the API and Runtime estate?"
+        - "Where do names repeat across business areas, domains, service domains, capabilities, or teams?"
+
+    direct_forward_edges:
+      description: "One-hop questions that follow stored Business and business-to-technology edges."
+      relationship_groups:
+        - path: "BUSINESS-AREA -[CONTAINS]-> BUSINESS-DOMAIN"
+          questions:
+            - "Which business domains does {business_area} contain?"
+            - "How many business domains does each business area contain?"
+            - "Which business area has the broadest directly contained domain portfolio?"
+        - path: "BUSINESS-DOMAIN -[CONTAINS]-> SERVICE-DOMAIN"
+          questions:
+            - "Which service domains does {business_domain} contain?"
+            - "How many service domains does each business domain contain?"
+            - "Which business domains share or overlap in service-domain membership?"
+        - path: "SERVICE-DOMAIN -[CONTAINS]-> BUSINESS-CAPABILITY"
+          questions:
+            - "Which business capabilities does {service_domain} contain?"
+            - "How many capabilities does each service domain contain?"
+            - "Which service domains contain multiple capabilities, and which contain only one?"
+        - path: "TEAMS -[OWNS]-> BUSINESS-CAPABILITY"
+          questions:
+            - "Which business capabilities does {team} own?"
+            - "How many capabilities does each team own?"
+            - "Which teams have overlapping ownership of the same capability?"
+        - path: "APPLICATION -[IMPLEMENTS]-> BUSINESS-CAPABILITY"
+          questions:
+            - "Which business capabilities does {application} implement?"
+            - "How many capabilities does each application implement?"
+            - "Which applications span multiple service domains, business domains, or business areas through the capabilities they implement?"
+        - path: "APPLICATION -[EXPOSES]-> API"
+          questions:
+            - "Which APIs does {application} expose?"
+            - "How many APIs does each application expose?"
+            - "Which APIs are exposed by more than one application?"
+
+    direct_reverse_edges:
+      description: "One-hop questions that start at an edge target and traverse back to its sources."
+      relationship_groups:
+        - path: "BUSINESS-DOMAIN <-[CONTAINS]- BUSINESS-AREA"
+          questions:
+            - "Which business area or areas contain {business_domain}?"
+            - "Does {business_domain} have one parent area, multiple parent areas, or no parent?"
+        - path: "SERVICE-DOMAIN <-[CONTAINS]- BUSINESS-DOMAIN"
+          questions:
+            - "Which business domain contains {service_domain}?"
+            - "Which service domains are referenced by multiple business domains?"
+        - path: "BUSINESS-CAPABILITY <-[CONTAINS]- SERVICE-DOMAIN"
+          questions:
+            - "Which service domain or domains contain {business_capability}?"
+            - "Which capabilities cross service-domain boundaries?"
+        - path: "BUSINESS-CAPABILITY <-[OWNS]- TEAMS"
+          questions:
+            - "Which team or teams own {business_capability}?"
+            - "Which capabilities have shared ownership, and who are all the owners?"
+        - path: "BUSINESS-CAPABILITY <-[IMPLEMENTS]- APPLICATION"
+          questions:
+            - "Which applications implement {business_capability}?"
+            - "Which capabilities are implemented by multiple applications?"
+            - "Which capability has the largest application implementation footprint?"
+        - path: "API <-[EXPOSES]- APPLICATION"
+          questions:
+            - "Which application or applications expose {api}?"
+            - "Which APIs have multiple exposing applications?"
+
+    top_down_cross_layer:
+      description: "Start with business scope and descend to API contracts and runtime dependencies."
+      path_patterns:
+        - "BUSINESS-AREA -[CONTAINS]-> BUSINESS-DOMAIN -[CONTAINS]-> SERVICE-DOMAIN -[CONTAINS]-> BUSINESS-CAPABILITY <-[IMPLEMENTS]- APPLICATION -[EXPOSES]-> API -[CONTAINS]-> API-VERSION -[CONTAINS]-> ENDPOINT -[CONTAINS]-> OPERATION"
+        - "TEAMS -[OWNS]-> BUSINESS-CAPABILITY <-[IMPLEMENTS]- APPLICATION -[EXPOSES]-> API -[CONTAINS*]-> OPERATION"
+        - "OPERATION -[ACCEPTS]-> HEADER|PATH-PARAMETER|QUERY-PARAMETER|SCHEMA"
+        - "OPERATION -[RETURNS]-> STATUS-CODE -[RETURNS]-> HEADER|SCHEMA"
+        - "OPERATION -[IMPLEMENTS|CLASSIFIED-AS|HAS-EXPOSURE]-> SECURITY|PII|PCI|EXPOSURE, respecting each observed signature"
+        - "OPERATION -[DEPLOYED-TO]-> GATEWAY|MICROSERVICE"
+        - "OPERATION -[READS-FROM|CONNECTS-TO|WRITES-TO|UPDATES-TO]-> DATABASE"
+        - "OPERATION -[PRODUCES]-> EVENT"
+        - "OPERATION -[CALLS|ROUTES-TO]-> OPERATION"
+        - "CONSUMER -[SUBSCRIBES]-> API|OPERATION, traversed in reverse when starting from business scope"
+      questions:
+        - "What is the complete capability, application, API, endpoint, and operation estate under {business_area}?"
+        - "What is the complete technology estate under {business_domain}, including applications, APIs, deployments, databases, and events?"
+        - "Which applications implement capabilities in {service_domain}, and which APIs, versions, endpoints, and operations are associated through those applications?"
+        - "Which APIs and operations are associated with {business_capability} through its implementing applications?"
+        - "Which APIs and operations are associated with capabilities owned by {team}?"
+        - "Which consumers subscribe to APIs or operations associated with {business_area_or_domain_or_capability_or_team} through exposing applications?"
+        - "Which GATEWAY, MICROSERVICE, or WORKFLOW category nodes are linked by DEPLOYED-TO from operations associated with {business_capability}?"
+        - "Which databases are read, connected to, written, or updated by operations associated with {business_capability} through its implementing applications?"
+        - "Which events are produced by operations associated with {business_capability} through its implementing applications?"
+        - "Which downstream operations are called or routed to by operations associated with {business_area}?"
+        - "Which HTTP methods are used by operations associated with {service_domain}?"
+        - "Which request headers, parameters, schemas, and fields occur in APIs associated with {business_capability}?"
+        - "Which response status codes, headers, schemas, and fields occur in APIs associated with {business_domain}?"
+        - "Which operations associated with {business_area} are External, Internal, or Partner exposed?"
+        - "Which operations associated with {business_area_or_domain_or_capability_or_team} are classified as PII or PCI?"
+        - "Which security controls are implemented by operations associated with {business_capability}?"
+        - "Which externally exposed PII or PCI operations are associated with capabilities owned by {team}?"
+        - "Which business areas have the largest conservative application-level counts of associated APIs, operations, consumers, databases, or events?"
+        - "Which capabilities have application-level associated operation sets that share a database, event, deployment category, or downstream operation?"
+        - "Which teams own capabilities whose application-level associated operation sets share a runtime dependency?"
+        - "Where does a business hierarchy branch into multiple applications and later converge on the same API or database?"
+        - "What is the shortest evidence path from {business_area_or_capability_or_team} to {api_or_operation_or_database_or_event}?"
+
+    bottom_up_reverse_lineage:
+      description: "Start from API/runtime evidence and roll it back to associated business context and capability-owning teams."
+      path_patterns:
+        - "DATABASE <-[READS-FROM|CONNECTS-TO|WRITES-TO|UPDATES-TO]- OPERATION <-[CONTAINS]- ENDPOINT <-[CONTAINS]- API-VERSION <-[CONTAINS]- API <-[EXPOSES]- APPLICATION -[IMPLEMENTS]-> BUSINESS-CAPABILITY <-[OWNS]- TEAMS"
+        - "EVENT <-[PRODUCES]- OPERATION <-[CONTAINS*]- API <-[EXPOSES]- APPLICATION -[IMPLEMENTS]-> BUSINESS-CAPABILITY <-[CONTAINS*]- BUSINESS-AREA"
+        - "FIELD <-[HAS-PROPERTY*]- SCHEMA <-[ACCEPTS]- OPERATION <-[CONTAINS*]- API <-[EXPOSES]- APPLICATION -[IMPLEMENTS]-> BUSINESS-CAPABILITY"
+        - "FIELD <-[HAS-PROPERTY*]- SCHEMA <-[RETURNS]- STATUS-CODE <-[RETURNS]- OPERATION <-[CONTAINS*]- API <-[EXPOSES]- APPLICATION -[IMPLEMENTS]-> BUSINESS-CAPABILITY"
+      questions:
+        - "Which business capabilities are implemented by {application}, and which service domains, business domains, and business areas contain them?"
+        - "Which teams own capabilities implemented by {application}?"
+        - "Which capabilities and capability-owning teams are associated with {api} through its exposing applications?"
+        - "Which business hierarchy and capability-owning teams are associated upstream of {api_version_or_endpoint_or_operation}?"
+        - "Which business capabilities are associated with {consumer}'s subscribed APIs or operations through their exposing applications?"
+        - "Which business capabilities and capability-owning teams are associated with operations linked to {gateway_or_microservice_or_workflow} by DEPLOYED-TO?"
+        - "Which business capabilities, capability-owning teams, and areas are associated with operations that use {database}?"
+        - "Which business capabilities, capability-owning teams, and areas are associated with operations that produce or are called by {event}?"
+        - "Which business capabilities and capability-owning teams are associated with operations that call or route to {operation}?"
+        - "Which business areas are associated with operations that read from {database}?"
+        - "Which business areas are associated with operations that write or update {database}?"
+        - "Which teams own capabilities whose application-level associated operations produce {event}?"
+        - "Which capabilities are associated through implementing applications with APIs that expose {field_or_schema_or_header_or_parameter_or_status_code}?"
+        - "Which business areas are associated through applications with operations classified as {classification}?"
+        - "Which teams own capabilities associated through applications with External operations governed by {security_control}?"
+        - "What is the shortest evidence path from {database_or_event_or_field} back to {team_or_capability_or_business_area}?"
+        - "How many distinct business areas, domains, capabilities, teams, applications, and APIs converge on {database_or_event}?"
+        - "Which low-level dependencies have the widest associated business-context rollup?"
+
+    blast_radius:
+      description: "Business-layer impact questions, kept separate from ordinary scope and lineage questions."
+      top_down_business_change:
+        questions:
+          - "What current hierarchy and application-level technology estate falls into review scope if {business_area} is reorganized or retired?"
+          - "Which domains, service domains, capabilities, teams, applications, APIs, operations, consumers, deployments, databases, and events fall under {business_area}'s change scope?"
+          - "Which current parent paths, descendants, owners, implementers, and application-level technology associations fall into structural review scope before moving {business_domain}?"
+          - "Which current parents, descendant capabilities, owners, implementers, and application-level technology associations fall into structural review scope before splitting or merging {service_domain}?"
+          - "What is affected if {business_capability} is renamed, redefined, consolidated, or retired?"
+          - "Which implementing applications and their exposed APIs fall into conservative portfolio-review scope if {business_capability} changes?"
+          - "Which API consumers and runtime dependencies are conservatively associated through applications with a change to {business_capability}?"
+          - "Which currently owned capabilities and application-level technology associations enter review scope if {team} gives up ownership of {business_capability}?"
+          - "Which capabilities become ownerless if {team} is removed?"
+          - "Which multi-parent descendants and shared implementing applications show that a proposed business-area split may not be structurally isolated?"
+          - "Which shared applications and their associated APIs, databases, or events extend conservative review scope beyond {business_domain}?"
+          - "Which externally exposed, PII, or PCI operations fall inside the change radius of {business_area_or_capability_or_team}?"
+      reverse_technical_to_business:
+        questions:
+          - "Which business areas, domains, capabilities, and capability-owning teams appear in the reverse business-context rollup of {application_or_api_or_operation}?"
+          - "Which business capabilities and capability-owning teams are associated with operations in the reverse outage radius of {database}?"
+          - "Which business capabilities and capability-owning teams are associated with operations in the reverse outage radius of {event}?"
+          - "For operations linked by DEPLOYED-TO to {gateway_or_microservice_or_workflow}, which capability-owning teams appear in the reverse business-context rollup?"
+          - "Which business areas appear in the reverse context rollup of a contract change to {api_or_endpoint_or_schema_or_field}?"
+          - "Which capabilities and capability-owning teams appear in the context rollup if {api_version} is deprecated?"
+          - "Which business capabilities are associated with operations governed by {security_control_or_classification_or_exposure}?"
+          - "Which business areas are associated with operations in the reverse data-change radius of {database_or_event}?"
+          - "Which business capabilities are associated with operations in the reverse change radius of routing or call changes to {operation}?"
+          - "Which technical root node has the widest reverse-mapped business-context rollup?"
+      concentration_and_comparison:
+        questions:
+          - "How do business areas rank by the number of distinct applications, APIs, operations, consumers, deployments, databases, and events in their blast radius?"
+          - "How do capabilities rank by the number of dependent consumers and shared runtime resources in their blast radius?"
+          - "Which teams have the largest cross-domain or cross-area change blast radius?"
+          - "Which capabilities have exactly one implementing application, and what application-level runtime resources are associated with it?"
+          - "Which capabilities have multiple implementing applications, and how many distinct application-level runtime paths are associated with them?"
+          - "What is the overlap between the blast radii of {business_node_set}?"
+          - "What are the union, intersection, and root-specific remainders of the structural scopes of {business_node_set}?"
+          - "How does the direct impact differ from the transitive impact for {business_area_or_capability_or_team}?"
+          - "Which impact paths cross Business, API, and Runtime layer boundaries, and at which edge does each crossing occur?"
+          - "Which nodes are reached by the selected propagation-edge policy versus included only as contextual rollups?"
+
+  api:
+    graph_node_types:
+      - APPLICATION
+      - API
+      - API-VERSION
+      - ENDPOINT
+      - HTTP-METHOD
+      - SECURITY
+      - EXPOSURE
+      - PCI
+      - PII
+      - GATEWAY
+      - MICROSERVICE
+      - WORKFLOW
+      - QUERY-PARAMETER
+      - PATH-PARAMETER
+      - HEADER
+      - STATUS-CODE
+      - SCHEMA
+      - FIELD
+      - CONSUMER
+    cross_layer_node_type:
+      OPERATION: >-
+        OPERATION is formally a Runtime-layer node, but its containment and contract
+        relationships are included here because it is the bridge between an endpoint
+        and API contract, control, deployment, and runtime dependency nodes.
+    concern: "API portfolio, versions, endpoint operations, contracts, consumers, controls, exposure, deployment placement, and contract-facing impact."
+    business_rollup_precision_note: >-
+      API-to-business questions reverse through an exposing APPLICATION and then follow that
+      application's IMPLEMENTS edges. They produce conservative application-level associations;
+      they do not prove that a particular API or operation implements every returned capability,
+      or that a capability-owning team owns the API or operation.
+    observed_structure_notes:
+      - "The 1,842 API nodes represent 324 distinct API names; identity-level and name-grouped questions must be kept separate."
+      - "The version names present are v1, v5, and v6; exposure values are External, Internal, and Partner."
+      - "The modeled HTTP methods are DELETE, GET, PATCH, POST, and PUT; the sole security-control node is OAuth 2."
+      - "Each API node contains one API-version node, and each API-version contains one endpoint in this snapshot."
+      - "There are 1,930 endpoint-contained operations; two operations lack endpoint containment and the usual contract/control links."
+      - "Endpoint operation counts are: 1,786 endpoints with one operation, 28 with two, 24 with three, and 4 with four."
+      - "Forty-seven operations have both GATEWAY and MICROSERVICE DEPLOYED-TO edges; the generic targets are classifiers, not concrete instances."
+
+    inventory_and_coverage:
+      questions:
+        - "Which applications, APIs, API versions, endpoints, operations, and consumers exist?"
+        - "How many nodes of each API-layer type exist?"
+        - "Which APIs, endpoints, operations, schemas, fields, headers, or parameters match {name_or_text}?"
+        - "Which API version names are present, and how many APIs, endpoints, and operations use each version?"
+        - "Which operation HTTP methods are present, and how many operations support each method?"
+        - "Which exposure values are present, and how many operations are External, Internal, or Partner exposed?"
+        - "Which security controls are modeled, and what percentage of operations implements each control?"
+        - "How many operations are classified as PII, PCI, both, or neither?"
+        - "Which deployment target types exist, and what percentage of operations is deployed to each?"
+        - "Which APIs, versions, endpoints, or operations have no expected containment parent or child?"
+        - "Which operations lack a method, security control, exposure, deployment target, request contract, or response status?"
+        - "Which status-code nodes lack a response schema or response headers?"
+        - "Which schemas have no fields, and which fields have no parent schema or field?"
+        - "Which consumers have no API or operation subscriptions?"
+        - "Which APIs or operations have no subscribing consumers?"
+        - "Which API names occur in several versions or contexts, and what exact node ids disambiguate them?"
+        - "Which endpoints contain more than one operation?"
+        - "Which operations are not contained by an endpoint?"
+        - "Which source-type, relationship-type, and target-type signatures are populated in the API subgraph?"
+
+    direct_forward_edges:
+      description: "Complete one-hop coverage of stored API hierarchy, contract, control, deployment, and consumer edges."
+      relationship_groups:
+        - path: "APPLICATION -[EXPOSES]-> API"
+          questions:
+            - "What set of APIs is exposed by {application}?"
+            - "Which application exposes the largest API portfolio?"
+        - path: "API -[CONTAINS]-> API-VERSION"
+          questions:
+            - "Which API versions does {api} contain?"
+            - "Does {api} contain more than one version node?"
+        - path: "API-VERSION -[CONTAINS]-> ENDPOINT"
+          questions:
+            - "Which endpoints does {api_version} contain?"
+            - "How many endpoints are present in each API version?"
+        - path: "ENDPOINT -[CONTAINS]-> OPERATION"
+          questions:
+            - "Which operations does {endpoint} contain?"
+            - "Which endpoint contains multiple concrete or service-specific operations?"
+        - path: "OPERATION -[SUPPORTS]-> HTTP-METHOD"
+          questions:
+            - "Which HTTP method does {operation} support?"
+            - "Does {operation}'s SUPPORTS edge agree with its properties.httpMethod value?"
+        - path: "OPERATION -[IMPLEMENTS]-> SECURITY"
+          questions:
+            - "Which security control does {operation} implement?"
+            - "Which operations implement more than one security control?"
+        - path: "OPERATION -[CLASSIFIED-AS]-> PII|PCI"
+          questions:
+            - "Is {operation} classified as PII, PCI, both, or neither?"
+            - "Which data-sensitivity classifications apply to {operation}?"
+        - path: "OPERATION -[HAS-EXPOSURE]-> EXPOSURE"
+          questions:
+            - "What exposure classification applies to {operation}?"
+            - "Does {operation} have more than one exposure classification?"
+        - path: "OPERATION -[DEPLOYED-TO]-> GATEWAY|MICROSERVICE"
+          questions:
+            - "Where is {operation} deployed?"
+            - "Is {operation} linked to GATEWAY, MICROSERVICE, both populated categories, or neither?"
+            - "Does {operation}'s DEPLOYED-TO edge agree with its properties.serviceCategory value?"
+        - path: "OPERATION -[ACCEPTS]-> HEADER"
+          questions:
+            - "Which request headers does {operation} accept?"
+            - "How many request headers does {operation} accept?"
+        - path: "OPERATION -[ACCEPTS]-> PATH-PARAMETER"
+          questions:
+            - "Which path parameters does {operation} accept?"
+            - "Do the accepted path-parameter names correspond to placeholders in {operation}'s path property?"
+        - path: "OPERATION -[ACCEPTS]-> QUERY-PARAMETER"
+          questions:
+            - "Which query parameters does {operation} accept?"
+            - "How many query parameters does {operation} accept?"
+        - path: "OPERATION -[ACCEPTS]-> SCHEMA"
+          questions:
+            - "Which request schema or schemas does {operation} accept?"
+            - "Which operations accept more than one request schema?"
+        - path: "OPERATION -[RETURNS]-> STATUS-CODE"
+          questions:
+            - "Which status codes can {operation} return?"
+            - "Which operations return multiple modeled status codes?"
+        - path: "STATUS-CODE -[RETURNS]-> SCHEMA"
+          questions:
+            - "Which response schema does {status_code} return?"
+            - "Which status-code nodes return more than one schema?"
+        - path: "STATUS-CODE -[RETURNS]-> HEADER"
+          questions:
+            - "Which response headers does {status_code} return?"
+            - "How many response headers are associated with {status_code}?"
+        - path: "SCHEMA -[HAS-PROPERTY]-> FIELD"
+          questions:
+            - "Which top-level fields does {schema} contain?"
+            - "Which fields of {schema} are required, and what are their types and formats?"
+        - path: "FIELD -[HAS-PROPERTY]-> FIELD"
+          questions:
+            - "Which nested fields does {field} contain?"
+            - "What is the complete nested field tree beneath {field}?"
+        - path: "CONSUMER -[SUBSCRIBES]-> API"
+          questions:
+            - "Which APIs does {consumer} subscribe to?"
+            - "How many APIs does each consumer subscribe to?"
+        - path: "CONSUMER -[SUBSCRIBES]-> OPERATION"
+          questions:
+            - "Which operations does {consumer} subscribe to?"
+            - "How many operations does each consumer subscribe to?"
+
+    direct_reverse_edges:
+      description: "Complete one-hop coverage from each API edge target back to the source that uses, contains, or governs it."
+      relationship_groups:
+        - path: "API <-[EXPOSES]- APPLICATION"
+          questions:
+            - "Which applications expose {api}?"
+            - "Is {api} shared by multiple applications?"
+        - path: "API-VERSION <-[CONTAINS]- API"
+          questions:
+            - "Which API contains {api_version}?"
+            - "Does {api_version} have a unique parent API?"
+        - path: "ENDPOINT <-[CONTAINS]- API-VERSION"
+          questions:
+            - "Which API version contains {endpoint}?"
+            - "Does {endpoint} have a unique parent version?"
+        - path: "OPERATION <-[CONTAINS]- ENDPOINT"
+          questions:
+            - "Which endpoint contains {operation}?"
+            - "Is {operation} contained by more than one endpoint?"
+        - path: "HTTP-METHOD <-[SUPPORTS]- OPERATION"
+          questions:
+            - "Which operations support {http_method}?"
+            - "Which APIs and applications expose operations supporting {http_method}?"
+        - path: "SECURITY <-[IMPLEMENTS]- OPERATION"
+          questions:
+            - "Which operations implement {security_control}?"
+            - "Which consumers, APIs, and applications are structurally associated with operations implementing {security_control}?"
+        - path: "PII|PCI <-[CLASSIFIED-AS]- OPERATION"
+          questions:
+            - "Which operations are classified as {classification}?"
+            - "Which APIs, applications, consumers, and business capabilities are in scope for {classification}?"
+        - path: "EXPOSURE <-[HAS-EXPOSURE]- OPERATION"
+          questions:
+            - "Which operations have {exposure} exposure?"
+            - "Which APIs and applications contain or expose {exposure} operations, and which business capabilities are associated through those applications?"
+        - path: "GATEWAY|MICROSERVICE <-[DEPLOYED-TO]- OPERATION"
+          questions:
+            - "Which operations are deployed to {deployment_target}?"
+            - "Which APIs, applications, consumers, and capabilities are associated with operations linked to {deployment_target} by DEPLOYED-TO?"
+        - path: "HEADER <-[ACCEPTS]- OPERATION"
+          questions:
+            - "Which operations accept {header} as a request header?"
+            - "In which APIs and versions is {header} accepted?"
+        - path: "HEADER <-[RETURNS]- STATUS-CODE <-[RETURNS]- OPERATION"
+          questions:
+            - "Which status-code responses return {header}?"
+            - "Which operations, endpoints, and APIs can return {header}?"
+        - path: "PATH-PARAMETER <-[ACCEPTS]- OPERATION"
+          questions:
+            - "Which operations accept {path_parameter}?"
+            - "Across which paths, versions, and APIs is {path_parameter} used?"
+        - path: "QUERY-PARAMETER <-[ACCEPTS]- OPERATION"
+          questions:
+            - "Which operations accept {query_parameter}?"
+            - "Across which consumers and APIs is {query_parameter} used?"
+        - path: "SCHEMA <-[ACCEPTS]- OPERATION"
+          questions:
+            - "Which operations accept {schema} as a request schema?"
+            - "Which consumers subscribe to operations that accept {schema}?"
+        - path: "STATUS-CODE <-[RETURNS]- OPERATION"
+          questions:
+            - "Which operations return {status_code}?"
+            - "Which APIs and versions expose {status_code}?"
+        - path: "SCHEMA <-[RETURNS]- STATUS-CODE <-[RETURNS]- OPERATION"
+          questions:
+            - "Which status codes and operations return {schema} as a response?"
+            - "Which consumers subscribe to operations that return {schema}?"
+        - path: "FIELD <-[HAS-PROPERTY]- SCHEMA|FIELD"
+          questions:
+            - "Which schema or parent field contains {field}?"
+            - "What are all ancestor fields and the root schema of {field}?"
+            - "Which request or response operations expose {field}?"
+        - path: "API|OPERATION <-[SUBSCRIBES]- CONSUMER"
+          questions:
+            - "Which consumers subscribe to {api_or_operation}?"
+            - "How many distinct consumers depend directly on {api_or_operation}?"
+
+    top_down_portfolio_and_contract:
+      path_patterns:
+        - "APPLICATION -[EXPOSES]-> API -[CONTAINS]-> API-VERSION -[CONTAINS]-> ENDPOINT -[CONTAINS]-> OPERATION"
+        - "OPERATION -[ACCEPTS]-> HEADER|PATH-PARAMETER|QUERY-PARAMETER"
+        - "OPERATION -[ACCEPTS]-> SCHEMA -[HAS-PROPERTY*]-> FIELD"
+        - "OPERATION -[RETURNS]-> STATUS-CODE -[RETURNS]-> HEADER"
+        - "OPERATION -[RETURNS]-> STATUS-CODE -[RETURNS]-> SCHEMA -[HAS-PROPERTY*]-> FIELD"
+      questions:
+        - "What is the complete API tree exposed by {application}, from API through version, endpoint, and operation?"
+        - "What is the complete contract of {api}, including every operation's request and response elements?"
+        - "How do the endpoint and operation sets of {api_version_set} compare?"
+        - "Which endpoints or operations appear in one selected version but not another?"
+        - "Which operationIds or paths repeat across gateway and microservice services?"
+        - "Which operations have wildcard or concrete identifiers in their ids but templated paths in properties.path?"
+        - "For {endpoint}, what are the method, operationId, path, service, service category, security, exposure, sensitivity, and deployment target of every operation?"
+        - "What request headers, path parameters, query parameters, request schemas, and nested fields does {operation} accept?"
+        - "What status codes, response headers, response schemas, and nested fields can {operation} return?"
+        - "What is the maximum request or response field nesting depth for {operation_or_api}?"
+        - "Which required fields occur at each canonical path in {schema}?"
+        - "Which fields in {schema} allow additional properties?"
+        - "Which object or array fields have no nested child fields?"
+        - "Which field names have inconsistent type, format, required, or additionalProperties values across API contracts?"
+        - "Which schemas or fields share the same canonicalPath, and where are they exposed?"
+        - "Which API contracts use string, integer, number, boolean, object, or array fields?"
+        - "Which APIs return non-success or error status-code nodes in addition to success responses?"
+        - "Which operations have a request schema but no modeled response schema, or vice versa?"
+        - "Which request and response headers appear most widely across the API estate?"
+        - "Which path or query parameters are reused by the most operations?"
+
+    consumer_control_deployment_and_runtime_scope:
+      path_patterns:
+        - "CONSUMER -[SUBSCRIBES]-> API|OPERATION"
+        - "OPERATION -[IMPLEMENTS]-> SECURITY"
+        - "OPERATION -[CLASSIFIED-AS]-> PII|PCI"
+        - "OPERATION -[HAS-EXPOSURE]-> EXPOSURE"
+        - "OPERATION -[DEPLOYED-TO]-> GATEWAY|MICROSERVICE"
+        - "OPERATION -[READS-FROM|CONNECTS-TO|WRITES-TO|UPDATES-TO]-> DATABASE"
+        - "OPERATION -[PRODUCES]-> EVENT"
+        - "OPERATION -[CALLS|ROUTES-TO]-> OPERATION"
+      questions:
+        - "What APIs and operations form {consumer}'s complete subscription footprint?"
+        - "Does {consumer} subscribe both at API and operation level, and where do those subscriptions overlap?"
+        - "Which subscribed operations of {consumer} are External, Internal, or Partner exposed?"
+        - "Which subscribed operations of {consumer} are PII or PCI classified?"
+        - "Which security controls are implemented by the operations used by {consumer}?"
+        - "Which GATEWAY, MICROSERVICE, or WORKFLOW category nodes are linked by DEPLOYED-TO from {consumer}'s subscribed operations?"
+        - "Which databases and events are reached transitively from {consumer}'s subscriptions?"
+        - "Which operations used by {consumer} call or route to other operations?"
+        - "Which APIs mix External, Internal, and Partner operations?"
+        - "Which APIs mix gateway- and microservice-deployed operations?"
+        - "Which APIs include both PII-classified and non-PII operations?"
+        - "Which APIs include PCI-classified operations, and who consumes them?"
+        - "Which API versions are served by more than one service or service category?"
+        - "Which operations have a DEPLOYED-TO target inconsistent with their serviceCategory?"
+        - "Which operations share a database or event but belong to different APIs or applications?"
+        - "Which APIs depend on the same called or routed-to operation?"
+        - "Which business capabilities and capability-owning teams are associated through exposing applications with the APIs consumed by {consumer}?"
+
+    reverse_contract_and_portfolio_lineage:
+      path_patterns:
+        - "FIELD <-[HAS-PROPERTY*]- SCHEMA <-[ACCEPTS]- OPERATION <-[CONTAINS*]- API <-[EXPOSES]- APPLICATION"
+        - "FIELD <-[HAS-PROPERTY*]- SCHEMA <-[RETURNS]- STATUS-CODE <-[RETURNS]- OPERATION <-[CONTAINS*]- API"
+        - "DATABASE <-[READS-FROM|CONNECTS-TO|WRITES-TO|UPDATES-TO]- OPERATION <-[CONTAINS*]- API <-[SUBSCRIBES]- CONSUMER"
+        - "EVENT <-[PRODUCES]- OPERATION <-[CONTAINS*]- API <-[SUBSCRIBES]- CONSUMER"
+        - "DATABASE <-[READS-FROM|CONNECTS-TO|WRITES-TO|UPDATES-TO]- OPERATION <-[SUBSCRIBES]- CONSUMER"
+        - "EVENT <-[PRODUCES]- OPERATION <-[SUBSCRIBES]- CONSUMER"
+      questions:
+        - "Starting from {field}, which parent field tree, schema, request or response, status code, operation, endpoint, version, API, and application expose it?"
+        - "Is {field} request-only, response-only, or present in both directions?"
+        - "Which consumers ultimately depend on {field_or_schema_or_header_or_parameter_or_status_code}?"
+        - "Starting from {schema}, which operations accept it and which status-code responses return it?"
+        - "Starting from {header}, where is it used as a request header versus a response header?"
+        - "Starting from {path_parameter_or_query_parameter}, which operations, paths, versions, and APIs use it?"
+        - "Starting from {status_code}, which response schema and headers does it carry, and which operation returns it?"
+        - "Starting from {security_control_or_exposure_or_classification}, which operations, endpoints, APIs, applications, consumers, capabilities, and teams are in scope?"
+        - "Starting from {deployment_target}, which operations are linked to it and which APIs, applications, consumers, capabilities, and capability-owning teams roll up from those operations?"
+        - "Starting from {database}, which operations use it and which API contracts and consumers sit above those operations?"
+        - "Starting from {event}, which producing operations and subscribed consumers sit upstream?"
+        - "Starting from {operation}, which callers, routers, endpoints, APIs, consumers, applications, capabilities, and teams depend on it?"
+        - "Which field, schema, operation, endpoint, or API has the greatest reverse fan-in from consumers?"
+        - "Which database, event, or deployment target has the greatest reverse fan-in from APIs?"
+        - "What is the shortest evidence path between {consumer_or_api} and {field_or_database_or_event}?"
+
+    compound_risk_and_governance:
+      questions:
+        - "Which External operations are classified as PII?"
+        - "Which External operations are classified as PCI?"
+        - "Which operations are classified as both PII and PCI?"
+        - "Which Partner operations are classified as PII or PCI?"
+        - "Which PII or PCI operations are consumed by {consumer}?"
+        - "Which PII or PCI operations are deployed to {deployment_target}?"
+        - "Which PII or PCI operations read from, connect to, write to, or update {database}?"
+        - "Which PII or PCI operations produce {event}?"
+        - "Which External write or update operations are classified as PII or PCI?"
+        - "Which operations satisfying {http_method}, {exposure}, {classification}, {security_control}, and {deployment_target} all at once exist?"
+        - "Which operations lack one or more of method, OAuth 2, exposure, and deployment relationships?"
+        - "Which External operations have no modeled PII or PCI classification?"
+        - "Which PII or PCI operations have no subscribing consumer?"
+        - "Which APIs have the highest number of External PII or PCI operations?"
+        - "Which applications have the largest sensitive API footprint, and which capabilities, capability-owning teams, and business areas are associated through those applications?"
+        - "Which consumers have the broadest sensitive or externally exposed subscription footprint?"
+        - "Where does an identical field name or canonical path cross both PII-classified and non-PII operations?"
+        - "Which sensitive operations depend on shared databases, events, deployments, or downstream operations?"
+
+    blast_radius:
+      description: "API-layer impact questions grouped by the initiating change or failure."
+      api_portfolio_and_deprecation:
+        questions:
+          - "What is affected if {application} stops exposing its APIs?"
+          - "What is the deprecation blast radius of {api}?"
+          - "Which versions, endpoints, operations, consumers, contracts, deployments, databases, events, applications, capabilities, teams, and business areas are in {api}'s deprecation radius?"
+          - "What is affected if {api_version} is retired?"
+          - "Which consumers depend directly on {api_version}'s operations even if they subscribe to the parent API separately?"
+          - "What is affected if {endpoint} is removed or moved?"
+          - "What is affected if {operation}'s path, method, operationId, service, or serviceCategory changes?"
+          - "Which called or routed operations expand the transitive blast radius of deprecating {operation}?"
+          - "Which business capabilities and capability-owning teams are in the reverse context rollup of {api_or_version_or_endpoint_or_operation}'s deprecation?"
+      request_contract_change:
+        questions:
+          - "What is the contract-change blast radius of changing or removing request {header}?"
+          - "What is the contract-change blast radius of renaming, adding, or removing {path_parameter}?"
+          - "What is the contract-change blast radius of changing {query_parameter}?"
+          - "What is the contract-change blast radius of {schema}?"
+          - "Which operations and consumers are affected if {field} changes type or format?"
+          - "Which operations and consumers are affected if {field} changes required status?"
+          - "Which operations and consumers are affected if additionalProperties changes on {schema_or_field}?"
+          - "How far does a nested-field change propagate through parent fields, root schema, operation, endpoint, API, application, and consumer?"
+          - "Which APIs share the exact affected schema or field node, and which additional APIs are only heuristic review candidates because distinct nodes share a schema name, field name, or canonical path?"
+      response_contract_change:
+        questions:
+          - "What is affected if {status_code} is added, removed, or changes meaning?"
+          - "What is affected if response {header} changes or is removed?"
+          - "What is the response-contract blast radius of {schema}?"
+          - "Which consumers and callers are affected if {field} changes in a response schema?"
+          - "Which operations are impacted if a shared response field changes at any nesting depth?"
+          - "What is the combined request-and-response blast radius when {schema_or_field} appears in both directions?"
+          - "Which APIs and consumers are affected by changing all occurrences of {canonical_path}?"
+      security_privacy_and_exposure_change:
+        questions:
+          - "What is the security-change blast radius of {security_control}?"
+          - "Which operations, consumers, APIs, applications, capabilities, and teams are affected if OAuth 2 behavior changes?"
+          - "What is the policy-change blast radius of reclassifying {operation} as PII or PCI?"
+          - "What is the estate-wide blast radius of changing the PII classification policy?"
+          - "What is the estate-wide blast radius of changing the PCI classification policy?"
+          - "Which consumers, associated business capabilities, and capability-owning teams enter review scope if {operation}'s exposure changes from Internal or Partner to External?"
+          - "Which databases, events, called operations, and deployments sit downstream of External PII or PCI operations affected by a policy change?"
+          - "Which sensitive operations share a dependency that makes the security blast radius cross API boundaries?"
+      deployment_and_runtime_change:
+        questions:
+          - "For operations linked by DEPLOYED-TO to {gateway_or_microservice_or_workflow}, which endpoints, APIs, consumers, applications, capabilities, and capability-owning teams are in structural scope?"
+          - "What is affected if {operation} moves between gateway and microservice deployment categories?"
+          - "Which consumers are affected by a service or serviceCategory change to {operation}?"
+          - "Which API contracts are in the reverse outage radius of {database}?"
+          - "Which APIs and consumers are in the reverse outage radius of {event}?"
+          - "Which APIs and consumers are affected by a data change to {database_or_event}?"
+          - "Which APIs and consumers are affected if a called or routed-to {operation} changes or fails?"
+          - "Which cross-API call or route dependencies enlarge the deployment blast radius?"
+      multi_root_and_prioritization:
+        questions:
+          - "What is the union and intersection of the blast radii of {api_node_set}?"
+          - "Which consumers are common to every root in {api_node_set}, and which are unique to one root?"
+          - "Which applications, capabilities, and teams appear in multiple API blast radii?"
+          - "How do APIs, schemas, fields, deployment targets, databases, and events rank by distinct consumer blast radius?"
+          - "Which affected nodes are one hop away versus transitively affected within {max_depth}?"
+          - "Which blast-radius paths cross from API contracts into Runtime and then back to another API?"
+          - "Which blast-radius results are truncated by depth or result limits?"
+          - "Which result nodes are contextual portfolio rollups rather than propagating failures?"
+
+  runtime:
+    graph_node_types:
+      - OPERATION
+      - DATABASE
+      - EVENT
+    related_api_classifier_types:
+      - GATEWAY
+      - MICROSERVICE
+      - WORKFLOW
+    concern: "Execution topology, service placement, calls and routes, database access, event flows, observed telemetry, and operational impact."
+    business_rollup_precision_note: >-
+      Runtime-to-business questions roll an operation up through API and APPLICATION before
+      reaching capabilities and TEAMS. The result is a conservative application-level association,
+      not proof that the operation implements a capability or that a team operationally owns it.
+    observed_structure_notes:
+      - "OPERATION nodes carry operationId, service, serviceCategory, and usually httpMethod and path."
+      - "DATABASE nodes carry type, host, and sometimes connectionString; EVENT nodes carry type and host."
+      - "Six database nodes have a named host and three use 'unknown'; all five event nodes use host 'unknown'."
+      - "GATEWAY, MICROSERVICE, and WORKFLOW are singleton API-layer classifier nodes, not concrete runtime instances or hosts."
+      - "One operation is isolated and one operation is telemetry-only, so not every Runtime node can roll up through an endpoint."
+      - "There are 52 duplicate logical-operation pairs when grouping by operationId, httpMethod, and path; keep graph identity separate from logical deduplication."
+      - "Positive errorCount occurs on four ROUTES-TO edges in this snapshot; other observed runtime edges report zero."
+      - "Observed lastSeen values span 2026-08-28 through 2026-08-29; the capture window and retention semantics are not modeled."
+      - "Self-loops occur on 23 ROUTES-TO edges, both CONSUMES edges, and one CONNECTS-TO edge, so every transitive traversal requires cycle protection."
+
+    inventory_and_coverage:
+      questions:
+        - "Which operations exist, and what are their operationId, HTTP method, path, service, and serviceCategory?"
+        - "How many operations are implemented by each service, service category, and HTTP method?"
+        - "Which services are recorded on the broadest mix of GET, POST, PUT, PATCH, and DELETE operations?"
+        - "Which logical operations occur in gateway and microservice forms when grouped by operationId, method, and path?"
+        - "Which operations have missing or blank httpMethod, path, service, serviceCategory, or operationId properties?"
+        - "Which operations have no containing endpoint, method, security, exposure, or deployment edge?"
+        - "Which endpoints map to one, two, three, or four runtime operation nodes?"
+        - "Which databases exist, and what type, host, logical name, and connection string are recorded for each?"
+        - "Which database nodes share a type, host, logical name, or connection endpoint?"
+        - "Which databases have an unknown host or no recorded connection string?"
+        - "Which event destinations exist, and what transport type and host are recorded for each?"
+        - "Which events have an unknown host?"
+        - "How many CALLS, ROUTES-TO, CONNECTS-TO, READS-FROM, WRITES-TO, UPDATES-TO, PRODUCES, and CONSUMES edges exist?"
+        - "Does any DELETE-FROM edge exist in this snapshot, and what deletion behavior is therefore unrepresented?"
+        - "Which less common populated Runtime signatures use DATABASE or EVENT as the source of CALLS, CONNECTS-TO, or PRODUCES?"
+        - "Which Runtime nodes or subgraphs are orphaned from the API hierarchy?"
+        - "Which Runtime edges are self-loops?"
+        - "Which CALLS, ROUTES-TO, event, or database subgraphs contain cycles?"
+        - "Which edge properties are populated for each Runtime relationship type?"
+        - "Which data-access edges lack tableName even though they carry a captured query?"
+
+    direct_forward_edges:
+      description: "One-hop questions following every populated stored Runtime relationship signature."
+      relationship_groups:
+        - path: "OPERATION -[CALLS]-> OPERATION"
+          questions:
+            - "Which operations does {operation} call directly?"
+            - "What method and path were recorded for each call from {operation}?"
+            - "What callCount, errorCount, lastSeen, and recorded depth accompany each direct call?"
+        - path: "OPERATION -[ROUTES-TO]-> OPERATION"
+          questions:
+            - "Which operations does {operation} route to directly?"
+            - "What path and HTTP method were recorded for each route from {operation}?"
+            - "Does {operation} route to itself, to a gateway operation, or to a microservice operation?"
+        - path: "OPERATION -[CONNECTS-TO]-> DATABASE"
+          questions:
+            - "Which databases does {operation} connect to?"
+            - "What observed callCount, errorCount, lastSeen, and depth apply to each connection?"
+        - path: "OPERATION -[READS-FROM]-> DATABASE"
+          questions:
+            - "Which databases and tables does {operation} read from?"
+            - "Which captured queries support the read dependencies of {operation}?"
+        - path: "OPERATION -[WRITES-TO]-> DATABASE"
+          questions:
+            - "Which databases and tables does {operation} write to?"
+            - "Which captured queries support the write dependencies of {operation}?"
+        - path: "OPERATION -[UPDATES-TO]-> DATABASE"
+          questions:
+            - "Which databases and tables does {operation} update?"
+            - "Which captured queries support the update dependencies of {operation}?"
+        - path: "OPERATION -[PRODUCES]-> EVENT"
+          questions:
+            - "Which events does {operation} produce?"
+            - "What destinationName and observed telemetry are recorded for each event produced by {operation}?"
+        - path: "EVENT -[CONSUMES]-> EVENT"
+          questions:
+            - "Which events does {event} consume?"
+            - "Is the CONSUMES edge a self-loop or a cross-event dependency?"
+        - path: "EVENT -[PRODUCES]-> EVENT"
+          questions:
+            - "Which events does {event} produce?"
+            - "What event-to-event production chain starts at {event}?"
+        - path: "EVENT -[CALLS]-> OPERATION"
+          questions:
+            - "Which operations does {event} call?"
+            - "What path, method, callCount, errorCount, lastSeen, and depth are recorded for each event-originated call?"
+        - path: "EVENT -[CONNECTS-TO]-> DATABASE"
+          questions:
+            - "Which databases does {event} connect to?"
+            - "Is the connection direct, and what telemetry was observed?"
+        - path: "EVENT -[READS-FROM]-> DATABASE"
+          questions:
+            - "Which databases and tables does {event} read from?"
+            - "Which captured queries are associated with those event reads?"
+        - path: "EVENT -[WRITES-TO]-> DATABASE"
+          questions:
+            - "Which databases and tables does {event} write to?"
+            - "Which captured queries are associated with those event writes?"
+        - path: "EVENT -[UPDATES-TO]-> DATABASE"
+          questions:
+            - "Which databases and tables does {event} update?"
+            - "Which captured queries are associated with those event updates?"
+        - path: "DATABASE -[CALLS]-> OPERATION"
+          questions:
+            - "Which operation does {database} call according to the populated DATABASE -[CALLS]-> OPERATION edge?"
+            - "Which telemetry fields are present, and which path or method fields are absent, on the database-originated call?"
+        - path: "DATABASE -[CONNECTS-TO]-> DATABASE"
+          questions:
+            - "Which database, including itself, does {database} connect to?"
+            - "Is the database connection a self-loop, and what telemetry is recorded?"
+
+    direct_reverse_edges:
+      description: "One-hop questions beginning at the target of every Runtime relationship and walking back to direct sources."
+      relationship_groups:
+        - path: "OPERATION <-[CALLS]- OPERATION"
+          questions:
+            - "Which operations call {operation} directly?"
+            - "Which caller has the highest callCount or errorCount toward {operation}?"
+        - path: "OPERATION <-[ROUTES-TO]- OPERATION"
+          questions:
+            - "Which operations route to {operation} directly?"
+            - "Which gateway paths and methods feed {operation}?"
+        - path: "DATABASE <-[CONNECTS-TO]- OPERATION"
+          questions:
+            - "Which operations connect to {database}?"
+            - "Which service and serviceCategory values are recorded on those connecting operations?"
+        - path: "DATABASE <-[READS-FROM]- OPERATION"
+          questions:
+            - "Which operations read from {database}?"
+            - "Which readers touch {table_name}, and which query is recorded for each?"
+        - path: "DATABASE <-[WRITES-TO]- OPERATION"
+          questions:
+            - "Which operations write to {database}?"
+            - "Which writers touch {table_name}, and which query is recorded for each?"
+        - path: "DATABASE <-[UPDATES-TO]- OPERATION"
+          questions:
+            - "Which operations update {database}?"
+            - "Which updaters touch {table_name}, and which query is recorded for each?"
+        - path: "EVENT <-[PRODUCES]- OPERATION"
+          questions:
+            - "Which operations produce {event}?"
+            - "Which producing operation has the highest callCount, errorCount, or most recent lastSeen?"
+        - path: "EVENT <-[CONSUMES]- EVENT"
+          questions:
+            - "Which events consume {event}?"
+            - "Does {event} participate in a self-consuming or cross-event loop?"
+        - path: "EVENT <-[PRODUCES]- EVENT"
+          questions:
+            - "Which event produces {event}?"
+            - "What event chain leads into {event}?"
+        - path: "OPERATION <-[CALLS]- EVENT"
+          questions:
+            - "Which events call {operation}?"
+            - "What type and host values are recorded on the event nodes that make those calls?"
+        - path: "DATABASE <-[CONNECTS-TO]- EVENT"
+          questions:
+            - "Which events connect to {database}?"
+            - "What event destination and telemetry are associated with that connection?"
+        - path: "DATABASE <-[READS-FROM]- EVENT"
+          questions:
+            - "Which events read from {database}?"
+            - "Which event reads use {table_name_or_query}?"
+        - path: "DATABASE <-[WRITES-TO]- EVENT"
+          questions:
+            - "Which events write to {database}?"
+            - "Which event writes use {table_name_or_query}?"
+        - path: "DATABASE <-[UPDATES-TO]- EVENT"
+          questions:
+            - "Which events update {database}?"
+            - "Which event updates use {table_name_or_query}?"
+        - path: "OPERATION <-[CALLS]- DATABASE"
+          questions:
+            - "Which database calls {operation} through the observed extension edge?"
+            - "How does that database-originated call connect back to API or business context?"
+        - path: "DATABASE <-[CONNECTS-TO]- DATABASE"
+          questions:
+            - "Which database connects to {database}?"
+            - "Is {database} the source and target of the same connection edge?"
+
+    top_down_execution_and_data_lineage:
+      path_patterns:
+        - "BUSINESS-AREA -[CONTAINS*]-> BUSINESS-CAPABILITY <-[IMPLEMENTS]- APPLICATION -[EXPOSES]-> API -[CONTAINS*]-> OPERATION"
+        - "CONSUMER -[SUBSCRIBES]-> API -[CONTAINS*]-> OPERATION, or CONSUMER -[SUBSCRIBES]-> OPERATION"
+        - "OPERATION -[CALLS|ROUTES-TO]-> OPERATION, repeating the union cycle-safely before following a data edge to DATABASE"
+        - "OPERATION -[PRODUCES]-> EVENT"
+        - "EVENT -[PRODUCES|CONSUMES]-> EVENT, repeated cycle-safely"
+        - "EVENT -[CALLS]-> OPERATION"
+        - "OPERATION|EVENT -[CONNECTS-TO|READS-FROM|WRITES-TO|UPDATES-TO]-> DATABASE"
+      questions:
+        - "Starting from {business_area}, which runtime operations are conservatively associated through applications with its descendant capabilities?"
+        - "Starting from {business_domain_or_service_domain}, which services, operations, databases, and events are reachable?"
+        - "For {business_capability}, which applications, APIs, endpoints, runtime services, and operations form its conservative implementation scope?"
+        - "For {team}, what runtime estate is reachable through the capabilities it owns?"
+        - "For {application}, which exposed APIs terminate in which gateway or microservice operations?"
+        - "For {api}, which endpoints have multiple runtime implementations?"
+        - "For {api_version}, which services, databases, tables, and events are downstream?"
+        - "For {endpoint}, what gateway-to-gateway or gateway-to-microservice route chain handles it?"
+        - "For {endpoint}, what call chain, database access, and event production can follow execution?"
+        - "For {consumer}, which directly subscribed operations and transitive runtime dependencies are reachable?"
+        - "For an API-level subscription held by {consumer}, which contained operations and dependencies enter scope?"
+        - "For External or Partner operations, which internal services, databases, tables, and events lie downstream?"
+        - "For PII- or PCI-classified operations, which databases, tables, events, and called operations may participate in processing?"
+        - "For operations protected by {security_control}, which downstream services and data stores are reachable?"
+        - "For operations accepting {contract_element}, which runtime dependencies execute behind them?"
+        - "For operations returning {response_element}, which services, databases, and events are associated with them?"
+        - "Across versions of {api_name}, how do service assignments, routes, calls, database dependencies, and event outputs differ?"
+        - "Which application-level operation sets associated with a capability call or route to operations whose containing APIs are exposed by a different application?"
+        - "Where do two top-down paths converge on the same database, event, or callee operation?"
+        - "What is the shortest complete path from {business_or_api_root} to {runtime_target}?"
+
+    bottom_up_reverse_lineage:
+      path_patterns:
+        - "DATABASE <-[CONNECTS-TO|READS-FROM|WRITES-TO|UPDATES-TO]- OPERATION, then reverse CALLS or ROUTES-TO repeatedly and reverse API containment"
+        - "EVENT <-[PRODUCES]- OPERATION, then reverse CALLS or ROUTES-TO repeatedly and reverse API containment"
+        - "OPERATION <-[SUBSCRIBES]- CONSUMER, or OPERATION <-[CONTAINS*]- API <-[SUBSCRIBES]- CONSUMER"
+        - "OPERATION <-[CONTAINS]- ENDPOINT <-[CONTAINS]- API-VERSION <-[CONTAINS]- API <-[EXPOSES]- APPLICATION -[IMPLEMENTS]-> BUSINESS-CAPABILITY <-[OWNS]- TEAMS"
+      questions:
+        - "Starting from {operation}, which endpoint, version, API, application, capability, business hierarchy, and team are upstream?"
+        - "Starting from {service}, which operations, APIs, applications, capabilities, areas, and teams map back to it?"
+        - "Starting from {database}, which operations and events connect, read, write, or update it, separated by access mode?"
+        - "Starting from {database}, which callers and routes lead back to API entry points and consumers?"
+        - "Starting from {database}, which applications, capabilities, business areas, and teams depend on it?"
+        - "Starting from {table_name}, which queries, operations, services, APIs, consumers, capabilities, and teams touch it?"
+        - "Starting from {query}, which edge, operation or event, database, and upstream context produced it?"
+        - "Starting from {event}, which operations or events produced it?"
+        - "Starting from {event}, which APIs, consumers, applications, capabilities, and teams sit upstream of its producers?"
+        - "Starting from an operation called by {event}, which downstream database and event effects follow?"
+        - "Starting from callee {operation}, which operations, events, or databases call it directly or transitively?"
+        - "Starting from routed target {operation}, which gateway or intermediate operations feed it?"
+        - "Starting from {operation}, which consumers subscribe directly and which subscribe to its parent API?"
+        - "Starting from {database_or_event}, which External, Partner, PII, or PCI operation surfaces can reach it?"
+        - "Starting from {database_or_event}, which request and response contract elements are attached to its upstream operations?"
+        - "Starting from an error-bearing route or call, which consumers, APIs, applications, capabilities, and teams lie upstream?"
+        - "Starting from a concrete-path operation, which wildcard, canonical, gateway, or microservice variants represent the same logical operation?"
+        - "Starting from an unknown-host database or event, which runtime and business contexts rely on the unresolved infrastructure identity?"
+        - "Which runtime dependency has the largest reverse fan-in from operations, APIs, consumers, capabilities, or teams?"
+        - "What is the shortest evidence path from {runtime_target} back to {consumer_or_business_owner}?"
+
+    telemetry_and_operational_observation:
+      questions:
+        - "Which Runtime edges have the highest observed callCount?"
+        - "Which Runtime edges have a nonzero errorCount?"
+        - "What is errorCount divided by callCount for each error-bearing edge?"
+        - "Which relationships were seen most recently or least recently according to lastSeen?"
+        - "Which relationships appear stale relative to the graph's generatedAt timestamp and a supplied threshold?"
+        - "How are callCount and errorCount distributed by relationship type?"
+        - "How are callCount and errorCount distributed by source service, service category, database, event, API, or business area?"
+        - "Which path and method combinations have the highest observed callCount on ROUTES-TO or CALLS edges?"
+        - "Which services have the highest aggregate observed callCount on their route and call edges, with the aggregation rule stated?"
+        - "Which databases have the highest aggregate observed read, write, update, or connection callCount, with the aggregation rule stated?"
+        - "Which tables have the highest aggregate observed read or write callCount where tableName is populated, with the aggregation rule stated?"
+        - "Which event destinations have the highest aggregate observed production callCount, with the aggregation rule stated?"
+        - "Which consumers' reachable operation sets include error-bearing routes?"
+        - "Which External, PII, or PCI operations have an error-bearing Runtime path?"
+        - "Which teams or business capabilities roll up to the observed error-bearing paths?"
+        - "Which edges have the greatest stored depth, and which source and target does each edge connect?"
+        - "What are the stored edge-depth distribution and the independently computed graph-hop distribution when reported as non-equivalent measures?"
+        - "Which duplicate logical operations have divergent callCount, errorCount, or lastSeen observations?"
+        - "Which runtime relationships have telemetry attributes missing or structurally inconsistent for their edge type?"
+        - "What portion of the Runtime topology has any observed telemetry versus only static relationship evidence?"
+
+    blast_radius:
+      description: "Runtime-layer outage, change, and telemetry-weighted impact questions."
+      operation_and_service_failure:
+        questions:
+          - "If {operation} is used as an outage root, which direct callers, routed callers, event-call paths, consumers, APIs, applications, capabilities, domains, areas, and teams are structurally in scope?"
+          - "If {operation} fails, which downstream operations, databases, tables, and event destinations fall within its dependency-side impact scope?"
+          - "What are the separate upstream-dependent and downstream-dependency sides of {operation}'s blast radius within {max_depth}?"
+          - "If every operation belonging to {service} fails, which consumers, APIs, applications, capabilities, databases, and events are in scope?"
+          - "If a gateway operation fails, which routed gateway or microservice operations and downstream data/event dependencies are affected?"
+          - "For the generic GATEWAY deployment category, which linked operations, endpoints, APIs, consumers, and capability rollups form its structural scope?"
+          - "For the generic MICROSERVICE deployment category, which linked operations and upstream API entry points form its structural scope?"
+          - "Which operations have both gateway and microservice deployment edges, and how should their radius be deduplicated?"
+          - "If a high-fan-in callee is used as an outage root, which caller operations and application-level associated business capabilities are in its reverse structural scope?"
+          - "If a route target fails, which gateway paths, methods, consumers, APIs, and capabilities are in its reverse dependency radius?"
+          - "If {service} is migrated, which routes, calls, data access, event production, API contracts, and business-owner rollups fall within migration or retest scope?"
+      database_and_data_change:
+        questions:
+          - "If {database} fails, which operations and events are affected, separated by connect, read, write, and update relationship?"
+          - "If {database} fails, which upstream callers, routes, consumers, APIs, applications, capabilities, areas, and teams are transitively affected?"
+          - "If host {host} fails, which distinct logical databases and Runtime paths share that host?"
+          - "If {table_name} changes or becomes unavailable, which readers, writers, updaters, APIs, capabilities, and consumers are exposed?"
+          - "If a database schema change invalidates {query}, which exact operations or events execute it and what is their reverse blast radius?"
+          - "Which databases are single points of concentration by distinct operation, API, consumer, or capability fan-in?"
+          - "Which business areas share {database}, causing an outage radius to cross organizational boundaries?"
+          - "How does {database}'s outage radius differ when restricted to direct users versus callers of those users?"
+          - "Which data-change impact paths reach PII-, PCI-, External-, or Partner-classified operations?"
+          - "What part of table-level blast radius is unknown because tableName is absent on relevant edges?"
+      event_and_async_change:
+        questions:
+          - "If {event} is unavailable, which producer operations, event flows, called operations, databases, APIs, and capabilities are affected?"
+          - "If {event}'s contract changes, which producers, consuming events, called operations, and upstream consumers require review?"
+          - "If a Kafka or RabbitMQ host fails, which event destinations and producer/called-operation paths share it?"
+          - "If an operation called by {event} is used as an outage root, which event-call edge and downstream database writes or produced events fall within structural scope?"
+          - "Which event self-loops or event cycles require cycle-safe handling in a blast-radius calculation?"
+          - "Which business areas and teams share {event} through different producer operations?"
+          - "Which event has the broadest reverse producer, API, consumer, and business radius?"
+          - "What part of event blast radius is unknowable because message schemas, consumer groups, or delivery semantics are absent?"
+      api_contract_security_and_business_initiated:
+        questions:
+          - "If {api_version} is retired, which runtime operations, services, routes, callees, databases, events, and consumers are affected?"
+          - "If request {schema_or_field_or_header_or_parameter} changes, which operations and downstream Runtime paths may be affected?"
+          - "If response {schema_or_field_or_header_or_status_code} changes, which operations, APIs, and subscribed consumers are affected?"
+          - "If {security_control} changes, which operations, consumers, APIs, capabilities, and downstream dependencies are in scope?"
+          - "Which databases, events, and callees lie in the downstream radius of External PII or PCI operations?"
+          - "If {consumer} is removed or compromised, which subscribed operations and API-derived Runtime paths are in scope?"
+          - "If {application} is decommissioned, which operations, shared callees, databases, events, consumers, and capabilities are affected?"
+          - "If {business_capability} is retired, which services and shared Runtime resources are exclusively or jointly associated with it?"
+          - "Which team's owned capabilities have the broadest Runtime blast radius by unique operations, services, databases, events, APIs, and consumers?"
+      telemetry_weighting_and_multi_root:
+        questions:
+          - "Which dependency roots have the greatest callCount-weighted structural scope under an explicitly stated aggregation rule?"
+          - "Which error-bearing routes have the greatest reverse consumer and business blast radius?"
+          - "Which stale dependencies have a broad blast radius if they remain active despite an old lastSeen value?"
+          - "Which cycles and self-loops could amplify or confuse an unbounded impact traversal?"
+          - "Which two or more failed databases, events, services, or operations affect the largest overlapping dependent set?"
+          - "What is the union, intersection, and root-specific remainder of the blast radii for {runtime_node_set}?"
+          - "Which dependencies look like structural single points of failure because they have high reverse fan-in and no alternate path represented?"
+          - "How does the radius change when duplicate gateway and microservice representations of one logical operation are collapsed?"
+          - "What blast-radius calculations omit or terminate at the isolated operation and telemetry-only operation?"
+          - "What is the blast radius of all database or event nodes whose host is unknown, and which impacts cannot be assigned to concrete infrastructure?"
+          - "Which affected nodes are direct, which are transitive, and which are business/API context rollups only?"
+          - "Which impact evidence paths have nonzero errorCount, high callCount, recent lastSeen, or high stored depth?"
+
+limitations:
+  answerable_only_with_static_graph_evidence:
+    - "The graph is a snapshot, not a live health or availability view."
+    - "Blast radius shows represented structural reachability; it cannot prove actual runtime failure, compatibility, customer harm, or recovery behavior."
+    - "Missing edges must be reported as missing graph evidence rather than treated as proof that a real dependency does not exist."
+    - "Business-to-API/runtime scoping through APPLICATION is a conservative upper bound because APIs do not link directly to capabilities."
+    - "Multiple parents, repeated logical operations, and self-loops require node-id deduplication while preserving every evidence path."
+    - "Recorded alternatives do not prove redundancy, substitutability, failover readiness, or traffic steering."
+    - "GATEWAY, MICROSERVICE, and WORKFLOW are singleton deployment-category nodes, not concrete runtime instances."
+    - "TEAMS -[OWNS]-> BUSINESS-CAPABILITY does not establish operational ownership or accountability for applications, APIs, operations, databases, or events."
+  unsupported_business_facts:
+    - "Revenue, customer counts, business criticality, strategic priority, regulatory materiality, geography, cost, and financial loss."
+    - "Team staffing, on-call contacts, escalation policies, RACI, change approvals, and ownership effective dates."
+  unsupported_api_facts:
+    - "OAuth scopes, roles, grant types, issuers, audiences, policy rules, certificates, and authorization logic."
+    - "Field-to-database-column or field-to-event-payload mapping; PII and PCI apply at operation level only."
+    - "Release history, semantic compatibility, lifecycle state, deprecation date, base URL, environment, region, repository, and build artifact."
+  unsupported_runtime_facts:
+    - "Latency, percentiles, durations, retries, exception types, traces, logs, throughput time series, SLOs, SLAs, and live availability."
+    - "Concrete infrastructure topology beyond partial DATABASE/EVENT host strings, including clusters, pods, namespaces, regions, replicas, failover, credentials, and verified connection reachability."
+    - "Event schemas, keys, consumer groups, partitions, exchanges, routing keys, delivery guarantees, ordering, and retention."
+  incomplete_or_special_cases:
+    - "No DELETE-FROM edge type is present in this snapshot; deletion behavior is therefore not represented."
+    - "The WORKFLOW classifier has no deployed operations and is orphaned."
+    - "GATEWAY-listPaymentsUsers:GET:/v1/payments/users is an OPERATION node whose id has a GATEWAY prefix; it is isolated."
+    - "MICROSERVICE:dns.lookup is an OPERATION node whose id has a MICROSERVICE prefix; it is telemetry-only and lacks normal endpoint/contract lineage."
+    - "Several database and event hosts are 'unknown', so host-level impact is incomplete."
+    - "tableName is absent on many data-access edges, especially update and non-relational operations."
+    - "The meaning of the stored edge depth property is not formally defined; report it separately from computed graph hop distance."
+    - "Runtime callCount, errorCount, and lastSeen values describe captured observations and should not be presented as current production metrics."
+sample_questions_by_category:
+  description: Ten concrete, ready-to-ask examples for every named leaf category in layers. Values are drawn from merged-graph-v4.json; repeated names can still require an exact node id when querying an ambiguity-sensitive
+    API.
+  samples_per_category: 10
+  named_category_count: 32
+  total_sample_questions: 320
+  business:
+    inventory_and_coverage:
+    - Which business areas, business domains, service domains, business capabilities, and teams exist?
+    - How many nodes of each Business-layer type exist?
+    - Which Business-layer nodes match fraud?
+    - Which business domains belong to more than one business area?
+    - Which service domains have no parent business domain, or more than one parent?
+    - Which business capabilities have no owning team, exactly one owner, or multiple owning teams?
+    - Which teams own no capabilities?
+    - Which capabilities have no implementing application?
+    - What percentage of each business hierarchy level is linked to its expected parent and child types?
+    - Which Business-layer nodes are orphaned or disconnected from the API and Runtime estate?
+    direct_forward_edges:
+    - Which business domains does Accounts and Deposits contain?
+    - How many business domains does each business area contain?
+    - Which service domains does Account Management contain?
+    - Which business domains share or overlap in service-domain membership?
+    - How many capabilities does each service domain contain?
+    - Which business capabilities does Beneficiary & Payee Platform Team own?
+    - How many capabilities does each team own?
+    - Which business capabilities does channel-integration-service implement?
+    - Which applications span multiple service domains, business domains, or business areas through the capabilities they implement?
+    - How many APIs does each application expose?
+    direct_reverse_edges:
+    - Which business area or areas contain Core Banking?
+    - Does Channel Specific have one parent area, multiple parent areas, or no parent?
+    - Which business domain contains ACH Operations?
+    - Which service domains are referenced by multiple business domains?
+    - Which capabilities cross service-domain boundaries?
+    - Which team or teams own Administer counterparties?
+    - Which capabilities have shared ownership, and who are all the owners?
+    - Which capabilities are implemented by multiple applications?
+    - Which capability has the largest application implementation footprint?
+    - Which application or applications expose Identity and API Security Services API?
+    top_down_cross_layer:
+    - What is the complete capability, application, API, endpoint, and operation estate under Accounts and Deposits?
+    - Which applications implement capabilities in Account Reconciliation, and which APIs, versions, endpoints, and operations are associated through those applications?
+    - Which APIs and operations are associated with capabilities owned by Core Accounts & Ledger Team?
+    - Which GATEWAY, MICROSERVICE, or WORKFLOW category nodes are linked by DEPLOYED-TO from operations associated with Administer card terminals?
+    - Which events are produced by operations associated with Administer collateral assets through its implementing applications?
+    - Which request headers, parameters, schemas, and fields occur in APIs associated with Administer counterparties?
+    - Which operations associated with Payments and Cards are External, Internal, or Partner exposed?
+    - Which security controls are implemented by operations associated with Account Reconciliation?
+    - Which business areas have the largest conservative application-level counts of associated APIs, operations, consumers, databases, or events?
+    - Which teams own capabilities whose application-level associated operation sets share a runtime dependency?
+    bottom_up_reverse_lineage:
+    - Which business capabilities are implemented by cards-merchant-app, and which service domains, business domains, and business areas contain them?
+    - Which teams own capabilities implemented by operations-openfinance-app?
+    - Which business hierarchy and capability-owning teams are associated upstream of the v1 Identity and API Security Services API version?
+    - Which business capabilities and capability-owning teams are associated with operations linked to GATEWAY by DEPLOYED-TO?
+    - Which business capabilities, capability-owning teams, and areas are associated with operations that produce or are called by banking.api.events-unknown?
+    - Which business areas are associated with operations that read from banking_demo-postgres?
+    - Which business areas are associated with operations that write or update oauth_db-postgres?
+    - Which capabilities are associated through implementing applications with APIs that expose 422 for Create Banking Compliance Fraud Resolution Resolution?
+    - Which teams own capabilities associated through applications with External operations governed by OAuth 2?
+    - How many distinct business areas, domains, capabilities, teams, applications, and APIs converge on banking_demo-postgres?
+    blast_radius:
+      top_down_business_change:
+      - What current hierarchy and application-level technology estate falls into review scope if Accounts and Deposits is reorganized or retired?
+      - Which domains, service domains, capabilities, teams, applications, APIs, operations, consumers, deployments, databases, and events fall under the change scope of Payments and Cards?
+      - Which current parent paths, descendants, owners, implementers, and application-level technology associations fall into structural review scope before moving Account Management?
+      - Which current parents, descendant capabilities, owners, implementers, and application-level technology associations fall into structural review scope before splitting or merging Asset Securitization?
+      - What is affected if Administer collateral assets is renamed, redefined, consolidated, or retired?
+      - Which API consumers and runtime dependencies are conservatively associated through applications with a change to Administer counterparties?
+      - Which currently owned capabilities and application-level technology associations enter review scope if Consumer Lending Platform Team gives up ownership of Account Information Service?
+      - Which capabilities become ownerless if Core Accounts & Ledger Team is removed?
+      - Which multi-parent descendants and shared implementing applications show that a proposed business-area split may not be structurally isolated?
+      - Which shared applications and their associated APIs, databases, or events extend conservative review scope beyond Payments?
+      reverse_technical_to_business:
+      - Which business areas, domains, capabilities, and capability-owning teams appear in the reverse business-context rollup of operations-openfinance-app?
+      - Which business capabilities and capability-owning teams are associated with operations in the reverse outage radius of oauth_db-postgres?
+      - Which business capabilities and capability-owning teams are associated with operations in the reverse outage radius of sms-events-unknown?
+      - For operations linked by DEPLOYED-TO to GATEWAY, which capability-owning teams appear in the reverse business-context rollup?
+      - Which business areas appear in the reverse context rollup of a contract change to Customer Billing API?
+      - Which capabilities and capability-owning teams appear in the context rollup if the v5 Current Account API version is deprecated?
+      - Which business capabilities are associated with operations governed by OAuth 2?
+      - Which business areas are associated with operations in the reverse data-change radius of redis-redis?
+      - Which business capabilities are associated with operations in the reverse change radius of routing or call changes to Create Aggregation Customer Account?
+      - Which technical root node has the widest reverse-mapped business-context rollup?
+      concentration_and_comparison:
+      - How do business areas rank by the number of distinct applications, APIs, operations, consumers, deployments, databases, and events in their blast radius?
+      - How do capabilities rank by the number of dependent consumers and shared runtime resources in their blast radius?
+      - Which teams have the largest cross-domain or cross-area change blast radius?
+      - Which capabilities have exactly one implementing application, and what application-level runtime resources are associated with it?
+      - Which capabilities have multiple implementing applications, and how many distinct application-level runtime paths are associated with them?
+      - What is the overlap between the blast radii of Accounts and Deposits and Payments and Cards?
+      - What are the union, intersection, and root-specific remainders of the structural scopes of Cards and Payments?
+      - How does the direct impact differ from the transitive impact for Risk and Compliance?
+      - Which impact paths cross Business, API, and Runtime layer boundaries, and at which edge does each crossing occur?
+      - Which nodes are reached by the selected propagation-edge policy versus included only as contextual rollups?
+  api:
+    inventory_and_coverage:
+    - Which applications, APIs, API versions, endpoints, operations, and consumers exist?
+    - How many nodes of each API-layer type exist?
+    - Which API version names are present, and how many APIs, endpoints, and operations use each version?
+    - Which exposure values are present, and how many operations are External, Internal, or Partner exposed?
+    - How many operations are classified as PII, PCI, both, or neither?
+    - Which APIs, versions, endpoints, or operations have no expected containment parent or child?
+    - Which status-code nodes lack a response schema or response headers?
+    - Which consumers have no API or operation subscriptions?
+    - Which API names occur in several versions or contexts, and what exact node ids disambiguate them?
+    - Which operations are not contained by an endpoint?
+    direct_forward_edges:
+    - What set of APIs is exposed by cards-merchant-app?
+    - Which endpoints does the v5 Account Reconciliation API version contain?
+    - Which HTTP method does Create Security Oauth Token support?
+    - Is Create Aggregation Customer Account classified as PII, PCI, both, or neither?
+    - Where is Create Payments Validate deployed?
+    - How many request headers does Create Banking Account Bill Payment accept?
+    - How many query parameters does Create Banking Account Management Account Reconciliation accept?
+    - Which operations return multiple modeled status codes?
+    - How many response headers are associated with 202 for Create Banking Account Bill Payment?
+    - What is the complete nested field tree beneath the customerId field?
+    direct_reverse_edges:
+    - Which applications expose Customer Billing API?
+    - Does the v5 Account Reconciliation API version have a unique parent API?
+    - Is Create Security Oauth Token contained by more than one endpoint?
+    - Which consumers, APIs, and applications are structurally associated with operations implementing OAuth 2?
+    - Which operations have External exposure?
+    - Which operations accept x-mock-response as a request header?
+    - Which operations accept customerId?
+    - Across which consumers and APIs is limit used?
+    - Which APIs and versions expose 202 for Create Banking Account Bill Payment?
+    - What are all ancestor fields and the root schema of the customerId field?
+    top_down_portfolio_and_contract:
+    - What is the complete API tree exposed by cards-merchant-app, from API through version, endpoint, and operation?
+    - How do the endpoint and operation sets of the v1 and v5 API-version nodes compare?
+    - Which operationIds or paths repeat across gateway and microservice services?
+    - For /v5/banking/cards/{cardId}/loss-reports, what are the method, operationId, path, service, service category, security, exposure, sensitivity, and deployment target of every operation?
+    - What status codes, response headers, response schemas, and nested fields can Create Payments Validate return?
+    - Which required fields occur at each canonical path in CreateBankingAccountBillPaymentRequest?
+    - Which object or array fields have no nested child fields?
+    - Which schemas or fields share the same canonicalPath, and where are they exposed?
+    - Which APIs return non-success or error status-code nodes in addition to success responses?
+    - Which request and response headers appear most widely across the API estate?
+    consumer_control_deployment_and_runtime_scope:
+    - What APIs and operations form Bank Sync's complete subscription footprint?
+    - Does API Operations Console subscribe both at API and operation level, and where do those subscriptions overlap?
+    - Which subscribed operations of Business Banking Pro are PII or PCI classified?
+    - Which GATEWAY, MICROSERVICE, or WORKFLOW category nodes are linked by DEPLOYED-TO from Card Management Portal's subscribed operations?
+    - Which databases and events are reached transitively from Account Linker's subscriptions?
+    - Which APIs mix External, Internal, and Partner operations?
+    - Which APIs include both PII-classified and non-PII operations?
+    - Which APIs include PCI-classified operations, and who consumes them?
+    - Which operations have a DEPLOYED-TO target inconsistent with their serviceCategory?
+    - Which APIs depend on the same called or routed-to operation?
+    reverse_contract_and_portfolio_lineage:
+    - Starting from the correlationId field, which parent field tree, schema, request or response, status code, operation, endpoint, version, API, and application expose it?
+    - Is the phoneNumber field request-only, response-only, or present in both directions?
+    - Starting from CreateBankingAccountTransferRequest, which operations accept it and which status-code responses return it?
+    - Starting from x-mock-response, where is it used as a request header versus a response header?
+    - Starting from 201 for Create Banking Account Direct Debit Mandate, which response schema and headers does it carry, and which operation returns it?
+    - Starting from OAuth 2, which operations, endpoints, APIs, applications, consumers, capabilities, and teams are in scope?
+    - Starting from oauth_db-postgres, which operations use it and which API contracts and consumers sit above those operations?
+    - Starting from sms-events-unknown, which producing operations and subscribed consumers sit upstream?
+    - Which field, schema, operation, endpoint, or API has the greatest reverse fan-in from consumers?
+    - Which database, event, or deployment target has the greatest reverse fan-in from APIs?
+    compound_risk_and_governance:
+    - Which External operations are classified as PII?
+    - Which External operations are classified as PCI?
+    - Which Partner operations are classified as PII or PCI?
+    - Which PII or PCI operations are deployed to GATEWAY?
+    - Which PII or PCI operations produce banking.api.events-unknown?
+    - Which operations satisfying DELETE, Internal, PII, OAuth 2, and MICROSERVICE all at once exist?
+    - Which operations lack one or more of method, OAuth 2, exposure, and deployment relationships?
+    - Which PII or PCI operations have no subscribing consumer?
+    - Which applications have the largest sensitive API footprint, and which capabilities, capability-owning teams, and business areas are associated through those applications?
+    - Where does an identical field name or canonical path cross both PII-classified and non-PII operations?
+    blast_radius:
+      api_portfolio_and_deprecation:
+      - What is affected if cards-merchant-app stops exposing its APIs?
+      - What is the deprecation blast radius of Open Banking Access Services API?
+      - Which versions, endpoints, operations, consumers, contracts, deployments, databases, events, applications, capabilities, teams, and business areas are in Current Account API's deprecation radius?
+      - What is affected if the v6 Payment Confirmation Services API version is retired?
+      - Which consumers depend directly on the v1 Identity and API Security Services API version's operations even if they subscribe to the parent API separately?
+      - What is affected if /v5/aggregation/customers/{customerId}/accounts is removed or moved?
+      - What is affected if Create Banking Account Management Account Reconciliation's path, method, operationId, service, or serviceCategory changes?
+      - Which called or routed operations expand the transitive blast radius of deprecating Create Security Oauth Token?
+      - Which business capabilities and capability-owning teams are in the reverse context rollup of Identity and API Security Services API's deprecation?
+      - What is affected if payments-app stops exposing its APIs?
+      request_contract_change:
+      - What is the contract-change blast radius of changing or removing request header x-mock-response?
+      - What is the contract-change blast radius of renaming, adding, or removing customerId?
+      - What is the contract-change blast radius of changing limit?
+      - What is the contract-change blast radius of CreateBankingAccountBillPaymentRequest?
+      - Which operations and consumers are affected if the customerId field changes type or format?
+      - Which operations and consumers are affected if the correlationId field changes required status?
+      - Which operations and consumers are affected if additionalProperties changes on CreateBankingAccountTransferRequest?
+      - How far does a nested-field change propagate through parent fields, root schema, operation, endpoint, API, application, and consumer?
+      - Which APIs share the exact affected schema or field node, and which additional APIs are only heuristic review candidates because distinct nodes share a schema name, field name, or canonical path?
+      - What is the contract-change blast radius of changing or removing request header idempotency-key?
+      response_contract_change:
+      - What is affected if 200 for Create Banking Card Cash Withdrawal is added, removed, or changes meaning?
+      - What is affected if response X-Workflow-Execution-Id changes or is removed?
+      - What is the response-contract blast radius of CreateBankingAccountTransferResponse_202?
+      - Which consumers and callers are affected if the sourceSystem field changes in a response schema?
+      - Which operations are impacted if a shared response field changes at any nesting depth?
+      - What is the combined request-and-response blast radius when CreateBankingAccountBillPaymentResponse_202 appears in both directions?
+      - Which APIs and consumers are affected by changing all occurrences of /Data/Account/*/Currency?
+      - What is affected if 502 for Create Banking Compliance Regulatory Compliance Operational Action is added, removed, or changes meaning?
+      - What is affected if response header X-Endpoint-Id changes or is removed?
+      - What is the response-contract blast radius of CreateBankingCardDisputeResponse_201?
+      security_privacy_and_exposure_change:
+      - What is the security-change blast radius of OAuth 2?
+      - Which operations, consumers, APIs, applications, capabilities, and teams are affected if OAuth 2 behavior changes?
+      - What is the policy-change blast radius of reclassifying Create Security Oauth Token as PII or PCI?
+      - What is the estate-wide blast radius of changing the PII classification policy?
+      - What is the estate-wide blast radius of changing the PCI classification policy?
+      - Which consumers, associated business capabilities, and capability-owning teams enter review scope if Create Banking Account Bill Payment's exposure changes from Internal or Partner to External?
+      - Which databases, events, called operations, and deployments sit downstream of External PII or PCI operations affected by a policy change?
+      - Which sensitive operations share a dependency that makes the security blast radius cross API boundaries?
+      - What is the policy-change blast radius of reclassifying Create Payments Validate as PII or PCI?
+      - Which consumers, associated business capabilities, and capability-owning teams enter review scope if Create Aggregation Customer Account's exposure changes from Internal or Partner to External?
+      deployment_and_runtime_change:
+      - For operations linked by DEPLOYED-TO to MICROSERVICE, which endpoints, APIs, consumers, applications, capabilities, and capability-owning teams are in structural scope?
+      - What is affected if Create Banking Account Management Account Reconciliation moves between gateway and microservice deployment categories?
+      - Which consumers are affected by a service or serviceCategory change to Create Security Oauth Token?
+      - Which API contracts are in the reverse outage radius of redis-redis?
+      - Which APIs and consumers are in the reverse outage radius of banking.api.events-unknown?
+      - Which APIs and consumers are affected by a data change to oauth_db-postgres?
+      - Which APIs and consumers are affected if a called or routed-to Create Banking Account Management Account Reconciliation changes or fails?
+      - Which cross-API call or route dependencies enlarge the deployment blast radius?
+      - For operations linked by DEPLOYED-TO to GATEWAY, which endpoints, APIs, consumers, applications, capabilities, and capability-owning teams are in structural scope?
+      - What is affected if Create Payments Validate moves between gateway and microservice deployment categories?
+      multi_root_and_prioritization:
+      - What is the union and intersection of the blast radii of Customer Billing API and Direct Debit API?
+      - Which consumers are common to every root in Payment Confirmation Services API and Open Banking Access Services API, and which are unique to one root?
+      - Which applications, capabilities, and teams appear in multiple API blast radii?
+      - How do APIs, schemas, fields, deployment targets, databases, and events rank by distinct consumer blast radius?
+      - Which affected nodes are one hop away versus transitively affected within 10 hops?
+      - Which blast-radius paths cross from API contracts into Runtime and then back to another API?
+      - Which blast-radius results are truncated by depth or result limits?
+      - Which result nodes are contextual portfolio rollups rather than propagating failures?
+      - What is the union and intersection of the blast radii of Identity and API Security Services API and Card Case API?
+      - Which consumers are common to every root in Account Reconciliation API and Customer Position API, and which are unique to one root?
+  runtime:
+    inventory_and_coverage:
+    - Which operations exist, and what are their operationId, HTTP method, path, service, and serviceCategory?
+    - Which services are recorded on the broadest mix of GET, POST, PUT, PATCH, and DELETE operations?
+    - Which operations have missing or blank httpMethod, path, service, serviceCategory, or operationId properties?
+    - Which endpoints map to one, two, three, or four runtime operation nodes?
+    - Which database nodes share a type, host, logical name, or connection endpoint?
+    - Which event destinations exist, and what transport type and host are recorded for each?
+    - How many CALLS, ROUTES-TO, CONNECTS-TO, READS-FROM, WRITES-TO, UPDATES-TO, PRODUCES, and CONSUMES edges exist?
+    - Which less common populated Runtime signatures use DATABASE or EVENT as the source of CALLS, CONNECTS-TO, or PRODUCES?
+    - Which Runtime edges are self-loops?
+    - Which edge properties are populated for each Runtime relationship type?
+    direct_forward_edges:
+    - Which operations does Create Banking Account Bill Payment call directly?
+    - Which operations does Create Banking Account Management Account Reconciliation route to directly?
+    - Which databases does Create Security Oauth Token connect to?
+    - Which databases and tables does Create Aggregation Customer Account write to?
+    - Which captured queries support the update dependencies of Create Payments Validate?
+    - Is the CONSUMES edge a self-loop or a cross-event dependency?
+    - Which operations does banking.workflow.events-unknown call?
+    - Is the connection direct, and what telemetry was observed?
+    - Which captured queries are associated with those event writes?
+    - Which operation does payment_validation-mongo call according to the populated DATABASE -[CALLS]-> OPERATION edge?
+    direct_reverse_edges:
+    - Which operations call Create Banking Account Bill Payment directly?
+    - Which gateway paths and methods feed Create Banking Account Management Account Reconciliation?
+    - Which operations read from hierarchy_v6-postgres?
+    - Which writers touch accounts_deposits.business_state, and which query is recorded for each?
+    - Which operations produce banking.api.events-unknown?
+    - Which event produces banking.workflow.commands-unknown?
+    - What type and host values are recorded on the event nodes that make those calls?
+    - Which events read from hierarchy_v6-postgres?
+    - Which event writes use payment_transactions?
+    - Which database calls Create Payments Validate through the observed extension edge?
+    top_down_execution_and_data_lineage:
+    - Starting from Accounts and Deposits, which runtime operations are conservatively associated through applications with its descendant capabilities?
+    - For Account Information Service, which applications, APIs, endpoints, runtime services, and operations form its conservative implementation scope?
+    - For channel-integration-service, which exposed APIs terminate in which gateway or microservice operations?
+    - For the v6 Payment Confirmation Services API version, which services, databases, tables, and events are downstream?
+    - For /v5/banking/account-management/account-reconciliation, what call chain, database access, and event production can follow execution?
+    - For an API-level subscription held by Bank Sync, which contained operations and dependencies enter scope?
+    - For PII- or PCI-classified operations, which databases, tables, events, and called operations may participate in processing?
+    - For operations accepting the CreateBankingAccountBillPaymentRequest schema, which runtime dependencies execute behind them?
+    - Across versions of Customer Position API, how do service assignments, routes, calls, database dependencies, and event outputs differ?
+    - Where do two top-down paths converge on the same database, event, or callee operation?
+    bottom_up_reverse_lineage:
+    - Starting from Create Banking Account Bill Payment, which endpoint, version, API, application, capability, business hierarchy, and team are upstream?
+    - Starting from oauth_db-postgres, which operations and events connect, read, write, or update it, separated by access mode?
+    - Starting from hierarchy_v6-postgres, which applications, capabilities, business areas, and teams depend on it?
+    - Starting from the captured fraud-evaluation idempotency query, which edge, operation or event, database, and upstream context produced it?
+    - Starting from banking.api.events-unknown, which APIs, consumers, applications, capabilities, and teams sit upstream of its producers?
+    - Starting from callee Create Banking Account Bill Payment, which operations, events, or databases call it directly or transitively?
+    - Starting from Create Banking Account Management Account Reconciliation, which consumers subscribe directly and which subscribe to its parent API?
+    - Starting from redis-redis, which request and response contract elements are attached to its upstream operations?
+    - Starting from a concrete-path operation, which wildcard, canonical, gateway, or microservice variants represent the same logical operation?
+    - Which runtime dependency has the largest reverse fan-in from operations, APIs, consumers, capabilities, or teams?
+    telemetry_and_operational_observation:
+    - Which Runtime edges have the highest observed callCount?
+    - What is errorCount divided by callCount for each error-bearing edge?
+    - Which relationships appear stale relative to the graph's generatedAt timestamp and a supplied threshold?
+    - How are callCount and errorCount distributed by source service, service category, database, event, API, or business area?
+    - Which services have the highest aggregate observed callCount on their route and call edges, with the aggregation rule stated?
+    - Which tables have the highest aggregate observed read or write callCount where tableName is populated, with the aggregation rule stated?
+    - Which consumers' reachable operation sets include error-bearing routes?
+    - Which teams or business capabilities roll up to the observed error-bearing paths?
+    - What are the stored edge-depth distribution and the independently computed graph-hop distribution when reported as non-equivalent measures?
+    - Which runtime relationships have telemetry attributes missing or structurally inconsistent for their edge type?
+    blast_radius:
+      operation_and_service_failure:
+      - If Create Banking Account Bill Payment is used as an outage root, which direct callers, routed callers, event-call paths, consumers, APIs, applications, capabilities, domains, areas, and teams are structurally in scope?
+      - If Create Banking Account Management Account Reconciliation fails, which downstream operations, databases, tables, and event destinations fall within its dependency-side impact scope?
+      - What are the separate upstream-dependent and downstream-dependency sides of Create Security Oauth Token's blast radius within 6 hops?
+      - If every operation belonging to payments-app fails, which consumers, APIs, applications, capabilities, databases, and events are in scope?
+      - If a gateway operation fails, which routed gateway or microservice operations and downstream data/event dependencies are affected?
+      - For the generic GATEWAY deployment category, which linked operations, endpoints, APIs, consumers, and capability rollups form its structural scope?
+      - For the generic MICROSERVICE deployment category, which linked operations and upstream API entry points form its structural scope?
+      - Which operations have both gateway and microservice deployment edges, and how should their radius be deduplicated?
+      - If a high-fan-in callee is used as an outage root, which caller operations and application-level associated business capabilities are in its reverse structural scope?
+      - If a route target fails, which gateway paths, methods, consumers, APIs, and capabilities are in its reverse dependency radius?
+      database_and_data_change:
+      - If banking_demo-postgres fails, which operations and events are affected, separated by connect, read, write, and update relationship?
+      - If oauth_db-postgres fails, which upstream callers, routes, consumers, APIs, applications, capabilities, areas, and teams are transitively affected?
+      - If host oracle fails, which distinct logical databases and Runtime paths share that host?
+      - If accounts_deposits.business_state changes or becomes unavailable, which readers, writers, updaters, APIs, capabilities, and consumers are exposed?
+      - If a database schema change invalidates GET channel-rule:CASA:10, which exact operations or events execute it and what is their reverse blast radius?
+      - Which databases are single points of concentration by distinct operation, API, consumer, or capability fan-in?
+      - Which business areas share oauth_db-postgres, causing an outage radius to cross organizational boundaries?
+      - How does hierarchy_v6-postgres's outage radius differ when restricted to direct users versus callers of those users?
+      - Which data-change impact paths reach PII-, PCI-, External-, or Partner-classified operations?
+      - What part of table-level blast radius is unknown because tableName is absent on relevant edges?
+      event_and_async_change:
+      - If banking.workflow.commands-unknown is unavailable, which producer operations, event flows, called operations, databases, APIs, and capabilities are affected?
+      - If banking.workflow.events-unknown's contract changes, which producers, consuming events, called operations, and upstream consumers require review?
+      - If a Kafka or RabbitMQ host fails, which event destinations and producer/called-operation paths share it?
+      - If an operation called by rabbitmq-unknown is used as an outage root, which event-call edge and downstream database writes or produced events fall within structural scope?
+      - Which event self-loops or event cycles require cycle-safe handling in a blast-radius calculation?
+      - Which business areas and teams share banking.workflow.commands-unknown through different producer operations?
+      - Which event has the broadest reverse producer, API, consumer, and business radius?
+      - What part of event blast radius is unknowable because message schemas, consumer groups, or delivery semantics are absent?
+      - If rabbitmq-unknown is unavailable, which producer operations, event flows, called operations, databases, APIs, and capabilities are affected?
+      - If banking.api.events-unknown's contract changes, which producers, consuming events, called operations, and upstream consumers require review?
+      api_contract_security_and_business_initiated:
+      - If the v5 Current Account API version is retired, which runtime operations, services, routes, callees, databases, events, and consumers are affected?
+      - If request x-mock-response changes, which operations and downstream Runtime paths may be affected?
+      - If response 200 for Create Banking Card Cash Withdrawal changes, which operations, APIs, and subscribed consumers are affected?
+      - If OAuth 2 changes, which operations, consumers, APIs, capabilities, and downstream dependencies are in scope?
+      - Which databases, events, and callees lie in the downstream radius of External PII or PCI operations?
+      - If Bank Sync is removed or compromised, which subscribed operations and API-derived Runtime paths are in scope?
+      - If operations-openfinance-app is decommissioned, which operations, shared callees, databases, events, consumers, and capabilities are affected?
+      - If Account Reconciliation is retired, which services and shared Runtime resources are exclusively or jointly associated with it?
+      - Which team's owned capabilities have the broadest Runtime blast radius by unique operations, services, databases, events, APIs, and consumers?
+      - If the v1 Identity and API Security Services API version is retired, which runtime operations, services, routes, callees, databases, events, and consumers are affected?
+      telemetry_weighting_and_multi_root:
+      - Which dependency roots have the greatest callCount-weighted structural scope under an explicitly stated aggregation rule?
+      - Which error-bearing routes have the greatest reverse consumer and business blast radius?
+      - Which stale dependencies have a broad blast radius if they remain active despite an old lastSeen value?
+      - Which cycles and self-loops could amplify or confuse an unbounded impact traversal?
+      - Which two or more failed databases, events, services, or operations affect the largest overlapping dependent set?
+      - Which dependencies look like structural single points of failure because they have high reverse fan-in and no alternate path represented?
+      - How does the radius change when duplicate gateway and microservice representations of one logical operation are collapsed?
+      - What blast-radius calculations omit or terminate at the isolated operation and telemetry-only operation?
+      - What is the blast radius of all database or event nodes whose host is unknown, and which impacts cannot be assigned to concrete infrastructure?
+      - Which affected nodes are direct, which are transitive, and which are business/API context rollups only?

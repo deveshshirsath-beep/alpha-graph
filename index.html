@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#f5f4ef" />
+    <meta name="description" content="Atlas V2 — a cinematic, interactive architecture graph explorer powered by Sigma.js" />
+    <title>Atlas V2 — API Knowledge Graph</title>
+    <script src="/theme-bootstrap.js"></script>
+  </head>
+  <body class="planner-mode">
+    <div id="app">
+      <header class="topbar">
+        <div class="brand-block">
+          <img class="brand-logo" src="/brand/apiwiz-logo.png" alt="APIwiz" width="36" height="30" />
+          <div class="brand-copy">
+            <div class="eyebrow">APIwiz architecture intelligence</div>
+            <h1>Atlas <span>V2</span></h1>
+          </div>
+          <div class="product-divider"></div>
+          <div class="product-name"><svg class="product-name-icon" data-icon="graph"></svg><strong>API Knowledge Graph</strong><span>Living system map</span></div>
+        </div>
+
+        <div class="header-actions">
+          <label class="graph-picker" for="graph-select">
+            <span>Active dataset</span>
+            <select id="graph-select" aria-label="Select graph dataset" disabled><option>Loading graphs…</option></select>
+          </label>
+          <div class="header-tools">
+            <select id="theme-select" aria-label="Theme"><option value="light">Light</option><option value="dark">Midnight</option><option value="ocean">Ocean</option><option value="sunset">Sunset</option></select>
+            <select id="text-size-select" aria-label="Text size"></select>
+            <button id="open-shortcuts" class="header-icon-button" type="button" aria-label="Keyboard shortcuts" title="Keyboard shortcuts"></button>
+          </div>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <aside id="controls-panel" class="sidebar" aria-label="Graph controls">
+          <div class="sidebar-switch">
+            <div class="mode-switch" data-active="graph" role="tablist" aria-label="Workspace">
+              <button id="planner-mode-toggle" class="mode-switch-option" data-view="chat" type="button" role="tab" aria-selected="false" tabindex="-1" aria-label="Chat assistant" title="Chat assistant"><span class="mode-switch-icon"><svg data-icon="chat-teardrop-dots"></svg></span><span class="mode-switch-text"><span>Chat</span><strong>Assistant</strong></span></button>
+              <button class="mode-switch-option active" data-view="graph" type="button" role="tab" aria-selected="true" title="Graph explorer"><span class="mode-switch-icon"><svg data-icon="graph"></svg></span><span class="mode-switch-text"><span>Graph</span><strong>Atlas</strong></span></button>
+            </div>
+          </div>
+
+          <section class="search-section" data-panel="discover">
+            <div class="panel-search">
+              <svg data-icon="magnifying-glass" class="search-icon"></svg>
+              <input id="graph-search" type="search" placeholder="Search entities" aria-label="Search entities" autocomplete="off" disabled />
+              <select id="search-entity-type" aria-label="Entity type to search" disabled><option value="">All types</option></select>
+            </div>
+            <div id="search-results" class="search-results" hidden></div>
+          </section>
+
+          <section class="layer-section" data-panel="layers">
+            <div class="section-heading"><span>Architecture Layers</span><button id="reset-view" class="text-button" disabled>Reset</button></div>
+            <div id="layer-tabs" class="layer-tabs" role="tablist" aria-label="Architecture layer">
+              <button class="layer-tab active" data-layer="BUSINESS" role="tab" aria-selected="true" disabled><i></i><span>Business</span><small>731</small></button>
+              <button class="layer-tab" data-layer="API" role="tab" aria-selected="false" disabled><i></i><span>API</span><small>73.6K</small></button>
+              <button class="layer-tab" data-layer="RUNTIME" role="tab" aria-selected="false" disabled><i></i><span>Runtime</span><small>1.9K</small></button>
+            </div>
+          </section>
+
+          <section class="entity-section" data-panel="entities">
+            <div class="section-heading"><span>Graph Entities</span><button id="view-all-entities" class="text-button" aria-pressed="false" disabled>View all</button></div>
+            <div id="type-filters" class="entity-tree skeleton-list"><span></span><span></span><span></span><span></span><span></span></div>
+          </section>
+
+          <section class="filter-section edge-filter-section" data-panel="relationships">
+            <button id="edge-section-toggle" class="section-heading disclosure" aria-expanded="false" disabled><span>Relationships</span><svg data-icon="caret-down"></svg></button>
+            <div id="edge-filter-wrap" hidden><div id="edge-filters" class="filter-list compact"></div><div class="relationship-rule-heading">Recommended paths</div><div id="relationship-rules" class="relationship-rules"></div></div>
+          </section>
+
+        </aside>
+        <div class="panel-resizer panel-resizer-left" role="separator" tabindex="0" aria-label="Resize explorer panel" aria-orientation="vertical" aria-controls="controls-panel" title="Drag to resize explorer · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
+
+        <section class="stage" aria-label="Interactive graph">
+          <button id="explorer-panel-reopen" class="side-panel-toggle panel-reopen graph-panel-reopen-left" type="button" aria-label="Expand explorer panel" data-panel-icon="panel-left-open"></button>
+          <button id="query-panel-reopen" class="side-panel-toggle panel-reopen graph-panel-reopen-right" type="button" aria-label="Expand query panel" data-panel-icon="panel-right-open" hidden></button>
+          <div class="stage-ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div id="sigma-container"></div>
+          <div class="stage-grid" aria-hidden="true"></div>
+          <div class="stage-title"><span id="view-kicker">System Constellation</span><strong id="view-title">Architecture Landscape</strong><small id="view-instructions">Drag to explore · Scroll to zoom · Select a node for context</small></div>
+
+          <div id="loading-panel" class="loading-panel"><div class="loader-orbit"><i></i><i></i><i></i></div><div><span id="loading-label">Reading graph source</span><div class="progress-track"><span id="loading-progress"></span></div><small id="loading-detail">Large graphs are prepared off the main browser thread.</small></div></div>
+
+          <div class="layout-controls"><select id="layout-mode" aria-label="Graph layout" disabled><option value="donut">Constellation Donut</option><option value="constellation-v1">Constellation V1</option><option value="hierarchy">Organizational</option></select></div>
+          <div class="stage-tools"><button id="zoom-in" aria-label="Zoom in" disabled>+</button><button id="zoom-out" aria-label="Zoom out" disabled>−</button><button id="zoom-fit" aria-label="Fit graph to screen" disabled><svg data-icon="corners-out"></svg></button></div>
+          <div id="minimap" class="minimap"><div><span>Navigator</span><small>Click to reposition</small></div><canvas id="minimap-canvas" width="380" height="220" aria-label="Graph minimap navigation"></canvas></div>
+          <div class="layer-legend" aria-label="Layer colors"><span><i class="business"></i>Business</span><span><i class="api"></i>API</span><span><i class="runtime"></i>Runtime</span></div>
+          <div id="empty-state" class="empty-state" hidden><span>No entities match this view</span><button id="empty-reset">Reset filters</button></div>
+
+          <aside id="inspector" class="inspector" aria-live="polite" aria-hidden="true">
+            <div class="inspector-header"><span>Entity intelligence</span><button id="close-inspector" class="close-button" aria-label="Close details">×</button></div>
+            <div class="inspector-accent"></div><div class="inspector-type" id="inspector-type">Entity</div><h2 id="inspector-name">—</h2><p id="inspector-id">—</p>
+            <div class="connection-summary"><div><strong id="in-degree">0</strong><span>incoming</span></div><div><strong id="out-degree">0</strong><span>outgoing</span></div><button id="focus-neighbors">Focus network</button></div>
+            <button id="add-to-traversal" class="add-traversal-button">＋ Add to path explorer</button><div id="inspector-properties" class="property-list"></div><div id="inspector-connections" class="connection-list"></div>
+          </aside>
+          <div id="toast" class="toast" role="status"></div>
+        </section>
+
+        <div class="panel-resizer panel-resizer-right" role="separator" tabindex="0" aria-label="Resize query panel" aria-orientation="vertical" aria-controls="query-panel" title="Drag to resize query panel · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
+        <aside id="query-panel" class="query-dock" aria-label="Graph query and traversal">
+          <div class="query-dock-header">
+            <div class="dock-tabs"><button class="active" data-dock-target="conditions">Query</button><button data-dock-target="traversal" title="Jump to Path explorer — trace graph connections">Paths</button></div>
+            <div class="panel-header-actions"><div class="dock-status"><i></i> Graph ready</div><button id="query-panel-toggle" class="side-panel-toggle" type="button" aria-label="Collapse query panel" data-panel-icon="panel-right-close"></button></div>
+          </div>
+          <div class="query-dock-intro">
+            <span>Graph Workspace</span>
+            <h2>Ask the Architecture</h2>
+            <p>Build precise graph conditions, then trace relationships in either direction.</p>
+          </div>
+          <section class="conditional-section" data-panel="conditions">
+            <div class="section-heading"><span>Query Builder</span><strong id="condition-count">0 conditions</strong></div>
+            <p class="section-help">Add and complete each numbered condition. AND narrows; OR adds alternatives, in order. The graph updates only when you run.</p>
+            <div id="condition-list" class="condition-list"></div>
+            <button id="add-condition" class="condition-add" disabled>＋ Add condition</button>
+            <div class="conditional-actions"><button id="apply-conditions" class="primary-action" disabled>Run query</button><button id="clear-conditions" class="secondary-action" disabled>Clear</button></div>
+            <div id="conditional-status" class="traversal-status" aria-live="polite"></div>
+          </section>
+
+          <section class="traversal-section" data-panel="traversal">
+            <div class="section-heading"><span>Path Explorer</span><strong id="selection-count">0 selected</strong></div>
+            <p class="section-help">Add entities from the detail panel, then trace how they connect. Paths are temporary in this browser tab, not saved history.</p>
+            <div id="selection-chips" class="selection-chips"><span class="empty-chip">No starting entities</span></div>
+            <div class="traversal-controls"><label>Direction<select id="traversal-direction" aria-label="Traversal direction" disabled><option value="out">Top-down</option><option value="in">Backwards</option><option value="both" selected>Both ways</option></select></label><label>Depth<select id="traversal-depth" aria-label="Traversal depth" disabled><option value="1">1 hop</option><option value="2" selected>2 hops</option><option value="3">3 hops</option><option value="4">4 hops</option><option value="6">6 hops</option></select></label></div>
+            <div class="traversal-actions"><button id="run-traversal" class="primary-action" disabled>Trace paths</button><button id="clear-traversal" class="secondary-action" disabled>Clear</button></div>
+            <div id="traversal-status" class="traversal-status" aria-live="polite"></div>
+          </section>
+          <div class="query-dock-tip"><kbd>⌘</kbd><kbd>K</kbd><span>Search any entity from the graph</span></div>
+        </aside>
+      </main>
+
+      <main id="planner-workspace" class="planner-shell">
+        <aside id="planner-library" class="planner-library" aria-label="Chat navigation" data-view="home">
+          <div class="sidebar-switch">
+            <div class="mode-switch" data-active="chat" role="tablist" aria-label="Workspace">
+              <button class="mode-switch-option active" data-view="chat" type="button" role="tab" aria-selected="true" title="Chat assistant"><span class="mode-switch-icon"><svg data-icon="chat-teardrop-dots"></svg></span><span class="mode-switch-text"><span>Chat</span><strong>Assistant</strong></span></button>
+              <button id="planner-back-to-viewer" class="mode-switch-option" data-view="graph" type="button" role="tab" aria-selected="false" tabindex="-1" aria-label="Graph explorer" title="Graph explorer"><span class="mode-switch-icon"><svg data-icon="graph"></svg></span><span class="mode-switch-text"><span>Graph</span><strong>Atlas</strong></span></button>
+            </div>
+          </div>
+
+          <nav class="planner-nav" aria-label="Chat">
+            <button id="planner-new-chat-nav" class="planner-nav-row" type="button"><svg data-icon="chat-circle-dots"></svg><span>New chat</span></button>
+            <button id="planner-questions-nav" class="planner-nav-row" type="button" aria-controls="planner-catalog-panel"><span data-planner-heading-icon="question" aria-hidden="true"></span><span>Questions</span></button>
+            <button id="planner-search-nav" class="planner-nav-row" type="button" aria-controls="planner-chat-search-panel"><span data-planner-heading-icon="search" aria-hidden="true"></span><span>Search</span></button>
+          </nav>
+
+          <section class="planner-discovery" aria-labelledby="planner-drill-title">
+          <header class="planner-drill-header"><button id="planner-drill-back" type="button" aria-label="Back to chats and projects" title="Back"></button><h3 id="planner-drill-title">Questions</h3></header>
+          <section id="planner-catalog-panel" class="planner-library-panel" aria-labelledby="planner-drill-title">
+            <div class="planner-section-heading planner-catalog-heading">
+              <div id="planner-catalog-label" class="planner-catalog-label"><span class="planner-catalog-total"><strong id="planner-catalog-count">—</strong> Questions</span><button id="planner-collapse-catalog" class="planner-header-icon" type="button" aria-label="Collapse all question groups" title="Collapse all question groups"></button><button id="planner-open-catalog-search" class="planner-header-icon" type="button" aria-label="Search Questions Catalog" aria-expanded="false" aria-controls="planner-catalog-search" title="Search Questions Catalog"></button></div>
+              <div id="planner-catalog-search" class="planner-search planner-catalog-search" hidden><svg data-icon="magnifying-glass"></svg><input id="planner-question-search" type="search" aria-label="Search question catalog" placeholder="Search or choose a question…" autocomplete="off" /><button id="planner-question-dropdown" class="search-dropdown-toggle" type="button" aria-label="Show question suggestions" title="Browse matching questions"></button><button id="planner-close-catalog-search" class="planner-header-icon" type="button" aria-label="Close catalog search" title="Close and clear search"></button></div>
+            </div>
+            <div id="planner-catalog-context" class="planner-catalog-context" hidden><div><strong id="planner-catalog-context-title"></strong><span id="planner-catalog-context-detail"></span></div><button id="planner-catalog-context-clear" type="button" aria-label="Clear catalog entity and relationship filters" title="Show all catalog questions"><svg data-icon="x"></svg></button></div>
+            <div id="planner-question-tree" class="planner-tree" aria-live="polite"></div>
+          </section>
+
+          <section id="planner-chat-search-panel" class="planner-library-panel planner-chat-search" aria-labelledby="planner-drill-title" hidden>
+            <label class="panel-search"><svg data-icon="magnifying-glass" class="search-icon"></svg><input id="planner-chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" /></label>
+            <div id="planner-chat-search-results" class="planner-chat-search-results" aria-live="polite"></div>
+          </section>
+
+          <section id="planner-browse-panel" class="planner-library-panel planner-browse-panel" aria-labelledby="planner-drill-title" hidden>
+            <div class="planner-browse-heading"><span id="planner-browse-count">—</span><button id="planner-browse-reset" type="button" title="Clear graph explorer selection">Reset</button></div>
+            <div id="planner-browse-body" class="planner-browse-body">
+              <label class="planner-browse-scope" for="planner-browse-type"><span>Entity type</span><select id="planner-browse-type" aria-label="Browse graph entity type" disabled><option value="">Loading entity types…</option></select></label>
+              <div class="planner-search planner-browse-search"><svg data-icon="magnifying-glass"></svg><input id="planner-browse-search" type="search" aria-label="Search graph entity types or names" placeholder="Find an entity type…" autocomplete="off" disabled /><button id="planner-browse-dropdown" class="search-dropdown-toggle" type="button" aria-label="Show entity suggestions" title="Browse matching entity types or names"></button></div>
+              <div id="planner-browse-status" class="planner-browse-status" role="status">Loading graph schema…</div>
+              <div id="planner-browse-results" class="planner-browse-results"></div>
+              <details class="planner-browse-relations"><summary><span>Relationships</span><small id="planner-browse-relation-count">0</small></summary><div id="planner-browse-relationships"></div></details>
+            </div>
+            <button id="planner-show-related-questions" class="planner-related-questions" type="button" hidden><span>View Related Questions</span><span aria-hidden="true">→</span></button>
+          </section>
+          </section>
+
+          <section id="planner-workspaces-panel" class="planner-library-panel planner-workspaces-panel" aria-labelledby="planner-workspaces-title">
+            <div class="planner-workspace-actions"><h3 id="planner-workspaces-title" class="planner-sidebar-heading">Projects</h3><div class="planner-workspace-tools"><button id="planner-add-workspace" type="button" aria-label="New project" title="New project"></button></div></div>
+            <div id="planner-workspace-tree" class="planner-document-tree" aria-live="polite"></div>
+          </section>
+        </aside>
+
+        <div id="planner-library-resizer" class="panel-resizer planner-panel-resizer planner-panel-resizer-left" role="separator" tabindex="0" aria-label="Resize question library" aria-orientation="vertical" aria-controls="planner-catalog-panel" title="Drag to resize library · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
+
+        <section class="planner-conversation" aria-label="Graph query conversation">
+          <button id="planner-library-toggle" class="planner-float-button planner-float-left" type="button" aria-label="Collapse sidebar" data-panel-icon="panel-left-close"></button>
+          <button id="planner-context-reopen" class="planner-float-button planner-float-right" type="button" aria-label="Expand evidence explorer" data-panel-icon="panel-right-open" hidden></button>
+          <div id="planner-chat-scroll" class="planner-chat-scroll">
+            <div id="planner-landing" class="planner-landing">
+            <section id="planner-empty-chat" class="planner-empty-chat">
+              <div class="planner-hero-mark"><img src="/brand/apiwiz-logo.png" alt="" width="40" height="33" /></div>
+              <div class="chat-greeting">
+                <div class="chat-title-row">
+                  <svg data-icon="folder-open" class="chat-title-icon"></svg>
+                  <span id="planner-home-title" class="chat-dataset-name">Graph</span>
+                  <button id="planner-home-dataset" class="chat-title-switch" type="button" aria-label="Change graph dataset" title="Change graph dataset"><svg data-icon="caret-down"></svg></button>
+                </div>
+                <div class="chat-intro">
+                  <h2 class="chat-intro-title">Ask Your API Estate Anything</h2>
+                  <p>Ask about your APIs, dependencies, ownership, or architecture.</p>
+                </div>
+                <div class="chat-stats" aria-label="Graph summary">
+                  <span><svg data-icon="tree-structure"></svg><span><span id="planner-stat-nodes">—</span> nodes</span></span>
+                  <i class="stat-dot" aria-hidden="true"></i>
+                  <span><svg data-icon="code"></svg><span><span id="planner-stat-apis">—</span> APIs</span></span>
+                  <i class="stat-dot" aria-hidden="true"></i>
+                  <span><svg data-icon="graph"></svg><span><span id="planner-stat-relations">—</span> relations</span></span>
+                </div>
+              </div>
+            </section>
+            <form id="planner-query-form" class="planner-composer">
+              <div class="planner-composer-card">
+                <div id="planner-prompt" class="planner-prompt-input is-empty" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Graph question" data-placeholder="Ask about the graph, or pick a question from the entity map"></div>
+                <div class="planner-composer-toolbar">
+                  <div class="planner-prompt-tools">
+                    <button id="planner-question-bank" class="planner-bank-button" type="button" title="Browse every catalog question"><svg data-icon="book-open-text"></svg><span>Question bank</span></button>
+                    <span id="planner-prompt-context" class="planner-prompt-context" hidden><span id="planner-prompt-context-label"></span><button id="planner-prompt-context-clear" type="button" aria-label="Remove this entity from the question" title="Remove"><svg data-icon="x"></svg></button></span>
+                  </div>
+                  <div class="planner-submit-wrap"><button id="planner-cancel" type="button" hidden>Cancel</button><button id="planner-run" type="submit" aria-label="Run query" title="Run query"><svg data-icon="arrow-up"></svg></button></div>
+                </div>
+              </div>
+              <div class="planner-composer-meta"><span id="planner-composer-status" role="status"></span></div>
+            </form>
+            <div id="planner-suggestions" class="planner-suggestions">
+              <div class="suggestion-layers" role="tablist" aria-label="Concerns">
+                  <button class="suggestion-layer active" type="button" role="tab" aria-selected="true" data-layer="business"><img src="/illustrations/concerns/business.svg" alt="" width="61" height="48" data-inline-svg /><span>Business concerns</span></button>
+                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="api"><img src="/illustrations/concerns/api.svg" alt="" width="61" height="48" data-inline-svg /><span>API concerns</span></button>
+                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="runtime"><img src="/illustrations/concerns/runtime.svg" alt="" width="61" height="48" data-inline-svg /><span>Runtime concerns</span></button>
+              </div>
+              <div class="suggestion-head">Suggested questions</div>
+              <div id="planner-suggestion-list" class="suggestion-list"></div>
+            </div>
+            </div>
+            <div id="planner-messages" class="planner-messages" aria-label="Conversation in chronological order"></div>
+          </div>
+          <div id="planner-composer-dock" class="planner-composer-dock" hidden></div>
+          <section id="planner-questions-page" class="planner-questions-page" aria-labelledby="planner-questions-title" hidden>
+            <header class="qb-header">
+              <div class="qb-title-row">
+                <h1 id="planner-questions-title" class="qb-title">Questions</h1>
+                <label class="qb-search"><svg data-icon="magnifying-glass"></svg><input type="search" placeholder="Search questions" aria-label="Search questions" autocomplete="off" /></label>
+              </div>
+              <div class="qb-layers" role="tablist" aria-label="Layer">
+                <button class="qb-layer active" type="button" role="tab" aria-selected="true" data-layer=""><span class="qb-layer-art"><img src="/illustrations/questions/inventory.svg" alt="" data-inline-svg /></span><span>All Questions</span></button>
+                <button class="qb-layer" type="button" role="tab" aria-selected="false" data-layer="business"><span class="qb-layer-art"><img src="/illustrations/questions/business-execution.svg" alt="" data-inline-svg /></span><span>Business Layer</span></button>
+                <button class="qb-layer" type="button" role="tab" aria-selected="false" data-layer="api"><span class="qb-layer-art"><img src="/illustrations/questions/api-lineage.svg" alt="" data-inline-svg /></span><span>API Layer</span></button>
+                <button class="qb-layer" type="button" role="tab" aria-selected="false" data-layer="runtime"><span class="qb-layer-art"><img src="/illustrations/questions/execution.svg" alt="" data-inline-svg /></span><span>Runtime Layer</span></button>
+              </div>
+              <div class="qb-filter" hidden></div>
+            </header>
+            <div class="qb-groups"></div>
+          </section>
+        </section>
+
+        <div id="planner-context-resizer" class="panel-resizer planner-panel-resizer planner-panel-resizer-right" role="separator" tabindex="0" aria-label="Resize result explorer" aria-orientation="vertical" aria-controls="planner-context" title="Drag to resize result explorer · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
+
+        <aside id="planner-context" class="planner-context" aria-label="Query result context">
+          <div class="planner-context-card">
+            <div class="planner-context-tabbar">
+              <div class="planner-context-pill"><svg data-icon="flow-arrow"></svg><span>Ask About Entities</span></div>
+              <div class="planner-context-tabs" role="tablist" aria-label="Result context views">
+                <button class="active" data-context-tab="map" role="tab" aria-selected="true" aria-controls="planner-type-map-panel">Entity map</button>
+                <button data-context-tab="diagram" role="tab" aria-selected="false" aria-controls="planner-diagram-panel">Map</button>
+                <button data-context-tab="entities" role="tab" aria-selected="false" aria-controls="planner-entities-panel">Entity</button>
+                <button data-context-tab="followups" role="tab" aria-selected="false" aria-controls="planner-followups-panel">Follow up</button>
+              </div>
+              <button id="planner-context-toggle" class="side-panel-toggle" type="button" aria-label="Collapse evidence explorer" data-panel-icon="panel-right-close"></button>
+            </div>
+            <section id="planner-type-map-panel" class="planner-context-panel planner-type-map" aria-label="Entity map"></section>
+            <section id="planner-diagram-panel" class="planner-context-panel planner-diagram-panel" aria-label="Result graph diagram" hidden>
+              <div class="planner-diagram-toolbar"><div><strong>Result Map</strong><span id="planner-diagram-count">0 nodes · 0 edges</span></div><button id="planner-diagram-expand" type="button" aria-expanded="false" aria-label="Expand map">⤢ <span>Expand</span></button></div>
+              <label class="planner-map-focus-label" for="planner-diagram-focus"><span>View connections around</span><select id="planner-diagram-focus" aria-label="Diagram focus entity" disabled><option value="">All returned nodes</option></select></label>
+              <div id="planner-diagram-canvas" class="planner-diagram-canvas">
+                <svg id="planner-diagram-svg" role="group" aria-label="Query result graph diagram" tabindex="0"></svg>
+                <div id="planner-diagram-empty" class="planner-context-empty"><strong>Your evidence, connected</strong><span>Run a question to explore its returned graph.</span></div>
+                <div class="planner-diagram-controls" aria-label="Map controls"><button id="planner-diagram-out" type="button" aria-label="Zoom out diagram"><svg data-icon="minus"></svg></button><output id="planner-diagram-scale" aria-label="Diagram zoom">100%</output><button id="planner-diagram-in" type="button" aria-label="Zoom in diagram"><svg data-icon="plus"></svg></button><button id="planner-diagram-fit" type="button">Fit</button><button id="planner-diagram-readable" type="button" title="Restore readable label size">1:1</button></div>
+              </div>
+              <div id="planner-diagram-navigation" class="planner-map-navigation" hidden><span id="planner-diagram-scope" role="status"></span><div><button id="planner-diagram-previous" type="button" aria-label="Previous diagram connections"><svg data-icon="arrow-left"></svg></button><button id="planner-diagram-next" type="button" aria-label="Next diagram connections"><svg data-icon="arrow-right"></svg></button></div></div>
+              <div class="planner-map-legend"><span><i class="business"></i>Business</span><span><i class="api"></i>API</span><span><i class="runtime"></i>Runtime</span></div>
+              <div id="planner-diagram-detail" class="planner-diagram-detail" role="status">Drag to pan · Scroll to zoom · Select an entity or relationship</div>
+            </section>
+            <section id="planner-entities-panel" class="planner-context-panel" hidden><div class="planner-context-copy"><strong>Result Entities</strong><span>Navigate by layer and entity type.</span></div><div id="planner-entity-tree" class="planner-entity-tree"></div></section>
+            <section id="planner-followups-panel" class="planner-context-panel" hidden><div class="planner-context-copy"><strong>Continue This Investigation</strong><span>Follow-up questions use the current result as context.</span></div><div id="planner-followups" class="planner-followups"><div class="planner-context-empty"><strong>No follow-ups yet</strong><span>Run a graph question first.</span></div></div></section>
+              <section id="planner-ask-entities-panel" class="planner-context-panel planner-type-map planner-ask-entities" aria-label="Ask about entities"></section>
+          </div>
+        </aside>
+      </main>
+
+      <div id="shortcut-modal" class="modal-backdrop" hidden><div class="shortcut-modal" role="dialog" aria-modal="true" aria-labelledby="shortcut-title"><button id="close-shortcuts" class="close-button" aria-label="Close shortcuts">×</button><div class="eyebrow">Move through Atlas faster</div><h2 id="shortcut-title">Keyboard Shortcuts</h2><dl><div><dt><kbd>⌘</kbd> <kbd>K</kbd></dt><dd>Search graph</dd></div><div><dt><kbd>Esc</kbd></dt><dd>Clear selection</dd></div><div><dt><kbd>F</kbd></dt><dd>Fit graph to screen</dd></div><div><dt><kbd>?</kbd></dt><dd>Show shortcuts</dd></div></dl></div></div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

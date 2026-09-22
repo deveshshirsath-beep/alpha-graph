@@ -1,0 +1,49 @@
+<svg width="87" height="59" viewBox="0 0 87 59" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="illo-api-Illustrations">
+<g id="illo-api-Illustration / API Lineage" clip-path="url(#illo-api-clip0_79_4912)">
+<g id="illo-api-api-lineage" clip-path="url(#illo-api-clip1_79_4912)">
+<g id="illo-api-Mask group">
+<mask id="illo-api-mask0_79_4912" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="-1" y="-14" width="89" height="89">
+<g id="illo-api-Group">
+<path id="illo-api-Vector" d="M87.5 -13.5H-0.5V74.5H87.5V-13.5Z" fill="url(#illo-api-paint0_linear_79_4912)"/>
+</g>
+</mask>
+<g mask="url(#illo-api-mask0_79_4912)">
+<g id="illo-api-Group_2">
+<path id="illo-api-Vector_2" d="M72.1001 7.40002H23.7001C20.6625 7.40002 18.2001 9.86246 18.2001 12.9V56.9C18.2001 59.9376 20.6625 62.4 23.7001 62.4H72.1001C75.1376 62.4 77.6001 59.9376 77.6001 56.9V12.9C77.6001 9.86246 75.1376 7.40002 72.1001 7.40002Z" fill="#E4E4E4" stroke="#B4B4B4" stroke-width="0.275" style="fill:var(--illo-ghost,#E4E4E4);stroke:var(--illo-line,#B4B4B4)"/>
+<path id="illo-api-Vector_3" d="M67.7001 3H19.3C16.2625 3 13.8 5.46243 13.8 8.5V52.5C13.8 55.5376 16.2625 58 19.3 58H67.7001C70.7376 58 73.2001 55.5376 73.2001 52.5V8.5C73.2001 5.46243 70.7376 3 67.7001 3Z" fill="url(#illo-api-paint1_linear_79_4912)" stroke="#B4B4B4" stroke-width="0.275" style="stroke:var(--illo-line,#B4B4B4)"/>
+<g id="illo-api-Group_3">
+<path id="illo-api-Vector_4" d="M65.5 30.5H25.9C22.8625 30.5 20.4 32.9624 20.4 36V42.6C20.4 45.6376 22.8625 48.1 25.9 48.1H65.5C68.5376 48.1 71 45.6376 71 42.6V36C71 32.9624 68.5376 30.5 65.5 30.5Z" fill="white" stroke="#B4B4B4" stroke-width="0.275" style="fill:var(--illo-paper,#FFFFFF);stroke:var(--illo-line,#B4B4B4)"/>
+</g>
+<path id="illo-api-Vector_5" opacity="0.8" d="M28.65 44.525C31.5357 44.525 33.875 42.1856 33.875 39.3C33.875 36.4143 31.5357 34.075 28.65 34.075C25.7644 34.075 23.425 36.4143 23.425 39.3C23.425 42.1856 25.7644 44.525 28.65 44.525Z" fill="#1E8E3E"/>
+<path id="illo-api-Vector_6" d="M54.8302 35.45H38.7702C38.0412 35.45 37.4502 36.0409 37.4502 36.77C37.4502 37.499 38.0412 38.09 38.7702 38.09H54.8302C55.5592 38.09 56.1502 37.499 56.1502 36.77C56.1502 36.0409 55.5592 35.45 54.8302 35.45Z" fill="#CECECE" style="fill:var(--illo-soft,#CECECE)"/>
+<path id="illo-api-Vector_7" d="M63.4652 40.675H38.9352C38.1151 40.675 37.4502 41.3399 37.4502 42.16C37.4502 42.9802 38.1151 43.645 38.9352 43.645H63.4652C64.2853 43.645 64.9502 42.9802 64.9502 42.16C64.9502 41.3399 64.2853 40.675 63.4652 40.675Z" fill="#CECECE" style="fill:var(--illo-soft,#CECECE)"/>
+</g>
+</g>
+</g>
+<g id="illo-api-Group_4">
+<path id="illo-api-Vector_8" d="M64.4001 10.7H13.8C10.7625 10.7 8.30005 13.1624 8.30005 16.2V23.9C8.30005 26.9375 10.7625 29.4 13.8 29.4H64.4001C67.4376 29.4 69.9001 26.9375 69.9001 23.9V16.2C69.9001 13.1624 67.4376 10.7 64.4001 10.7Z" fill="white" stroke="#B4B4B4" stroke-width="0.275" style="fill:var(--illo-paper,#FFFFFF);stroke:var(--illo-line,#B4B4B4)"/>
+</g>
+<path id="illo-api-Vector_9" opacity="0.8" d="M17.65 25.55C20.6876 25.55 23.15 23.0876 23.15 20.05C23.15 17.0125 20.6876 14.55 17.65 14.55C14.6125 14.55 12.15 17.0125 12.15 20.05C12.15 23.0876 14.6125 25.55 17.65 25.55Z" fill="#7B5CFF"/>
+<path id="illo-api-Vector_10" d="M47.625 15.65H28.375C27.6156 15.65 27 16.2656 27 17.025C27 17.7844 27.6156 18.4 28.375 18.4H47.625C48.3844 18.4 49 17.7844 49 17.025C49 16.2656 48.3844 15.65 47.625 15.65Z" fill="#CECECE" style="fill:var(--illo-soft,#CECECE)"/>
+<path id="illo-api-Vector_11" d="M59.56 21.15H28.54C27.6895 21.15 27 21.8395 27 22.69C27 23.5405 27.6895 24.23 28.54 24.23H59.56C60.4105 24.23 61.1 23.5405 61.1 22.69C61.1 21.8395 60.4105 21.15 59.56 21.15Z" fill="#CECECE" style="fill:var(--illo-soft,#CECECE)"/>
+</g>
+</g>
+</g>
+<defs>
+<linearGradient id="illo-api-paint0_linear_79_4912" x1="-0.5" y1="-13.5" x2="-0.5" y2="74.5" gradientUnits="userSpaceOnUse">
+<stop offset="0.7" stop-color="white"/>
+<stop offset="0.82"/>
+</linearGradient>
+<linearGradient id="illo-api-paint1_linear_79_4912" x1="13.8" y1="3" x2="13.8" y2="58" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" style="stop-color:var(--illo-paper,#FFFFFF)"/>
+<stop offset="1" stop-color="#F8F8F8" style="stop-color:var(--illo-surface,#F8F8F8)"/>
+</linearGradient>
+<clipPath id="illo-api-clip0_79_4912">
+<rect width="87" height="88" fill="white" transform="translate(0 -14.5)" style="fill:var(--illo-paper,#FFFFFF)"/>
+</clipPath>
+<clipPath id="illo-api-clip1_79_4912">
+<rect width="89" height="59" fill="white" transform="translate(-1)" style="fill:var(--illo-paper,#FFFFFF)"/>
+</clipPath>
+</defs>
+</svg>

@@ -1,0 +1,18 @@
+{
+  "formatVersion": 10,
+  "collectionFingerprint": "7829f28b57c23d943feb27a5d5283da4f013819d022a176ea77d5c634461a82c",
+  "generatedAt": "2026-09-22T04:47:17.183Z",
+  "defaultGraphId": "merged-graph-v4-a42c1b1b",
+  "graphs": [
+    {
+      "id": "merged-graph-v4-a42c1b1b",
+      "name": "merged-graph-v4",
+      "sourceName": "merged-graph-v4.json",
+      "manifest": "merged-graph-v4-a42c1b1b/manifest.json",
+      "graphVersion": "2.0.0",
+      "generatedAt": "2026-08-31T02:06:27.325201+00:00",
+      "totalNodes": 76315,
+      "totalEdges": 105833
+    }
+  ]
+}

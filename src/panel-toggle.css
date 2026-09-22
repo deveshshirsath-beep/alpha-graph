@@ -1,0 +1,90 @@
+/* Consistent, quiet panel controls in both application shells. */
+#app .side-panel-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 30px;
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 6px;
+  border: 1px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--ui-secondary);
+  cursor: pointer;
+}
+#app .side-panel-toggle .ui-icon { width: 18px; height: 18px; }
+#app .side-panel-toggle:hover { color: var(--text); background: var(--ui-field); border-color: var(--line); }
+#app .side-panel-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#app .panel-header-actions { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex-shrink: 0; }
+#app .panel-reopen { background: var(--panel); border-color: var(--line); }
+#app :is(.side-panel-toggle, .sidebar, .query-dock, .planner-library, .planner-context, .panel-resizer)[hidden] { display: none !important; }
+#app #sidebar-toggle svg { transform: none; }
+
+/* Use zero-width tracks, not zero-width contents; hidden controls leave the tab order. */
+#app .workspace, body.sidebar-collapsed #app .workspace {
+  grid-template-columns: var(--rail-width) var(--explorer-column, var(--explorer-width)) var(--explorer-divider, 1px) minmax(0, 1fr) var(--query-divider, 1px) var(--query-column, var(--query-width));
+}
+body.sidebar-collapsed #app .workspace { --explorer-column: 0px; --explorer-divider: 0px; }
+body.query-panel-collapsed #app .workspace { --query-column: 0px; --query-divider: 0px; }
+#app .workspace > :is(.tool-rail, .sidebar, .panel-resizer, .stage, .query-dock) { grid-row: 1; }
+#app .workspace > .tool-rail { grid-column: 1; }
+#app .workspace > .sidebar { grid-column: 2; }
+#app .workspace > .panel-resizer-left { grid-column: 3; }
+#app .workspace > .stage { grid-column: 4; }
+#app .workspace > .panel-resizer-right { grid-column: 5; }
+#app .workspace > .query-dock { grid-column: 6; }
+#app .graph-panel-reopen-left, #app .graph-panel-reopen-right { position: absolute; top: 16px; z-index: 22; }
+#app .graph-panel-reopen-left { left: 16px; }
+#app .graph-panel-reopen-right { right: 16px; }
+body.sidebar-collapsed #app .stage-title { left: 60px; max-width: calc(100% - 110px); }
+#app .query-dock-header { flex-wrap: nowrap; gap: 8px; }
+#app .query-dock-header .dock-status { white-space: nowrap; }
+
+#app .planner-shell {
+  position: relative;
+  --planner-rail-width: 72px;
+  grid-template-columns: var(--planner-rail-width) var(--library-column, var(--planner-library-width)) var(--library-divider, 1px) minmax(0, 1fr) var(--context-divider, 1px) var(--context-column, var(--planner-context-width));
+}
+#app .planner-shell.library-collapsed { --library-column: 0px; --library-divider: 0px; }
+#app .planner-shell.context-collapsed { --context-column: 0px; --context-divider: 0px; }
+#app .planner-shell > * { grid-row: 1; }
+#app .planner-panel-header { gap: 8px; }
+#app .planner-context-header { align-items: center; gap: 8px; }
+#app .planner-conversation-location { min-width: 0; }
+#app .planner-conversation-location :is(span, strong) { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app .planner-conversation-actions { flex-shrink: 0; }
+#app .planner-conversation { container: planner-conversation / inline-size; }
+
+/* Resizing or reopening both panels can make the center narrower than the viewport. */
+@container planner-conversation (max-width: 450px) {
+  #app .planner-composer :is(.planner-mode-label, .planner-key-hint) { display: none; }
+  #app .planner-composer-toolbar { flex-wrap: wrap; }
+  #app .planner-submit-wrap { margin-left: auto; }
+}
+
+@media (max-width: 1240px) {
+  #app .planner-shell { --planner-rail-width: 64px; }
+}
+@media (max-width: 1050px) {
+  #app .workspace, body.sidebar-collapsed #app .workspace { --query-column: 0px; --query-divider: 0px; }
+}
+@media (max-width: 1040px) {
+  #app .planner-shell { --context-column: 0px; --context-divider: 0px; }
+  #app .planner-context { position: absolute; top: 0; right: 0; bottom: 0; width: min(var(--planner-context-width), calc(100% - var(--planner-rail-width))); }
+}
+@media (max-width: 780px) {
+  #app .planner-shell { --planner-rail-width: 56px; --library-column: 0px; --library-divider: 0px; height: calc(100% - max(54px, 3.375rem)); }
+  #app .planner-conversation { grid-column: 4; }
+  #app .planner-library { display: flex; position: absolute; top: 0; bottom: 0; left: var(--planner-rail-width); width: min(var(--planner-library-width), calc(100% - var(--planner-rail-width))); z-index: 35; box-shadow: 12px 0 35px var(--shadow-color); }
+  #app .planner-library, #app .planner-context { grid-column: auto; }
+}
+@media (max-width: 760px) {
+  #app .planner-shell { height: calc(100% - max(98px, 6.125rem)); }
+}
+@media (max-width: 700px) {
+  #app .workspace, body.sidebar-collapsed #app .workspace { --explorer-column: 0px; --explorer-divider: 0px; }
+  #app .workspace > .stage { grid-column: 4; }
+  #app .workspace > .sidebar { grid-column: auto; }
+}

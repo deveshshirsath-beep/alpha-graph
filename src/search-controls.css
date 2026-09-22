@@ -1,0 +1,22 @@
+/* Fields show focus as sigma does: the whole field's edge darkens, and the text inside never draws a ring of its own. */
+#app input[type="search"] { appearance: none; -webkit-appearance: none; }
+#app input[type="search"]:is(:focus, :focus-visible) { outline: none; border-color: var(--field-focus); }
+#app :is(.planner-search, .search-box, .condition-entity-wrap):focus-within { outline: none; border-color: var(--field-focus); box-shadow: none; }
+#app .condition-entity-wrap { border-radius: 9px; }
+#app :is(.planner-search, .search-box, .condition-entity-wrap, .panel-search, .qb-search, .slot-picker-search) :is(input, textarea):is(:focus, :focus-visible) { outline: none; box-shadow: none; }
+#app .planner-search { min-height: max(40px, 2.5rem); height: auto; padding: 0 6px 0 11px; border-color: var(--ui-border); }
+#app .planner-search input { width: 100%; padding: 10px 0; font-size: .875rem; line-height: 1.4; }
+#app .planner-catalog-search { width: 100%; min-height: 47px; margin: 0; padding: 0 8px 0 14px; border: 0; border-radius: 0; background: transparent; box-shadow: none; }
+#planner-question-search::-webkit-search-cancel-button { display: none; }
+#app .search-dropdown-toggle { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 5px; color: var(--ui-secondary); background: transparent; cursor: pointer; }
+#app .search-dropdown-toggle:hover { color: var(--text); background: var(--ui-hover); }
+#app .search-dropdown-toggle .ui-icon { width: 15px; height: 15px; }
+#app .search-dropdown-toggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+#app .search-dropdown { position: fixed; z-index: 210; padding: 6px; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--ui-field); color: var(--text); box-shadow: 0 12px 32px var(--shadow-color); }
+#app .search-dropdown[hidden] { display: none; }
+#app .search-dropdown-heading { padding: 7px 9px 10px; color: var(--ui-secondary); font-size: .75rem; line-height: 1.5; }
+#app .search-dropdown-list { position: relative; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+#app .search-dropdown-option { padding: 10px; display: grid; gap: 4px; border-radius: 7px; cursor: pointer; }
+#app .search-dropdown-option:is(:hover, [aria-selected="true"]) { background: var(--ui-hover); outline: 1px solid var(--accent); outline-offset: -1px; }
+#app .search-dropdown-option span { color: var(--text); font-size: .875rem; line-height: 1.5; overflow-wrap: anywhere; }
+#app .search-dropdown-option small { color: var(--ui-secondary); font-size: .75rem; line-height: 1.4; overflow-wrap: anywhere; }

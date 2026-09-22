@@ -1,0 +1,36 @@
+/* Sigma's control language for every Alpha dropdown and the graph search, on Alpha's tokens. */
+#app { --control-fill: color-mix(in srgb, var(--text) 6%, transparent); --control-fill-hover: color-mix(in srgb, var(--text) 10%, transparent); --field-focus: color-mix(in srgb, var(--text) 30%, transparent); }
+
+#app .select-control .select-trigger { min-height: 2.5rem; height: 2.5rem; gap: 10px; padding: 0 8px 0 12px; border: 0; border-radius: 10px; background: var(--control-fill); box-shadow: none; color: var(--text); font-size: .9375rem; font-weight: 500; }
+#app .select-control .select-trigger:is(:hover:not(:disabled), [aria-expanded="true"]) { background: var(--control-fill-hover); }
+#app .select-control .select-trigger .select-chevron { width: 14px; height: 14px; flex-basis: 14px; margin-left: auto; color: var(--ui-secondary); transition: transform 200ms cubic-bezier(.22, 1, .36, 1); }
+#app .select-control .select-trigger[aria-expanded="true"] .select-chevron { transform: rotate(180deg); }
+
+/* Menus are sigma popovers: no heading, soft ring shadow, 40px rows. */
+#app .select-menu { padding: 0; overflow: hidden; border: 0; border-radius: 12px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .08), 0 14px 34px rgba(18, 35, 66, .14), 0 2px 6px rgba(18, 35, 66, .06); }
+[data-theme="light"] #app .select-menu { background: #fff; }
+:root:not([data-theme="light"]) #app .select-menu { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 14px 34px rgba(0, 0, 0, .45); }
+#app .select-menu-heading { display: none; }
+#app .select-options { padding: 8px; }
+#app .select-option-group { padding: 12px 12px 4px; color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
+#app .select-option { display: flex; align-items: center; gap: 10px; min-height: 2.5rem; padding: 6px 12px; border-radius: 8px; color: var(--text); font-size: .9375rem; }
+#app .select-option:is(:hover, .is-active) { background: var(--ui-hover); }
+#app .select-option > .ui-icon:first-child { width: 18px; height: 18px; flex-basis: 18px; }
+#app .select-option .selected-check { width: 16px; height: 16px; flex-basis: 16px; margin-left: auto; color: var(--text); }
+
+/* Graph search: sigma's single field with the entity-type picker as a pill inside it. */
+#app .search-section { padding: 4px 12px 12px; }
+#app .panel-search { display: flex; align-items: center; gap: 8px; height: 2.5rem; padding: 0 5px 0 12px; border-radius: 10px; background: var(--control-fill); transition: background-color .15s ease, box-shadow .15s ease; }
+#app .panel-search:focus-within { background: var(--panel); box-shadow: inset 0 0 0 1px var(--field-focus); }
+#app .panel-search .search-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--ui-secondary); }
+#app .panel-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: .9375rem; }
+#app .panel-search input::placeholder { color: var(--ui-secondary); }
+#app .panel-search input::-webkit-search-cancel-button { display: none; }
+#app .panel-search .select-control { flex: 0 1 auto; width: auto; min-width: 0; max-width: 48%; }
+#app .panel-search .select-control .select-trigger { height: 30px; min-height: 30px; gap: 6px; padding: 0 8px 0 10px; border-radius: 999px; background: color-mix(in srgb, var(--text) 9%, transparent); font-size: .8125rem; }
+#app .panel-search .select-control .select-trigger:is(:hover:not(:disabled), [aria-expanded="true"]) { background: color-mix(in srgb, var(--text) 14%, transparent); }
+#app .panel-search .select-control .select-trigger > .ui-icon:first-child { display: none; }
+#app .search-section .search-results { top: calc(100% - 6px); left: 12px; right: 12px; border: 0; border-radius: 12px; box-shadow: 0 0 0 1px rgba(5, 5, 5, .08), 0 14px 34px rgba(18, 35, 66, .14); }
+
+/* Narrow screens keep the canvas button to open and close the explorer; desktop never collapses it, as in sigma. */
+@media (min-width: 701px) { #app #explorer-panel-reopen { display: none; } }
