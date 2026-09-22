@@ -25,10 +25,17 @@
 #app .zoom-controls button:disabled { opacity: .4; }
 
 /* Right panel: one white card hanging in the column with the chat entity panel's inset, radius and shadow. */
-#app #query-panel { padding: 12px; background: var(--planner-content-bg, var(--bg)); overflow: hidden; }
-#app #query-panel .query-card { display: flex; flex-direction: column; max-height: 100%; overflow-y: auto; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); scrollbar-width: thin; }
+#app #query-panel { padding: 12px; background: transparent; overflow: hidden; }
+#app #query-panel .query-card { display: flex; flex-direction: column; max-height: calc(100% - 120px); overflow-y: auto; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); scrollbar-width: thin; }
 [data-theme="light"] #app #query-panel .query-card { background: #fff; }
 :root:not([data-theme="light"]) #app #query-panel .query-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 4px 10px -2px rgba(0, 0, 0, .45); }
+/* On desktop the canvas runs under the right column, so the card floats on the grid and the map corner sits below it. */
+@media (min-width: 1051px) {
+  #app .workspace > .stage { grid-column: 4 / 7; }
+  #app .workspace > :is(.query-dock, .panel-resizer-right) { z-index: 7; border: 0; background: transparent; box-shadow: none; }
+  #app .workspace > .query-dock { pointer-events: none; }
+  #app .workspace > .query-dock .query-card { pointer-events: auto; }
+}
 #app #query-panel .section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 #app #query-panel .section-title-row .side-panel-toggle { flex-shrink: 0; margin: -4px -4px -4px 0; }
 #app #query-panel .sidebar-section { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 14px 12px 16px; border: 0; background: none; }

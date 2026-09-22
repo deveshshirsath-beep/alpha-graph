@@ -1417,6 +1417,7 @@ function renderMessage(message) {
     renderApiTables(results, message);
     content.append(narrative, results);
     renderAnswerExtras(content, message);
+    renderAnswerActions(content, message);
     renderFollowupPills(content, message);
   } else content.textContent = message.content;
   body.append(header, content);
@@ -1534,7 +1535,41 @@ function graphSummary(payload) {
   return `${status} · ${graph.nodes.length} nodes · ${graph.edges.length} edges · ${provider}`;
 }
 
-async function runQuestion(question) {
+/** Quiet actions under an answer: copy its text, or ask the same question again. */
+function renderAnswerActions(host, message) {
+  if (message.error || message.cancelled) return;
+  const row = document.createElement("div");
+  row.className = "answer-actions";
+  const action = (name, label, onClick) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "answer-action";
+    button.setAttribute("aria-label", label);
+    button.title = label;
+    button.append(icon(name));
+    button.addEventListener("click", () => onClick(button));
+    return button;
+  };
+  const copy = action("copy", "Copy answer", async (button) => {
+    try { await navigator.clipboard.writeText(message.content || ""); button.replaceChildren(icon("check")); button.title = "Copied"; } catch { button.title = "Copy failed"; }
+    window.setTimeout(() => { button.replaceChildren(icon("copy")); button.title = "Copy answer"; }, 1500);
+  });
+  const original = activeChat()?.messages?.find((item) => item.id === message.replyTo && item.role === "user");
+  const regenerate = action("arrow-counter-clockwise", "Regenerate response", () => regenerateAnswer(message, original));
+  regenerate.disabled = !original || Boolean(state.requestController);
+  row.append(copy, regenerate);
+  host.append(row);
+}
+
+/** Asks the answered question again; the old answer is replaced only once a new one arrives. */
+function regenerateAnswer(message, original) {
+  if (!original || state.requestController) return;
+  state.promptEntities = [];
+  state.selectedEntityIds = [...(original.selectedEntityIds || [])];
+  runQuestion(original.content, { replace: [original.id, message.id] });
+}
+
+async function runQuestion(question, { replace = [] } = {}) {
   const chat = activeChat();
   if (!chat || !question.trim() || state.requestController) return;
   const selectedEntityIds = [...state.selectedEntityIds];
@@ -1573,6 +1608,7 @@ async function runQuestion(question) {
       replyTo: userMessage.id,
       result: { ...payload, matchedGraph: graph, followUpQuestions: payload.status === "answered" && graph.nodes.length ? followUpQuestions(graph) : [] },
     };
+    if (replace.length) chat.messages = chat.messages.filter((item) => !replace.includes(item.id));
     chat.messages.push(assistant);
     await persist();
   } catch (error) {

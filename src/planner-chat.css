@@ -103,6 +103,12 @@
 #app .answer-open-graph { justify-self: start; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 12px; border: 0; border-radius: 999px; background: var(--planner-hover-bg); color: var(--answer-text); cursor: pointer; font-size: .875rem; font-weight: 500; line-height: 1.25rem; white-space: nowrap; }
 #app .answer-open-graph:hover { background: color-mix(in srgb, var(--text) 9%, var(--planner-content-bg)); }
 #app .answer-open-graph .ui-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--answer-muted); }
+/* Copy and regenerate sit quietly under each answer, aligned to its text. */
+#app .answer-actions { display: flex; align-items: center; gap: 2px; margin: -4px 0 0 -6px; }
+#app .answer-action { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--answer-muted); cursor: pointer; }
+#app .answer-action:hover:not(:disabled) { background: var(--ui-hover); color: var(--answer-text); }
+#app .answer-action:disabled { opacity: .4; cursor: default; }
+#app .answer-action .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
 /* 1. A quiet rule and label introduce the follow-ups. */
 #app .answer-followups-label { display: flex; align-items: center; gap: 12px; margin: 8px 0 -4px; color: var(--answer-muted); font-size: .8125rem; font-weight: 500; line-height: 1.25rem; }
 #app .answer-followups-label::after { content: ""; flex: 1; height: 1px; background: var(--line); }
