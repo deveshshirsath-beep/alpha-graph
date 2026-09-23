@@ -61,14 +61,6 @@
 #app #controls-panel .filter-item input:focus-visible ~ .planner-type-mark { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 50%; }
 #app #edge-filters .relationship-dot { width: 10px; height: 10px; flex-basis: 10px; margin: 0 1px; border-radius: 50%; background: currentColor; }
 
-/* Recommended paths: entity names joined by relationship pills that wrap whole. */
-#app .relationship-rule-heading { margin: 14px 0 6px; padding-left: 8px; color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; letter-spacing: 0; line-height: 1.25rem; text-transform: none; }
-#app .relationship-rules { max-height: none; padding: 0; border: 0; }
-#app .relationship-rule { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; min-height: var(--panel-row); padding: 7px 8px; border-radius: 8px; color: var(--text); font-family: var(--ui-font); font-size: .8125rem; line-height: 1.25rem; }
-#app .relationship-rule:hover { background: var(--ui-hover); }
-#app .relationship-rule .rule-node { overflow-wrap: anywhere; }
-#app .relationship-rule .rule-edge { display: inline-flex; align-items: center; gap: 3px; padding: 1px 6px 1px 7px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: .75rem; font-weight: 500; white-space: nowrap; }
-#app .relationship-rule .rule-edge .ui-icon { width: .75rem; height: .75rem; flex-basis: .75rem; }
 
 /* The query builder's entity field takes the same field language as every other input. */
 #app .condition-entity-input { height: 2.5rem; padding: 0 12px; border: 0; border-radius: 10px; background: var(--control-fill); box-shadow: none; color: var(--text); font-size: .9375rem; }

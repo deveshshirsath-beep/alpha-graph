@@ -723,15 +723,6 @@ function makeFilters() {
     });
     els.edgeFilters.append(label);
   }
-  const rules = $("#relationship-rules");
-  rules.replaceChildren();
-  for (const [source, relationship, target] of RELATIONSHIP_RULES) {
-    const row = document.createElement("div");
-    row.className = "relationship-rule";
-    row.innerHTML = `<span class="rule-node">${escapeHtml(entityTypeLabel(source))}</span><b class="rule-edge">${escapeHtml(relationshipLabel(relationship))}</b><span class="rule-node">${escapeHtml(entityTypeLabel(target))}</span>`;
-    row.querySelector(".rule-edge").append(icon("arrow-right"));
-    rules.append(row);
-  }
   renderConditionalFilters();
 }
 
