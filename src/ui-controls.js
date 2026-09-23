@@ -217,6 +217,8 @@ function enhanceSelect(select) {
     trigger.append(icon('chevron'));
     trigger.lastElementChild.classList.add('select-chevron');
     trigger.title = option?.textContent || label;
+    // A field with nothing chosen reads as a placeholder, not as a value.
+    trigger.dataset.placeholder = String(!option?.value);
     if (select.disabled) close();
     else if (!menu.hidden) { rebuild(); position(); activate(select.selectedIndex); }
   };

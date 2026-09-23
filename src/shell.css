@@ -37,6 +37,8 @@ body:not(.planner-mode) #app main.workspace > :is(.stage, .query-dock) { animati
 #app main.workspace { --canvas-bg: var(--bg); --stage-line: color-mix(in srgb, var(--canvas-bg) 88%, var(--text)); --canvas-dot: color-mix(in srgb, var(--canvas-bg) 86%, var(--text)); background: var(--panel); }
 [data-theme="light"] #app main.workspace { --canvas-bg: #f5f5f2; --stage-line: #d9ddd6; background: #fff; }
 [data-theme="light"] #app main.workspace > .sidebar { --panel: #fff; --side-bg: #fff; }
+/* The graph columns sit on the same surface as the chat sidebar, not a lighter one. */
+#app main.workspace > :is(.sidebar, .query-dock, .panel-resizer) { --side-bg: var(--panel); }
 #app main.workspace > .sidebar { box-shadow: none; }
 #app main.workspace > .stage { border-top: 1px solid var(--stage-line); border-left: 1px solid var(--stage-line); border-top-left-radius: 16px; background: radial-gradient(circle, var(--canvas-dot) 1px, transparent 1px) 0 0 / 26px 26px, var(--canvas-bg); }
 #app main.workspace > .stage::before, #app main.workspace > .stage::after, #app .stage-grid { display: none; }

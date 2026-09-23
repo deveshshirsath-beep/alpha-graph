@@ -1005,6 +1005,8 @@ function selectNode(node, moveCamera = true) {
   }
   selectedNode = node;
   const attrs = graph.getNodeAttributes(node);
+  // The sheet lives in the query column and replaces the card, so the column must be open.
+  queryPanelToggle?.setOpen(true, false, false);
   els.inspector.classList.add("open");
   els.inspector.setAttribute("aria-hidden", "false");
   $("#inspector-type").textContent = `${attrs.layer} / ${attrs.entityType.replaceAll("-", " ")}`;
@@ -1624,6 +1626,8 @@ function wireControls() {
   renderConditionalFilters();
 }
 
+let queryPanelToggle = null;
+
 function wireWorkspaceShell() {
   $$('[data-panel-icon]').forEach(button => button.replaceChildren(icon(button.dataset.panelIcon)));
   const sidebar = $(".sidebar");
@@ -1641,7 +1645,7 @@ function wireWorkspaceShell() {
       toggle.replaceChildren(icon(toggle.dataset.panelIcon));
     },
   });
-  const queryPanel = connectPanelToggle({
+  queryPanelToggle = connectPanelToggle({
     panel: queryDock, toggles: [$("#query-panel-toggle")], reopen: [$("#query-panel-reopen")],
     label: "query panel", storageKey: "atlas-v2-query-panel", compact: window.matchMedia("(max-width: 1050px)"),
     onChange: open => {
@@ -1651,7 +1655,7 @@ function wireWorkspaceShell() {
     },
   });
   workspaceFocus.register(explorerPanel);
-  workspaceFocus.register(queryPanel);
+  workspaceFocus.register(queryPanelToggle);
 }
 
 function initializeRenderer() {

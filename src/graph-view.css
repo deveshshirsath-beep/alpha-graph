@@ -115,3 +115,25 @@
 #app .range-slider.is-dragging :is(.range-thumb.is-active, .range-fill) { transition: box-shadow 160ms ease, transform 160ms cubic-bezier(.22, 1, .36, 1); }
 #app .range-scale { display: none; }
 @media (prefers-reduced-motion: reduce) { #app :is(.range-fill, .range-thumb) { transition: none; } }
+
+/* Collective header: what this column is for, above the two sections. */
+#app #query-panel .query-card-head { display: grid; gap: 2px; padding: 14px 12px 12px; border-bottom: 1px solid var(--line); }
+#app #query-panel .query-card-head + .sidebar-section { padding-top: 14px; }
+
+/* The entity sheet takes the query card's place in the column instead of hiding behind it. */
+#app #query-panel .inspector { position: static; inset: auto; z-index: auto; display: none; flex-direction: column; width: auto; max-height: calc(100% - 120px); padding: 0 12px 14px; overflow-y: auto; border: 0; border-radius: 16px; background: var(--panel); backdrop-filter: none; box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); opacity: 1; pointer-events: auto; transform: none; transition: none; scrollbar-width: thin; }
+[data-theme="light"] #app #query-panel .inspector { background: #fff; }
+:root:not([data-theme="light"]) #app #query-panel .inspector { box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 4px 10px -2px rgba(0, 0, 0, .45); }
+#app #query-panel .inspector.open { display: flex; }
+#app #query-panel .inspector.open ~ .query-card, #app #query-panel .query-card:has(~ .inspector.open) { display: none; }
+#app #query-panel .inspector-header { margin: 0 -12px 14px; padding: 0 8px 0 12px; border-bottom: 1px solid var(--line); background: var(--panel); color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
+[data-theme="light"] #app #query-panel .inspector-header { background: #fff; }
+#app #query-panel .inspector .close-button { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border-radius: 8px; color: var(--ui-secondary); font-size: 0; }
+#app #query-panel .inspector .close-button .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app #query-panel .inspector .close-button:hover { background: var(--ui-hover); color: var(--text); }
+@media (min-width: 1051px) { #app .workspace > .query-dock .inspector { pointer-events: auto; } }
+
+/* Placeholder dropdowns read as placeholders, in every panel. */
+#app .select-trigger[data-placeholder="true"] { color: var(--ui-secondary); font-weight: 400; }
+#app .select-trigger[data-placeholder="true"] > .ui-icon:first-child { color: var(--ui-secondary); }
+#app .view-switcher-top { top: 12px; bottom: auto; }

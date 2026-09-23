@@ -45,7 +45,7 @@
 
           <div class="explorer-intro">
             <h2>Explore the graph</h2>
-            <p>Search entities, switch layers, and choose what the canvas shows.</p>
+            <p>Search, filter, and focus the canvas.</p>
           </div>
 
           <div class="explorer-tabs" role="tablist" aria-label="Graph filters">
@@ -94,7 +94,7 @@
 
           <div id="loading-panel" class="loading-panel"><div class="loader-orbit"><i></i><i></i><i></i></div><div><span id="loading-label">Reading graph source</span><div class="progress-track"><span id="loading-progress"></span></div><small id="loading-detail">Large graphs are prepared off the main browser thread.</small></div></div>
 
-          <div class="view-switcher">
+          <div class="view-switcher view-switcher-top">
             <div class="view-options" role="radiogroup" aria-label="Graph layout">
               <button class="view-option active" type="button" role="radio" aria-checked="true" data-layout="donut" aria-label="Constellation Donut" title="Constellation Donut" disabled><svg data-icon="circle-notch"></svg><span class="view-option-label">Constellation Donut</span></button>
               <button class="view-option" type="button" role="radio" aria-checked="false" data-layout="constellation-v1" aria-label="Constellation V1" title="Constellation V1" disabled><svg data-icon="graph"></svg><span class="view-option-label">Constellation V1</span></button>
@@ -111,21 +111,19 @@
           </div>
           <div id="empty-state" class="empty-state" hidden><span>No entities match this view</span><button id="empty-reset">Reset filters</button></div>
 
-          <aside id="inspector" class="inspector" aria-live="polite" aria-hidden="true">
-            <div class="inspector-header"><span>Entity intelligence</span><button id="close-inspector" class="close-button" aria-label="Close details">×</button></div>
-            <div class="inspector-accent"></div><div class="inspector-type" id="inspector-type">Entity</div><h2 id="inspector-name">—</h2><p id="inspector-id">—</p>
-            <div class="connection-summary"><div><strong id="in-degree">0</strong><span>incoming</span></div><div><strong id="out-degree">0</strong><span>outgoing</span></div><button id="focus-neighbors">Focus network</button></div>
-            <button id="add-to-traversal" class="add-traversal-button">＋ Add to path explorer</button><div id="inspector-properties" class="property-list"></div><div id="inspector-connections" class="connection-list"></div>
-          </aside>
           <div id="toast" class="toast" role="status"></div>
         </section>
 
         <div class="panel-resizer panel-resizer-right" role="separator" tabindex="0" aria-label="Resize query panel" aria-orientation="vertical" aria-controls="query-panel" title="Drag to resize query panel · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
         <aside id="query-panel" class="query-dock" aria-label="Graph query and traversal">
           <div class="query-card">
+          <div class="query-card-head">
+            <div class="section-title-row"><h2 class="sidebar-heading">Graph controls</h2><button id="query-panel-toggle" class="side-panel-toggle" type="button" aria-label="Collapse query panel" data-panel-icon="panel-right-close"></button></div>
+            <p class="sidebar-hint">Filter the canvas, then trace paths from an entity.</p>
+          </div>
           <section class="conditional-section sidebar-section" data-panel="conditions" aria-labelledby="query-heading">
             <div class="section-head">
-              <div class="section-title-row"><h2 id="query-heading" class="sidebar-heading">Query builder</h2><button id="query-panel-toggle" class="side-panel-toggle" type="button" aria-label="Collapse query panel" data-panel-icon="panel-right-close"></button></div>
+              <h2 id="query-heading" class="sidebar-heading">Query builder</h2>
               <p id="query-empty" class="sidebar-hint">Add conditions, then run them to filter the graph.</p>
             </div>
             <div id="condition-list" class="condition-list"></div>
@@ -146,6 +144,12 @@
             <div id="traversal-footer" class="status-row" hidden><span id="traversal-status" class="status-line" aria-live="polite"></span><button id="clear-traversal" class="link-button" type="button">Clear</button></div>
           </section>
           </div>
+          <aside id="inspector" class="inspector" aria-live="polite" aria-hidden="true">
+            <div class="inspector-header"><span>Entity details</span><button id="close-inspector" class="close-button" aria-label="Close details">×</button></div>
+            <div class="inspector-accent"></div><div class="inspector-type" id="inspector-type">Entity</div><h2 id="inspector-name">—</h2><p id="inspector-id">—</p>
+            <div class="connection-summary"><div><strong id="in-degree">0</strong><span>incoming</span></div><div><strong id="out-degree">0</strong><span>outgoing</span></div><button id="focus-neighbors">Focus network</button></div>
+            <button id="add-to-traversal" class="add-traversal-button">Add to traversal</button><div id="inspector-properties" class="property-list"></div><div id="inspector-connections" class="connection-list"></div>
+          </aside>
         </aside>
       </main>
 
