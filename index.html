@@ -145,10 +145,26 @@
           </section>
           </div>
           <aside id="inspector" class="inspector" aria-live="polite" aria-hidden="true">
-            <div class="inspector-header"><span>Entity details</span><button id="close-inspector" class="close-button" aria-label="Close details">×</button></div>
-            <div class="inspector-accent"></div><div class="inspector-type" id="inspector-type">Entity</div><h2 id="inspector-name">—</h2><p id="inspector-id">—</p>
-            <div class="connection-summary"><div><strong id="in-degree">0</strong><span>incoming</span></div><div><strong id="out-degree">0</strong><span>outgoing</span></div><button id="focus-neighbors">Focus network</button></div>
-            <button id="add-to-traversal" class="add-traversal-button">Add to traversal</button><div id="inspector-properties" class="property-list"></div><div id="inspector-connections" class="connection-list"></div>
+            <div class="entity-header">
+              <span id="inspector-mark" class="entity-header-mark planner-type-mark" aria-hidden="true"></span>
+              <div class="entity-who">
+                <h3 id="inspector-name">—</h3>
+                <div class="entity-sub"><span id="inspector-type">Entity</span><span class="entity-sub-dot" aria-hidden="true">·</span><span id="inspector-related">0 related</span></div>
+              </div>
+              <div class="entity-controls"><button id="close-inspector" class="icon-button" type="button" aria-label="Close details" title="Close details"></button></div>
+            </div>
+            <div class="entity-actions">
+              <button id="focus-neighbors" class="link-button with-icon" type="button"><svg data-icon="crosshair"></svg><span>Focus neighborhood</span></button>
+              <button id="add-to-traversal" class="link-button with-icon" type="button"><svg data-icon="path"></svg><span class="add-traversal-label">Add to traversal</span></button>
+            </div>
+            <div class="entity-tabs" role="tablist" aria-label="Entity details">
+              <button class="entity-tab active" type="button" role="tab" aria-selected="true" data-entity-tab="relations" aria-controls="inspector-connections">Relations <small id="relations-count">0</small></button>
+              <button class="entity-tab" type="button" role="tab" aria-selected="false" data-entity-tab="properties" aria-controls="inspector-properties">Properties</button>
+            </div>
+            <div class="entity-content">
+              <div id="inspector-connections" class="entity-panel" role="tabpanel" data-entity-panel="relations"></div>
+              <div id="inspector-properties" class="entity-panel" role="tabpanel" data-entity-panel="properties" hidden></div>
+            </div>
           </aside>
         </aside>
       </main>

@@ -1009,32 +1009,15 @@ function selectNode(node, moveCamera = true) {
   queryPanelToggle?.setOpen(true, false, false);
   els.inspector.classList.add("open");
   els.inspector.setAttribute("aria-hidden", "false");
-  $("#inspector-type").textContent = `${attrs.layer} / ${attrs.entityType.replaceAll("-", " ")}`;
-  $("#inspector-type").style.color = themeColor(attrs);
+  const mark = $("#inspector-mark");
+  mark.replaceChildren(icon("cube"));
+  mark.style.color = themeColor(attrs);
+  $("#inspector-type").textContent = sentenceLabel(attrs.entityType);
   $("#inspector-name").textContent = attrs.name;
-  $("#inspector-id").textContent = node;
-  $("#in-degree").textContent = graph.inDegree(node).toLocaleString();
-  $("#out-degree").textContent = graph.outDegree(node).toLocaleString();
+  $("#inspector-name").title = attrs.name;
   updateTraversalUI();
 
-  const properties = $("#inspector-properties");
-  properties.replaceChildren();
-  const propertiesHeading = document.createElement("h3");
-  propertiesHeading.textContent = "Property graph metadata";
-  properties.append(propertiesHeading);
-  const metadata = {
-    layer: attrs.layer,
-    entityType: attrs.entityType,
-    importance: attrs.importance,
-    ...(attrs.properties || {}),
-  };
-  for (const [key, value] of Object.entries(metadata)) {
-    const row = document.createElement("div");
-    row.innerHTML = `<span>${escapeHtml(key.replace(/([A-Z])/g, " $1"))}</span><strong></strong>`;
-    row.querySelector("strong").textContent = typeof value === "object" ? JSON.stringify(value) : String(value);
-    properties.append(row);
-  }
-
+  renderInspectorProperties(node, attrs);
   renderInspectorConnections(node);
 
   if (moveCamera) {
@@ -1046,28 +1029,62 @@ function selectNode(node, moveCamera = true) {
   renderer.refresh();
 }
 
+function sentenceLabel(value) {
+  const words = String(value).replaceAll("-", " ").replaceAll("_", " ").toLowerCase().trim();
+  return words ? words[0].toUpperCase() + words.slice(1) : "";
+}
+
+function renderInspectorProperties(node, attrs) {
+  const properties = $("#inspector-properties");
+  const block = document.createElement("div");
+  block.className = "entity-block";
+  const label = document.createElement("div");
+  label.className = "block-label";
+  label.textContent = "Metadata";
+  block.append(label);
+  const rows = {
+    Layer: sentenceLabel(attrs.layer),
+    "Entity type": sentenceLabel(attrs.entityType),
+    Importance: attrs.importance,
+    Incoming: formatNumber.format(graph.inDegree(node)),
+    Outgoing: formatNumber.format(graph.outDegree(node)),
+    ...(attrs.properties || {}),
+  };
+  for (const [key, value] of Object.entries(rows)) {
+    const row = document.createElement("div");
+    row.className = "kv-row";
+    row.innerHTML = `<span class="kv-key">${escapeHtml(sentenceLabel(key.replace(/([A-Z])/g, " $1")))}</span><span class="kv-values"></span>`;
+    row.querySelector(".kv-values").textContent = typeof value === "object" ? JSON.stringify(value) : String(value);
+    block.append(row);
+  }
+  const identity = document.createElement("div");
+  identity.className = "entity-block";
+  identity.innerHTML = `<div class="block-label">Identifier</div><p id="inspector-id" class="entity-id"></p>`;
+  identity.querySelector("#inspector-id").textContent = node;
+  properties.replaceChildren(block, identity);
+}
+
 function renderInspectorConnections(node) {
   const connections = $("#inspector-connections");
   const previousScrollTop = connections.querySelector(".connection-rows")?.scrollTop || 0;
   connections.replaceChildren();
-  const connectionsHeading = document.createElement("h3");
-  connectionsHeading.textContent = "Connected entities";
-  connections.append(connectionsHeading);
   // Count unique connected entities, not edges: parallel edges must not inflate
   // the number of remaining rows. Render in batches for high-degree nodes.
   const neighbors = graph.neighbors(node);
+  $("#inspector-related").textContent = `${formatNumber.format(neighbors.length)} related`;
+  $("#relations-count").textContent = formatNumber.format(neighbors.length);
   const rows = document.createElement("div");
-  rows.className = "connection-rows";
+  rows.className = "connection-rows relation-rows";
   rows.id = "connection-rows";
   rows.tabIndex = 0;
   rows.setAttribute("role", "region");
   rows.setAttribute("aria-label", "Connected entities, scroll to browse");
   const status = document.createElement("p");
-  status.className = "connection-pagination-status";
+  status.className = "connection-pagination-status relation-more";
   status.setAttribute("role", "status");
   const more = document.createElement("button");
   more.type = "button";
-  more.className = "more-connections";
+  more.className = "more-connections link-button with-icon";
   more.setAttribute("aria-controls", rows.id);
   connections.append(rows, status, more);
 
@@ -1082,15 +1099,15 @@ function renderInspectorConnections(node) {
       const connectionEdges = graph.edges(node, neighbor);
       const descriptions = [...new Set(connectionEdges.map((edge) => {
         const direction = graph.source(edge) === node ? "→" : "←";
-        return `${direction} ${graph.getEdgeAttribute(edge, "relationshipType").replaceAll("-", " ")}`;
+        return `${direction} ${sentenceLabel(graph.getEdgeAttribute(edge, "relationshipType"))}`;
       }))];
       const relationship = descriptions[0] || "RELATED TO";
       const button = document.createElement("button");
       button.type = "button";
-      button.className = "connection-row";
-      button.innerHTML = `<i style="--node-color:${safeCssColor(themeColor(neighborAttrs))}"></i><span><b></b><small></small></span><em aria-hidden="true">↗</em>`;
-      button.querySelector("b").textContent = neighborAttrs.name;
-      button.querySelector("small").textContent = `${relationship}${descriptions.length > 1 ? ` +${descriptions.length - 1}` : ""} · ${neighborAttrs.entityType.replaceAll("-", " ")}`;
+      button.className = "connection-row relation-row";
+      button.innerHTML = `<i style="--node-color:${safeCssColor(themeColor(neighborAttrs))}"></i><span class="relation-name"></span><small class="relation-kind"></small>`;
+      button.querySelector(".relation-name").textContent = neighborAttrs.name;
+      button.querySelector(".relation-kind").textContent = `${relationship}${descriptions.length > 1 ? ` +${descriptions.length - 1}` : ""}`;
       button.title = `${neighborAttrs.name}\n${descriptions.join("\n")}\n${neighbor}`;
       button.addEventListener("click", () => selectNode(neighbor));
       if (!firstNewRow) firstNewRow = button;
@@ -1100,9 +1117,9 @@ function renderInspectorConnections(node) {
     rows.append(fragment);
     visibleConnectionCount = Math.max(CONNECTION_PAGE_SIZE, rendered);
     const remaining = neighbors.length - rendered;
-    status.textContent = neighbors.length ? `Showing ${rendered.toLocaleString()} of ${neighbors.length.toLocaleString()} connected entities` : "No connected entities in the loaded graph.";
+    status.textContent = neighbors.length ? (remaining ? `${rendered.toLocaleString()} of ${neighbors.length.toLocaleString()}` : "") : "No connected entities in the loaded graph.";
     more.hidden = remaining === 0;
-    setButtonContent(more, "plus", `Show ${Math.min(CONNECTION_PAGE_SIZE, remaining)} more · ${remaining.toLocaleString()} remaining`);
+    setButtonContent(more, "plus", `Show ${Math.min(CONNECTION_PAGE_SIZE, remaining)} more`);
     if (revealNew && previousCount && firstNewRow) {
       firstNewRow.focus({ preventScroll: true });
       rows.scrollTo({ top: firstNewRow.offsetTop, behavior: "smooth" });
@@ -1523,8 +1540,8 @@ function handleSearch(query) {
 }
 
 /** Entities and Relationships are the explorer panel's two tabs, with arrow keys between them. */
-function wireExplorerTabs() {
-  const tabs = /** @type {HTMLButtonElement[]} */ ($$(".explorer-tab"));
+function wireExplorerTabs(selector = ".explorer-tab") {
+  const tabs = /** @type {HTMLButtonElement[]} */ ($$(selector));
   const select = (tab) => {
     for (const item of tabs) {
       const active = item === tab;
@@ -1555,6 +1572,7 @@ function wireControls() {
   $("#apply-conditions").addEventListener("click", applyConditionalFilters);
   $("#clear-conditions").addEventListener("click", clearConditionalFilters);
   wireExplorerTabs();
+  wireExplorerTabs(".entity-tab");
   $("#zoom-in").addEventListener("click", () => renderer.getCamera().animatedZoom({ duration: 250 }));
   $("#zoom-out").addEventListener("click", () => renderer.getCamera().animatedUnzoom({ duration: 250 }));
   $("#zoom-fit").addEventListener("click", fitVisibleGraph);
