@@ -349,13 +349,10 @@
 #app .answer-quote > * { margin: 0; color: inherit; }
 #app .answer-quote > * + * { margin-top: 10px; }
 
-/* A failed or cancelled query is a state, not prose: named, toned, and carried by its own rule. */
-#app .answer-notice { --notice: var(--ui-secondary); display: block; padding: 2px 0 2px 18px; border-left: 3px solid color-mix(in srgb, var(--notice) 45%, transparent); }
-#app .answer-notice.is-error { --notice: #c0392b; }
-:root:not([data-theme="light"]) #app .answer-notice.is-error { --notice: #ff8a80; }
-#app .answer-notice-label { display: inline-flex; align-items: center; gap: 8px; color: var(--notice); font-size: .8125rem; font-weight: 600; line-height: 1.125rem; }
-#app .answer-notice-label .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
-#app .answer-notice p { margin: 6px 0 0; color: var(--answer-text); font-size: .9375rem; line-height: 1.5rem; }
+/* An unanswered question reads as an empty result: quiet, and in the body's own type. */
+#app .answer-empty { display: block; padding: 2px 0 2px 18px; border-left: 3px solid var(--line); }
+#app .answer-empty strong { display: block; color: var(--answer-text); font-size: var(--text-body, .9375rem); font-weight: 600; line-height: 1.375rem; }
+#app .answer-empty p { margin: 4px 0 0; color: var(--answer-muted); font-size: var(--text-body, .9375rem); line-height: 1.5rem; }
 
 /* Retry sits on the same button language as the rest of the app. */
 #app .planner-restore-question { display: inline-flex; align-items: center; height: 2.25rem; padding: 0 14px; border: 1px solid var(--ui-border); border-radius: 10px; background: var(--planner-card-bg); color: var(--answer-text); cursor: pointer; font-family: var(--ui-font); font-size: .875rem; font-weight: 500; line-height: 1.25rem; }

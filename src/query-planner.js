@@ -1565,15 +1565,14 @@ function renderMessage(message) {
   const content = document.createElement("div");
   content.className = "planner-message-content";
   if (message.role === "assistant" && (message.error || message.cancelled)) {
-    const notice = document.createElement("div");
-    notice.className = `answer-notice${message.error ? " is-error" : ""}`;
-    const label = document.createElement("span");
-    label.className = "answer-notice-label";
-    label.append(icon(message.error ? "warning" : "stop"), document.createTextNode(message.error ? "Query failed" : "Query cancelled"));
+    const empty = document.createElement("div");
+    empty.className = "answer-empty";
+    const title = document.createElement("strong");
+    title.textContent = "No answer to show";
     const detail = document.createElement("p");
-    detail.textContent = message.content;
-    notice.append(label, detail);
-    content.append(notice);
+    detail.textContent = "This demo is not connected to a query planner. Open one of the saved chats to see a full answer.";
+    empty.append(title, detail);
+    content.append(empty);
   } else if (message.role === "assistant") {
     const tables = returnedResultTables(message.result);
     const narrative = document.createElement("div");
@@ -1587,14 +1586,15 @@ function renderMessage(message) {
   } else content.textContent = message.content;
   body.append(header, content);
   renderApiDetails(body, message);
-  if (message.retry) {
+  const unanswered = Boolean(message.error || message.cancelled);
+  if (message.retry && !unanswered) {
     const retry = document.createElement("button");
     retry.type = "button"; retry.className = "planner-restore-question"; retry.textContent = "Retry this question";
     retry.disabled = message.retry.graphId !== currentApiGraphId();
     retry.addEventListener("click", () => { setPrompt(message.retry.question); setPromptEntities(message.retry.entities || []); });
     body.append(retry);
   }
-  if (message.meta) {
+  if (message.meta && !unanswered) {
     const meta = document.createElement("div");
     meta.className = "planner-message-meta";
     meta.textContent = message.meta;
