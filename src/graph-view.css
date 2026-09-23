@@ -5,7 +5,7 @@
 
 /* Layout switch: a segmented control whose active option shows its name. */
 #app .view-switcher { position: absolute; z-index: 6; left: 12px; bottom: 12px; display: flex; align-items: center; gap: 8px; width: max-content; }
-#app .view-options { display: flex; gap: 2px; padding: 4px; border-radius: 14px; background: var(--panel); }
+#app .view-options { display: flex; align-items: center; gap: 2px; padding: 4px; border-radius: 14px; background: var(--panel); }
 #app .view-options > button { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: var(--ui-secondary); cursor: pointer; font-size: .9375rem; line-height: 1.375rem; white-space: nowrap; transition: background-color .15s ease, color .15s ease; }
 #app .view-options > button .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
 #app .view-option-label { display: none; }
@@ -13,25 +13,30 @@
 #app .view-options > button:hover:not(:disabled):not(.active) { background: var(--ui-hover); color: var(--text); }
 #app .view-options > button.active { background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); font-weight: 500; }
 
-/* Map corner: the minimap with zoom controls beside it, quiet until hovered. */
-#app .map-corner { position: absolute; z-index: 6; right: 12px; bottom: 12px; display: flex; align-items: flex-end; gap: 8px; }
+#app .view-switcher-label { padding: 0 4px 0 8px; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; align-self: center; }
+
+/* Map corner: minimap and zoom controls together, stacked above the view switch in the bottom-left. */
+#app .map-corner { position: absolute; z-index: 6; left: 12px; right: auto; bottom: 12px; width: 132px; display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
 #app .map-corner .minimap { position: static; inset: auto; width: auto; height: auto; padding: 0; border: 0; border-radius: 10px; background: none; box-shadow: none; backdrop-filter: none; }
-#app .map-corner .minimap canvas { display: block; width: 124px; height: 72px; border-radius: 8px; background: var(--panel); box-shadow: 0 0 0 1px var(--line); cursor: crosshair; }
-#app .zoom-controls { display: grid; gap: 2px; padding: 4px; border-radius: 12px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .06), 0 4px 12px -2px rgba(18, 35, 66, .12); }
+#app .map-corner .minimap canvas { display: block; width: 100%; height: 72px; border-radius: 8px; background: var(--panel); box-shadow: 0 0 0 1px var(--line); cursor: crosshair; }
+#app .zoom-controls { display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 4px; border-radius: 12px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .06), 0 4px 12px -2px rgba(18, 35, 66, .12); }
 :root:not([data-theme="light"]) #app .zoom-controls { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 4px 12px -2px rgba(0, 0, 0, .45); }
-#app .zoom-controls button { display: grid; place-items: center; width: 32px; height: 32px; min-height: 0; padding: 0; border: 0; border-radius: 8px; background: transparent; box-shadow: none; color: var(--text); cursor: pointer; }
+#app .zoom-controls button { display: grid; place-items: center; flex: 1 1 0; width: auto; height: 32px; min-height: 0; padding: 0; border: 0; border-radius: 8px; background: transparent; box-shadow: none; color: var(--text); cursor: pointer; }
 #app .zoom-controls button .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
 #app .zoom-controls button:hover:not(:disabled) { background: var(--ui-hover); color: var(--text); }
 #app .zoom-controls button:disabled { opacity: .4; }
 
 /* Right panel: one white card hanging in the column with the chat entity panel's inset, radius and shadow. */
-#app #query-panel { padding: 12px; background: transparent; overflow: hidden; }
-#app #query-panel .query-card { display: flex; flex-direction: column; max-height: calc(100% - 120px); overflow-y: auto; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); scrollbar-width: thin; }
+#app #query-panel { padding: 20px 20px 24px; background: transparent; overflow: hidden; }
+#app #query-panel .query-card { display: flex; flex-direction: column; flex: 0 1 auto; height: auto; max-height: 100%; overflow-y: auto; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); scrollbar-width: thin; }
 [data-theme="light"] #app #query-panel .query-card { background: #fff; }
 :root:not([data-theme="light"]) #app #query-panel .query-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 4px 10px -2px rgba(0, 0, 0, .45); }
 /* On desktop the canvas runs under the right column, so the card floats on the grid and the map corner sits below it. */
 @media (min-width: 1051px) {
   #app .workspace > .stage { grid-column: 4 / 7; }
+  /* Sigma centres on its container, so the container stops where the query card starts. */
+  #app .workspace > .stage #sigma-container { right: var(--query-width, 0px); }
+  body:not(.query-dock-open) #app .workspace > .stage #sigma-container { right: 0; }
   #app .workspace > :is(.query-dock, .panel-resizer-right) { z-index: 7; border: 0; background: transparent; box-shadow: none; }
   #app .workspace > .query-dock { pointer-events: none; }
   #app .workspace > .query-dock .query-card { pointer-events: auto; }
@@ -41,20 +46,23 @@
 }
 #app #query-panel .section-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 #app #query-panel .section-title-row .side-panel-toggle { flex-shrink: 0; margin: -4px -4px -4px 0; }
-#app #query-panel .sidebar-section { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 14px 12px 16px; border: 0; background: none; }
+#app #query-panel .sidebar-section { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 18px 20px 20px; border: 0; background: none; }
 #app #query-panel .sidebar-section + .sidebar-section { border-top: 1px solid var(--line); }
-#app #query-panel .section-head { display: grid; gap: 2px; padding-bottom: 2px; }
+#app #query-panel .section-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 8px; align-items: center; padding-bottom: 2px; }
+#app #query-panel .section-head > .sidebar-heading { grid-column: 1; grid-row: 1; }
+#app #query-panel .section-head > .feature-tour-button { grid-column: 2; grid-row: 1; justify-self: end; }
+#app #query-panel .section-head > .sidebar-hint { grid-column: 1 / -1; }
 #app #query-panel .sidebar-heading { margin: 0; color: var(--text); font-size: .9375rem; font-weight: 600; line-height: 1.375rem; }
 #app #query-panel .sidebar-hint { margin: 0; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; }
 #app #query-panel :is(.sidebar-hint, .status-row, .primary-action)[hidden] { display: none; }
 
 /* Sigma's controls: a filled "add" row, a status line with a quiet Clear, and icon buttons. */
-#app #query-panel .control-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 2.5rem; padding: 0 8px 0 12px; border: 0; border-radius: 10px; background: var(--control-fill); box-shadow: none; color: var(--text); cursor: pointer; font-size: .9375rem; font-weight: 500; letter-spacing: 0; line-height: 1.375rem; text-align: left; text-transform: none; }
+#app #query-panel .control-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 2.75rem; padding: 0 12px; border: 0; border-radius: 10px; background: var(--control-fill); box-shadow: none; color: var(--text); cursor: pointer; font-size: .9375rem; font-weight: 500; letter-spacing: 0; line-height: 1.375rem; text-align: left; text-transform: none; }
 #app #query-panel .control-row:hover:not(:disabled) { background: var(--control-fill-hover); }
 #app #query-panel .control-row:disabled { color: var(--ui-secondary); cursor: default; }
 #app #query-panel .control-lead { display: grid; place-items: center; flex: 0 0 auto; width: 18px; height: 18px; color: var(--ui-secondary); }
 #app #query-panel .control-lead .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
-#app #query-panel .control-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app #query-panel .control-label { flex: 1; min-width: 0; overflow: hidden; padding: 0; color: var(--text); font-size: .9375rem; font-weight: 500; letter-spacing: 0; line-height: 1.375rem; text-transform: none; text-overflow: ellipsis; white-space: nowrap; }
 #app #query-panel .status-row { display: flex; align-items: center; gap: 8px; min-height: 32px; }
 #app #query-panel .status-line { margin: 0; padding: 0; color: var(--ui-secondary); font-size: .8125rem; letter-spacing: 0; line-height: 1.25rem; text-transform: none; }
 #app #query-panel .status-line:empty { display: none; }
@@ -72,7 +80,9 @@
 /* Query conditions: compact cards in sentence case, 36px fields. */
 #app #query-panel .condition-list { display: grid; gap: 8px; }
 #app #query-panel .condition-list:empty { display: none; }
-#app #query-panel .condition-card { display: grid; gap: 8px; margin: 0; padding: 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); box-shadow: none; }
+#app #query-panel .condition-list { display: grid; gap: 0; }
+#app #query-panel .condition-card { display: grid; gap: 8px; margin: 0; padding: 12px 0; border: 0; border-radius: 0; background: none; box-shadow: none; }
+#app #query-panel .condition-card + .condition-card { border-top: 1px solid var(--line); }
 #app #query-panel .condition-card-header { display: flex; flex-wrap: nowrap; align-items: center; gap: 6px; min-height: 32px; margin: 0; }
 #app #query-panel .condition-card-header > span { flex: 1; color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; letter-spacing: 0; line-height: 1.25rem; text-transform: none; }
 #app #query-panel .condition-card-header > .select-control { width: auto; }
@@ -83,7 +93,7 @@
 #app #query-panel .condition-card .condition-entity-input { height: 2.25rem; font-size: .875rem; }
 #app #query-panel .condition-suggestions { border-radius: 10px; }
 #app #query-panel .condition-suggestion-heading { font-size: .75rem; font-weight: 500; letter-spacing: 0; text-transform: none; }
-#app #query-panel .condition-suggestions b { font-size: .875rem; font-weight: 500; }
+#app #query-panel .condition-suggestions b { font-size: .9375rem; font-weight: 500; line-height: 1.375rem; }
 #app #query-panel .condition-suggestions small { font-size: .75rem; }
 
 /* Traversal: sigma's entity rows and two-sided distance slider. */
@@ -109,8 +119,7 @@
 #app .range-fill { background: var(--text); transition: left 200ms cubic-bezier(.22, 1, .36, 1), width 200ms cubic-bezier(.22, 1, .36, 1); }
 #app .range-stop { position: absolute; top: 50%; width: 4px; height: 4px; border-radius: 50%; background: color-mix(in srgb, var(--text) 30%, transparent); transform: translate(-50%, -50%); pointer-events: none; }
 #app .range-stop.in-range { background: color-mix(in srgb, var(--panel) 70%, transparent); }
-#app .range-stop.is-origin { width: 8px; height: 8px; background: var(--text); }
-#app .range-stop.is-origin.in-range { background: var(--panel); }
+#app .range-stop.is-origin, #app .range-stop.is-origin.in-range { width: 11px; height: 11px; background: var(--accent); box-shadow: 0 0 0 2.5px var(--panel); }
 #app .range-thumb { position: absolute; top: 50%; z-index: 1; width: var(--thumb-size); height: var(--thumb-size); border-radius: 50%; background: #fff; box-shadow: 0 0 0 1px rgba(5, 5, 5, .14), 0 2px 6px rgba(18, 35, 66, .18); cursor: grab; transform: translate(-50%, -50%); transition: left 200ms cubic-bezier(.22, 1, .36, 1), box-shadow 160ms ease, transform 160ms cubic-bezier(.22, 1, .36, 1); }
 #app .range-thumb:hover { transform: translate(-50%, -50%) scale(1.06); }
 #app .range-thumb:focus-visible { outline: none; box-shadow: 0 0 0 1px rgba(5, 5, 5, .2), 0 2px 6px rgba(18, 35, 66, .18), 0 0 0 3px var(--ui-focus); }
@@ -120,7 +129,7 @@
 @media (prefers-reduced-motion: reduce) { #app :is(.range-fill, .range-thumb) { transition: none; } }
 
 /* Collective header: what this column is for, above the two sections. */
-#app #query-panel .query-card-head { display: grid; gap: 2px; padding: 14px 12px 12px; border-bottom: 1px solid var(--line); }
+#app #query-panel .query-card-head { display: grid; gap: 2px; padding: 18px 20px 16px; border-bottom: 1px solid var(--line); }
 #app #query-panel .query-card-head + .sidebar-section { padding-top: 14px; }
 
 /* The entity sheet takes the query card's place in the column instead of hiding behind it. */
@@ -152,7 +161,7 @@
 #app .inspector .entity-tab small { margin-left: 6px; color: var(--ui-secondary); font-size: .8125rem; }
 #app .inspector .entity-tab:hover { color: var(--text); }
 #app .inspector .entity-tab.active { border-bottom-color: var(--text); color: var(--text); font-weight: 500; }
-#app .inspector .entity-content { flex: 1 1 auto; min-height: 0; padding: 12px 12px 20px; overflow-y: auto; scrollbar-width: thin; }
+#app .inspector .entity-content { flex: 1 1 auto; min-height: 0; padding: 16px 16px 24px; overflow-y: auto; scrollbar-width: thin; }
 #app .inspector .entity-panel { display: grid; align-content: start; gap: 20px; }
 #app .inspector .entity-panel[hidden] { display: none; }
 #app .inspector .entity-block { display: grid; gap: 2px; }

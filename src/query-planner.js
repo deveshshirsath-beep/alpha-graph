@@ -5,6 +5,7 @@ import { chronologicalMessages, messageTimestamp } from "./planner-conversation.
 import { PlannerGraphBrowser } from "./planner-graph-browser.js";
 import { bindQuestion, parameterTypes, parseQuestionCatalog, parseQuestionTemplates, questionAnchor, questionParameters, relevantCatalogQuestions } from "./planner-discovery.js";
 import { icon, inlineIllustrations, syncDropdowns } from "./ui-controls.js";
+import { attachTourButton, registerTour, waitFor } from "./feature-tour.js";
 import { SearchDropdown } from "./search-dropdown.js";
 import { catalogSearchOptions } from "./search-options.js";
 import { PlannerApi, resultPagination } from "./planner-api.js";
@@ -640,7 +641,7 @@ function syncGraphEntry() {
   renderActiveChat();
 }
 
-const SAMPLE_CHATS_KEY = "atlas-sample-chats-v1";
+const SAMPLE_CHATS_KEY = "atlas-sample-chats-v2";
 
 function sampleReply(answer, user, graphId, createdAt) {
   const narrative = [answer.narrative, answer.bullets.map((text) => `- ${text}`).join("\n")].join("\n\n");
@@ -684,8 +685,11 @@ async function seedSampleChats() {
   let stamp = Date.now() - 86_400_000;
   let first = null;
   for (const sample of SAMPLE_PROJECTS) {
-    const project = { ...(await documents.createProject(workspace.id, sample.name)), chats: [] };
+    const existing = (workspace.projects || []).find((item) => item.name === sample.name);
+    const project = existing || { ...(await documents.createProject(workspace.id, sample.name)), chats: [] };
+    project.chats ||= [];
     for (const item of sample.chats) {
+      if (project.chats.some((chat) => chat.title === item.question)) continue;
       const chat = await documents.createChat(workspace.id, project.id, item.question);
       const createdAt = new Date(stamp += 60_000).toISOString();
       const user = { id: makeId("message"), role: "user", content: item.question, createdAt, graphId };
@@ -695,7 +699,7 @@ async function seedSampleChats() {
       await documents.updateChat(workspace.id, project.id, chat.id, { title: chat.title, graphId, messages: chat.messages });
       project.chats.push(chat);
     }
-    workspace.projects.push(project);
+    if (!existing) workspace.projects.push(project);
     first ||= project;
   }
   try { localStorage.setItem(SAMPLE_CHATS_KEY, "1"); } catch { /* Seeding again later only adds duplicates. */ }
@@ -761,7 +765,7 @@ function menuButton(label, items, ids) {
   button.title = label;
   button.setAttribute("aria-label", label);
   button.setAttribute("aria-haspopup", "menu");
-  button.append(icon("chevron"));
+  button.append(icon("kebab"));
   button.addEventListener("click", () => openRowMenu(button, items, ids));
   return button;
 }
@@ -943,15 +947,45 @@ async function handleDocumentAction(button) {
   renderActiveChat();
 }
 
+/** Only http(s) links are rendered as links; anything else stays as plain text. */
+function safeHref(value) {
+  try {
+    const url = new URL(String(value), location.href);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
+  } catch { return ""; }
+}
+
 function appendInlineMarkdown(target, value) {
-  const expression = /(\*\*([^*]+)\*\*|`([^`]+)`)/g;
+  const expression = /(\*\*([^*]+)\*\*|\*([^*\n]+)\*|_([^_\n]+)_|`([^`]+)`|\[([^\]]+)\]\(([^)\s]+)\))/g;
   let cursor = 0;
   let match = expression.exec(value);
   while (match) {
     if (match.index > cursor) target.append(document.createTextNode(value.slice(cursor, match.index)));
-    const element = document.createElement(match[2] ? "strong" : "code");
-    element.textContent = match[2] || match[3];
-    target.append(element);
+    const [, , bold, star, underscore, code, linkText, linkHref] = match;
+    if (bold) {
+      const element = document.createElement("strong");
+      element.textContent = bold;
+      target.append(element);
+    } else if (star || underscore) {
+      const element = document.createElement("em");
+      element.textContent = star || underscore;
+      target.append(element);
+    } else if (code) {
+      const element = document.createElement("code");
+      element.textContent = code;
+      target.append(element);
+    } else {
+      const href = safeHref(linkHref);
+      const element = document.createElement(href ? "a" : "span");
+      element.textContent = linkText;
+      if (href) {
+        element.setAttribute("href", href);
+        element.setAttribute("target", "_blank");
+        element.setAttribute("rel", "noopener noreferrer");
+        element.className = "answer-link";
+      }
+      target.append(element);
+    }
     cursor = match.index + match[0].length;
     match = expression.exec(value);
   }
@@ -968,6 +1002,48 @@ function renderMarkdown(target, value) {
     if (!line.trim()) {
       list = null;
       index += 1;
+      continue;
+    }
+    if (line.trim().startsWith("```")) {
+      list = null;
+      const pre = document.createElement("pre");
+      pre.className = "answer-code";
+      const code = document.createElement("code");
+      const language = line.trim().slice(3).trim();
+      if (language) code.dataset.language = language;
+      index += 1;
+      const body = [];
+      while (index < lines.length && !lines[index].trim().startsWith("```")) body.push(lines[index]), index += 1;
+      code.textContent = body.join("\n");
+      pre.append(code);
+      target.append(pre);
+      index += 1;
+      continue;
+    }
+    if (/^\s*(?:---|\*\*\*|___)\s*$/.test(line)) {
+      list = null;
+      const rule = document.createElement("hr");
+      rule.className = "answer-rule";
+      target.append(rule);
+      index += 1;
+      continue;
+    }
+    const quote = line.match(/^>\s?(.*)$/);
+    if (quote) {
+      list = null;
+      const block = document.createElement("blockquote");
+      block.className = "answer-quote";
+      const paragraph = document.createElement("p");
+      appendInlineMarkdown(paragraph, quote[1]);
+      block.append(paragraph);
+      index += 1;
+      while (index < lines.length && /^>\s?/.test(lines[index])) {
+        const next = document.createElement("p");
+        appendInlineMarkdown(next, lines[index].replace(/^>\s?/, ""));
+        block.append(next);
+        index += 1;
+      }
+      target.append(block);
       continue;
     }
     const heading = line.match(/^(#{1,4})\s+(.+)$/);
@@ -1284,14 +1360,30 @@ function renderAnswerExtras(host, message) {
     const open = document.createElement("button");
     open.type = "button";
     open.className = "answer-open-graph";
-    open.append(icon("graph"), document.createTextNode("Open Atlas Graph"));
+    const text = document.createElement("span");
+    text.className = "answer-open-graph-text";
+    const title = document.createElement("strong");
+    title.textContent = "Open Atlas Graph";
+    const name = document.createElement("small");
+    name.className = "answer-snapshot";
+    name.textContent = snapshotName(message);
+    text.append(title, name);
+    open.append(icon("graph"), text);
+    open.title = `This answer's graph snapshot${message.createdAt ? `, captured ${new Date(message.createdAt).toLocaleString()}` : ""}`;
     open.addEventListener("click", () => setPlannerMode(false));
-    host.append(open);
+    const wrap = document.createElement("div");
+    wrap.className = "answer-open-graph-wrap";
+    wrap.append(open);
+    host.append(wrap);
   }
 }
 
 /** Sigma-style follow-up pills after every answer; choosing one keeps the answer's entities as context. */
 function renderFollowupPills(host, message) {
+  // Suggestions are an invitation to ask next, so only the latest answer carries them.
+  const history = activeChat()?.messages || [];
+  const newest = [...history].reverse().find((item) => item.role === "assistant");
+  if (newest && newest.id !== message.id) return;
   const graph = normalizeGraph(message.result?.matchedGraph);
   if (!graph.nodes.length || isScalarCount(message.result)) return;
   const questions = [...new Set([...(message.result?.followUpQuestions || []), ...followUpQuestions(graph)])].slice(0, 4);
@@ -1313,6 +1405,60 @@ function renderFollowupPills(host, message) {
   host.append(label, row);
 }
 
+let suggestionOffset = 0;
+let suggestionChatId = "";
+
+/** Refresh: walk the catalog to the next set of suggestions for this layer. */
+function shuffleSuggestions() {
+  suggestionOffset += 4;
+  renderSuggestions();
+}
+
+
+/** The chat walkthrough: pick an entity in the right panel, then ask one of its catalog questions. */
+function registerChatTours() {
+  const mapPanel = () => document.querySelector("#planner-type-map-panel");
+  registerTour("entity-questions", {
+    title: "Ask about an entity",
+    steps: [
+      {
+        text: "The Entity map is the graph's own vocabulary. Open the tab and pick the type you want to ask about.",
+        target: () => document.querySelector('[data-context-tab="map"]'),
+        run: () => { /** @type {HTMLElement | null} */ (document.querySelector('[data-context-tab="map"]'))?.click(); },
+        settle: 250,
+      },
+      {
+        text: "Choosing a type opens the catalog questions written for it — we've picked the first one in the tree.",
+        target: () => mapPanel()?.querySelector(".planner-type-row"),
+        run: async () => {
+          const entry = /** @type {HTMLElement | null} */ (await waitFor(() => mapPanel()?.querySelector(".planner-type-entry:not([disabled])")));
+          entry?.click();
+        },
+        settle: 350,
+      },
+      {
+        text: "Every question here already knows the type you picked. Choosing one drops it into the composer, filled in.",
+        target: () => mapPanel()?.querySelector(".planner-type-question"),
+        run: async () => {
+          const question = /** @type {HTMLElement | null} */ (await waitFor(() => mapPanel()?.querySelector(".planner-type-question")));
+          question?.click();
+        },
+        settle: 400,
+      },
+      {
+        text: "The composer now holds the question, with the entity attached as context. Edit it freely before sending.",
+        target: () => document.querySelector("#planner-prompt"),
+      },
+      {
+        text: "Question bank opens the whole catalog when you want something the entity map didn't offer. Send with the arrow, and the answer comes back with its own graph snapshot.",
+        target: () => document.querySelector("#planner-question-bank"),
+      },
+    ],
+  });
+
+  attachTourButton(document.querySelector(".planner-context-pill")?.parentElement, "entity-questions", "asking about an entity");
+}
+
 function renderHome() {
   const select = /** @type {HTMLSelectElement | null} */ (ui.graphSelect);
   q("#planner-home-title").textContent = select?.selectedOptions?.[0]?.textContent || "Graph";
@@ -1331,8 +1477,17 @@ function renderSuggestions() {
     tab.setAttribute("aria-selected", String(active));
   });
   const seen = new Set();
-  const picks = (state.catalog?.templates || []).filter((template) => template.layer === suggestionLayer && template.category === "direct_forward_edges"
-    && templateRoute(template) && questionParameters(template.question).length && !seen.has(template.path) && seen.add(template.path)).slice(0, 4);
+  const candidates = (state.catalog?.templates || []).filter((template) => template.layer === suggestionLayer && template.category === "direct_forward_edges"
+    && templateRoute(template) && questionParameters(template.question).length && !seen.has(template.path) && seen.add(template.path));
+  // A new chat opens on a different slice of the catalog, and Refresh walks to the next one.
+  const chatId = activeChat()?.id || "";
+  if (chatId !== suggestionChatId) {
+    suggestionChatId = chatId;
+    suggestionOffset = candidates.length ? Math.floor(Math.random() * candidates.length) : 0;
+  }
+  const picks = candidates.length
+    ? Array.from({ length: Math.min(4, candidates.length) }, (_, index) => candidates[(suggestionOffset + index) % candidates.length])
+    : [];
   q("#planner-suggestion-list").replaceChildren(...picks.map((template) => {
     const row = document.createElement("button");
     row.type = "button";
@@ -1409,7 +1564,17 @@ function renderMessage(message) {
   if (message.replyTo) article.dataset.replyTo = message.replyTo;
   const content = document.createElement("div");
   content.className = "planner-message-content";
-  if (message.role === "assistant") {
+  if (message.role === "assistant" && (message.error || message.cancelled)) {
+    const notice = document.createElement("div");
+    notice.className = `answer-notice${message.error ? " is-error" : ""}`;
+    const label = document.createElement("span");
+    label.className = "answer-notice-label";
+    label.append(icon(message.error ? "warning" : "stop"), document.createTextNode(message.error ? "Query failed" : "Query cancelled"));
+    const detail = document.createElement("p");
+    detail.textContent = message.content;
+    notice.append(label, detail);
+    content.append(notice);
+  } else if (message.role === "assistant") {
     const tables = returnedResultTables(message.result);
     const narrative = document.createElement("div");
     renderMarkdown(narrative, resultNarrative(message, tables[0]));
@@ -1424,7 +1589,7 @@ function renderMessage(message) {
   renderApiDetails(body, message);
   if (message.retry) {
     const retry = document.createElement("button");
-    retry.type = "button"; retry.className = "planner-restore-question"; retry.textContent = "Restore Question to Retry";
+    retry.type = "button"; retry.className = "planner-restore-question"; retry.textContent = "Retry this question";
     retry.disabled = message.retry.graphId !== currentApiGraphId();
     retry.addEventListener("click", () => { setPrompt(message.retry.question); setPromptEntities(message.retry.entities || []); });
     body.append(retry);
@@ -1528,6 +1693,22 @@ async function persistChat(workspaceId, projectId, chat, graphId) {
   if (activeChat()?.id === chat.id && currentApiGraphId() === graphId) renderActiveChat();
 }
 
+/** A stable, readable name for the graph snapshot an answer carries. */
+function snapshotName(message) {
+  const id = String(message.id || "");
+  let hash = 0;
+  for (let index = 0; index < id.length; index += 1) hash = (hash * 31 + id.charCodeAt(index)) >>> 0;
+  const code = hash.toString(36).toUpperCase().slice(-4).padStart(4, "0");
+  // Older seeded messages stored the picker's placeholder, so resolve the name from the registry.
+  const entry = (state.registry?.graphs || []).find((item) => item.id === message.graphId || item.name === message.graphId);
+  const dataset = entry?.name || state.graphEntry?.name || "graph";
+  const captured = message.createdAt ? new Date(message.createdAt) : null;
+  const stamp = captured && !Number.isNaN(captured.valueOf())
+    ? captured.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
+    : "";
+  return `${dataset} · snapshot ${code}${stamp ? ` · captured ${stamp}` : ""}`;
+}
+
 function graphSummary(payload) {
   const graph = normalizeGraph(payload?.matchedGraph);
   const status = payload?.status ? titleCase(payload.status) : "Answered";
@@ -1558,6 +1739,13 @@ function renderAnswerActions(host, message) {
   const regenerate = action("arrow-counter-clockwise", "Regenerate response", () => regenerateAnswer(message, original));
   regenerate.disabled = !original || Boolean(state.requestController);
   row.append(copy, regenerate);
+  // When the answer carries an atlas snapshot, the actions share its row from the opposite end.
+  const atlas = host.querySelector(".answer-open-graph-wrap");
+  if (atlas) {
+    atlas.classList.add("has-actions");
+    atlas.append(row);
+    return;
+  }
   host.append(row);
 }
 
@@ -1631,13 +1819,33 @@ function selectEntity(id) {
   setPromptEntity(node || { id });
 }
 
+/** An empty context tab: its illustration, what the tab holds, and how to fill it. */
+function illustratedEmpty(name, title, description) {
+  const empty = document.createElement("div");
+  empty.className = "planner-empty-state";
+  const image = document.createElement("img");
+  image.src = `/illustrations/empty/${name}.svg`;
+  image.alt = "";
+  image.width = 132;
+  image.height = 132;
+  image.setAttribute("data-inline-svg", "");
+  const strong = document.createElement("strong");
+  strong.textContent = title;
+  const span = document.createElement("span");
+  span.textContent = description;
+  empty.append(image, strong, span);
+  inlineIllustrations(empty);
+  return empty;
+}
+
 function renderEntityTree(graph) {
   ui.entityTree.replaceChildren();
   if (!graph.nodes.length) {
-    const empty = document.createElement("div");
-    empty.className = "planner-tree-empty";
-    empty.textContent = "Run a query to browse result entities.";
-    ui.entityTree.append(empty);
+    ui.entityTree.append(illustratedEmpty(
+      "entity-map",
+      "No entities yet",
+      "Ask a question and the entities it returns are grouped here by layer and type.",
+    ));
     return;
   }
   const grouped = new Map();
@@ -1701,14 +1909,11 @@ function followUpQuestions(graph) {
 function renderFollowups(graph) {
   ui.followups.replaceChildren();
   if (!graph.nodes.length) {
-    const empty = document.createElement("div");
-    empty.className = "planner-context-empty";
-    const strong = document.createElement("strong");
-    strong.textContent = "No follow-ups yet";
-    const span = document.createElement("span");
-    span.textContent = "Run a graph question first.";
-    empty.append(strong, span);
-    ui.followups.append(empty);
+    ui.followups.append(illustratedEmpty(
+      "followups",
+      "No follow-ups yet",
+      "Once an answer comes back, the next questions worth asking about it appear here.",
+    ));
     return;
   }
   followUpQuestions(graph).forEach((question) => {
@@ -1860,6 +2065,8 @@ function wirePlanner() {
   q("#planner-questions-nav").addEventListener("click", () => setQuestionsPage(!planner.classList.contains("questions-open")));
   q("#planner-show-related-questions").addEventListener("click", () => { showLibraryView("home"); setQuestionsPage(true, { filter: { ...state.browseContext } }); });
   qa(".suggestion-layer").forEach((tab) => tab.addEventListener("click", () => { suggestionLayer = tab.dataset.layer || "business"; renderSuggestions(); }));
+  q("#planner-suggestions-refresh")?.addEventListener("click", shuffleSuggestions);
+  registerChatTours();
   q("#planner-home-dataset").addEventListener("click", () => /** @type {HTMLElement | null} */ (document.querySelector(".graph-picker .select-trigger"))?.click());
   q("#planner-question-bank").addEventListener("click", () => setQuestionsPage(true));
   qa(".mode-switch").forEach(group => group.addEventListener("keydown", (event) => {

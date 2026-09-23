@@ -16,6 +16,10 @@
 #app .select-option { display: flex; align-items: center; gap: 10px; min-height: 2.5rem; padding: 6px 12px; border-radius: 8px; color: var(--text); font-size: .9375rem; }
 #app .select-option:is(:hover, .is-active) { background: var(--ui-hover); }
 #app .select-option > .ui-icon:first-child { width: 18px; height: 18px; flex-basis: 18px; }
+#app .select-option-text { min-width: 0; display: grid; gap: 1px; }
+#app .select-option-text > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app .select-option-text > small { color: var(--ui-secondary); font-size: .75rem; line-height: 1.125rem; }
+#app .select-option:has(.select-option-text > small) { min-height: 3.25rem; }
 #app .select-option .selected-check { width: 16px; height: 16px; flex-basis: 16px; margin-left: auto; color: var(--text); }
 
 /* Graph search: sigma's single field with the entity-type picker as a pill inside it. */
@@ -34,3 +38,99 @@
 
 /* Narrow screens keep the canvas button to open and close the explorer; desktop never collapses it, as in sigma. */
 @media (min-width: 701px) { #app #explorer-panel-reopen { display: none; } }
+
+/* Every list popover speaks the same language as the select menu: one soft ring, 12px radius,
+   8px of padding, 40px rows on an 8px radius, and a quiet heading instead of a grey bar. */
+#app :is(.condition-suggestions, .search-results, #search-results) {
+  padding: 8px;
+  overflow: auto;
+  border: 0;
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: 0 0 0 1px rgba(5, 5, 5, .08), 0 14px 34px rgba(18, 35, 66, .14), 0 2px 6px rgba(18, 35, 66, .06);
+}
+[data-theme="light"] #app :is(.condition-suggestions, .search-results, #search-results) { background: #fff; }
+:root:not([data-theme="light"]) #app :is(.condition-suggestions, .search-results, #search-results) { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 14px 34px rgba(0, 0, 0, .45); }
+
+#app :is(.condition-suggestion-heading, .search-result-heading) {
+  position: static;
+  padding: 8px 12px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--ui-secondary);
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.125rem;
+  text-transform: none;
+}
+
+#app :is(.condition-suggestions button, .search-result) {
+  gap: 10px;
+  min-height: 2.5rem;
+  padding: 7px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+}
+#app :is(.condition-suggestions button, .search-result):is(:hover, [aria-selected="true"], .is-active) { background: var(--ui-hover); }
+#app :is(.condition-suggestions b, .search-result b) { color: var(--text); font-size: .9375rem; font-weight: 500; line-height: 1.375rem; }
+#app :is(.condition-suggestions small, .search-result small) { color: var(--ui-secondary); font: 12px/1.125rem var(--font-mono); letter-spacing: 0; }
+#app .search-result em { color: var(--ui-secondary); font-size: .75rem; letter-spacing: 0; }
+#app .condition-suggestions button > i { box-shadow: none; }
+#app .condition-suggestion-empty, #app .result-empty { padding: 14px 12px; color: var(--ui-secondary); font-size: .8125rem; text-align: left; }
+#app .search-result-more { padding: 8px 12px 4px; color: var(--ui-secondary); font-size: .75rem; line-height: 1.125rem; text-align: left; }
+
+/* Dropdown headings: one label and one count, on the panel's own type scale — the base sheet
+   styles these as 9px bold eyebrows, which is where the mismatch came from. */
+#app :is(.condition-suggestion-heading, .search-result-heading, .search-dropdown-heading) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 0;
+}
+#app :is(.condition-suggestion-heading, .search-result-heading, .search-dropdown-heading) > span {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ui-secondary);
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.125rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#app :is(.condition-suggestion-heading, .search-result-heading, .search-dropdown-heading) > small {
+  flex: 0 0 auto;
+  color: var(--ui-secondary);
+  font-size: .75rem;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Option rows in the entity-type picker follow the same scale as every other list row. */
+#app .search-type-suggestion { gap: 10px; min-height: 2.5rem; padding: 7px 12px; border: 0; border-radius: 8px; }
+#app .search-type-suggestion:is(:hover, [aria-selected="true"], .is-active) { background: var(--ui-hover); }
+#app .search-type-suggestion span { color: var(--text); font-size: .9375rem; line-height: 1.375rem; }
+#app .search-type-suggestion small { color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; letter-spacing: 0; font-variant-numeric: tabular-nums; }
+
+/* Icons inside every field and popover are the one Phosphor family at one size. */
+#app :is(.panel-search, .slot-picker-search, .search-dropdown, .condition-suggestions, .search-results) .ui-icon { flex-shrink: 0; }
+#app :is(.condition-suggestions, .search-results) .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app .planner-related-questions .ui-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--accent); }
+#app #planner-diagram-expand .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+
+/* Group headings inside a popover use the same label style as the popover's own heading. */
+#app .search-layer-heading {
+  padding: 12px 12px 6px;
+  color: var(--ui-secondary);
+  font-size: .8125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.125rem;
+  text-transform: none;
+}
+#app .search-layer-heading:first-child { padding-top: 6px; }

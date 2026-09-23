@@ -1,0 +1,152 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   UI SCALE — the audit outcome, and the last word on type, weight and radius.
+   Loaded last so it settles every disagreement underneath it.
+
+   TYPE         22 / 19 / 17 headings · 15 body, controls, row labels · 13 secondary,
+                counts, captions, small buttons. Mono is 13. Nothing else.
+   WEIGHT       400 body · 500 labels and controls · 600 headings and emphasis.
+   RADIUS       6 chips · 8 rows and buttons · 10 fields · 12 cards and popovers ·
+                16 large surfaces · 999 pills · 50% dots.
+
+   The base sheet (styles.css) was authored on a different, much smaller scale, and
+   it still leaks through in places. Each pin below is a measured leak, not a guess.
+   ───────────────────────────────────────────────────────────────────────────── */
+#app {
+  --text-title: 1.0625rem;   /* 17 */
+  --text-body: .9375rem;     /* 15 */
+  --text-small: .8125rem;    /* 13 */
+  --lh-title: 1.5rem;
+  --lh-body: 1.375rem;
+  --lh-small: 1.125rem;
+  --weight-body: 400;
+  --weight-label: 500;
+  --weight-strong: 600;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-pill: 999px;
+}
+
+/* ── Type: leaks pinned back to the scale ─────────────────────────────────── */
+
+/* Top bar: the version chip and the product label were 10px and 12px. */
+#app .brand-copy h1 span { font-size: var(--text-small); font-weight: var(--weight-label); letter-spacing: .02em; border-radius: var(--radius-lg); }
+#app .product-name strong { font-size: var(--text-small); }
+
+/* Sidebar: the layer folder's count was 11px while every other count is 13px. */
+#app #controls-panel .planner-type-count,
+#app .folder-selected { font-size: var(--text-small); line-height: var(--lh-small); }
+
+/* Canvas: the loader detail was 9px, the slider legend 12px. */
+#app .loading-panel small { font-size: var(--text-small); line-height: var(--lh-small); }
+#app .range-legend, #app .range-legend span { font-size: var(--text-small); line-height: var(--lh-small); }
+
+/* Answers: table cells were 14px beside 13px mono in the same row; the atlas
+   button's title 14px; its caption and the failure meta 12px and 11px. */
+#app .answer-table :is(th, td) { font-size: var(--text-small); line-height: var(--lh-small); }
+#app .answer-open-graph-text strong { font-size: var(--text-body); line-height: var(--lh-body); }
+#app .answer-snapshot { font-size: var(--text-small); line-height: var(--lh-small); }
+#app .planner-restore-question { font-size: var(--text-body); line-height: var(--lh-body); }
+#app .planner-shell .planner-message-meta { font-size: var(--text-small); line-height: var(--lh-small); }
+#app .answer-followup { font-size: var(--text-body); line-height: var(--lh-body); }
+#app .planner-empty-state strong { font-size: var(--text-body); line-height: var(--lh-body); }
+
+/* ── Weight: 650 is not on the ramp ───────────────────────────────────────── */
+#app h1,
+#app select optgroup,
+#app .theme-switch button[aria-pressed="true"],
+#app .header-stats strong,
+#app .entity-folder[aria-expanded="true"] .planner-type-label { font-weight: var(--weight-strong); }
+
+/* ── Radius: 7, 9, 14 and 22 rounded onto the scale ───────────────────────── */
+#app .feature-tour-button,
+#app .search-dropdown-option,
+#app .rail-button,
+#app .stage-tools { border-radius: var(--radius-md); }
+#app .condition-entity-wrap,
+#app .planner-assist input { border-radius: var(--radius-lg); }
+#app .view-options,
+#app .planner-workspace-tools button,
+#app .planner-message-body,
+#app .answer-open-graph,
+#app .toast,
+#app .planner-assist { border-radius: var(--radius-xl); }
+.feature-tour-card { border-radius: var(--radius-xl); }
+
+/* ── Icons: 14 inline · 16 default · 20 prominent. Nothing between. ───────── */
+#app .select-control .select-trigger > .ui-icon,
+#app .section-title-row .side-panel-toggle .ui-icon,
+#app .feature-tour-button .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app .view-options > button .ui-icon,
+#app .zoom-controls button .ui-icon { width: 20px; height: 20px; flex-basis: 20px; }
+
+/* ── Colour: the loading panel still carried two hexes from the dark base. ── */
+#app .loading-panel span { color: var(--text); }
+#app .loading-panel small { color: var(--ui-secondary); }
+/* A speech bubble stays a bubble, on the scale's largest radius. */
+#app .planner-message.user .planner-message-body { border-radius: var(--radius-2xl); }
+
+/* ── Inspector: the two actions are buttons on a surface, not text floating in a gap ── */
+#app #inspector .entity-actions { flex-direction: column; gap: 6px; padding: 0 12px 12px; }
+#app #inspector .entity-actions .link-button { justify-content: flex-start; width: 100%; height: 2.75rem; gap: 10px; padding: 0 12px; border-radius: var(--radius-lg); background: var(--control-fill, color-mix(in srgb, var(--text) 6%, transparent)); color: var(--text); font-size: var(--text-body); font-weight: var(--weight-label); line-height: var(--lh-body); }
+#app #inspector .entity-actions .link-button:hover:not(:disabled) { background: var(--control-fill-hover, color-mix(in srgb, var(--text) 10%, transparent)); }
+#app #inspector .entity-actions .link-button .ui-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--ui-secondary); }
+
+/* Relation rows carry the entity's own shaped mark, aligned with its name. */
+#app #inspector .relation-row { padding: 6px 10px; }
+#app #inspector .relation-row .planner-type-mark { flex: 0 0 14px; width: 14px; height: 14px; }
+#app #inspector .relation-name { flex: 1; min-width: 0; overflow: hidden; color: var(--text); font-size: var(--text-body); line-height: var(--lh-body); text-overflow: ellipsis; white-space: nowrap; }
+
+/* A hidden control must stay hidden: the button's own display rule was outranking [hidden]. */
+#app #inspector [hidden], #app .link-button[hidden] { display: none; }
+
+/* ── The condition's entity field matches the selects above and below it ────── */
+#app .condition-entity-field { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 2.25rem; padding: 0 12px; border-radius: var(--radius-lg); background: var(--control-fill, color-mix(in srgb, var(--text) 6%, transparent)); transition: background-color .15s ease, box-shadow .15s ease; }
+#app .condition-entity-field:hover:not(:focus-within) { background: var(--control-fill-hover, color-mix(in srgb, var(--text) 10%, transparent)); }
+#app .condition-entity-field:focus-within { background: var(--panel); box-shadow: inset 0 0 0 1px var(--field-focus); }
+#app .condition-entity-field > .ui-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--ui-secondary); }
+#app .condition-entity-field:has(.entity-selected) > .ui-icon { color: var(--accent); }
+#app .condition-entity-field:has(input:disabled) { opacity: .55; }
+#app #query-panel .condition-card .condition-entity-input,
+#app .condition-entity-input { flex: 1; min-width: 0; height: auto; min-height: 0; padding: 0; border: 0; outline: 0; border-radius: 0; background: transparent; box-shadow: none; color: var(--text); font-size: var(--text-body); line-height: var(--lh-body); }
+#app .condition-entity-input:focus, #app .condition-entity-input.entity-selected { background: transparent; box-shadow: none; }
+/* The browser's own clear affordance is not part of the icon set. */
+#app #query-panel .condition-card .condition-entity-field { min-height: 2.25rem; }
+#app .condition-entity-input::-webkit-search-cancel-button,
+#app .condition-entity-input::-webkit-search-decoration,
+#app input[type="search"].condition-entity-input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; display: none; width: 0; }
+
+/* ── The layer chip sits on its title's centre, not the grid row's ─────────── */
+#app .layer-tab > span:not(.layer-mark) { align-self: center; }
+/* :is(span, small) elsewhere pins every span to flex-start, chip included. */
+#app .layer-tab > .layer-mark { align-self: center; }
+
+/* ── One continuous guide per open layer, drawn once instead of per row ────── */
+#app #controls-panel .entity-children { position: relative; }
+#app #controls-panel .entity-children::before { content: ""; display: block; position: absolute; top: 0; bottom: 0; left: calc(.5rem + 7.5px); width: 1px; background: var(--guide-color); border: 0; pointer-events: none; }
+#app #controls-panel .entity-children .planner-type-row::before { display: none; }
+
+/* ── The diagram's Expand button: a control, not a glyph pushed against a word.
+   It lost its spacing when the ⤢ text glyph became a Phosphor icon. ─────── */
+#app .planner-diagram-toolbar button,
+#app .planner-diagram-controls button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  height: 2rem;
+  padding: 0 12px;
+  border: 1px solid var(--ui-border);
+  border-radius: var(--radius-md);
+  background: var(--planner-card-bg, var(--panel));
+  color: var(--text);
+  font-family: var(--ui-font);
+  font-size: var(--text-small);
+  font-weight: var(--weight-label);
+  line-height: var(--lh-small);
+}
+#app .planner-diagram-toolbar button:hover,
+#app .planner-diagram-controls button:hover { border-color: var(--ui-border); background: var(--ui-hover); color: var(--text); }
+#app :is(.planner-diagram-toolbar, .planner-diagram-controls) button .ui-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--ui-secondary); }

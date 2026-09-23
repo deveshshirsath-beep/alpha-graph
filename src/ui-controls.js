@@ -6,8 +6,8 @@ const GLYPHS = {
   entity: 'cube', layers: 'stack', network: 'graph', filter: 'sliders-horizontal', route: 'path', catalog: 'files',
   shield: 'shield-check', team: 'users', sunset: 'sun-horizon', close: 'x', search: 'magnifying-glass',
   reset: 'arrow-counter-clockwise', focus: 'crosshair', fit: 'corners-out', chevron: 'caret-down', arrows: 'arrows-left-right',
-  depth: 'tree-structure', grip: 'dots-six-vertical', collapse: 'arrows-in-line-vertical', expand: 'arrows-out-line-vertical',
-  help: 'question', 'text-size': 'text-aa', 'panel-left-close': 'sidebar-simple', 'panel-left-open': 'sidebar-simple',
+  depth: 'tree-structure', grip: 'dots-six-vertical', kebab: 'dots-three-vertical', collapse: 'arrows-in-line-vertical', expand: 'arrows-out-line-vertical',
+  help: 'question', warning: 'warning-circle', 'text-size': 'text-aa', 'panel-left-close': 'sidebar-simple', 'panel-left-open': 'sidebar-simple',
   'panel-right-close': 'sidebar-simple', 'panel-right-open': 'sidebar-simple',
 };
 
@@ -28,6 +28,7 @@ export function icon(name = 'entity') {
 }
 
 /** Swaps `img[data-inline-svg]` for its own SVG markup, so the illustration's --illo-* colors follow the theme. */
+/** @param {Document|HTMLElement} [root] */
 export async function inlineIllustrations(root = document) {
   await Promise.all([...root.querySelectorAll('img[data-inline-svg]')].map(async (image) => {
     try {
@@ -197,7 +198,16 @@ function enhanceSelect(select) {
       row.dataset.value = option.value;
       row.style.setProperty('--option-hue', String((index * 47 + 155) % 360));
       const name = document.createElement('span');
-      name.textContent = option.textContent;
+      name.className = 'select-option-text';
+      const primary = document.createElement('span');
+      primary.textContent = option.textContent;
+      name.append(primary);
+      // An option may carry a quiet second line, e.g. when a dataset was captured.
+      if (option.dataset.sub) {
+        const sub = document.createElement('small');
+        sub.textContent = option.dataset.sub;
+        name.append(sub);
+      }
       const tick = icon('check');
       tick.classList.add('selected-check');
       row.append(icon(optionIcon(select, option)), name, tick);

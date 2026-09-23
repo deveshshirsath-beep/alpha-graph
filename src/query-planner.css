@@ -12,7 +12,7 @@ body.planner-mode > #app > .workspace {
 .planner-shell {
   display: grid;
   --planner-text-size: .8125rem;
-  --planner-meta-size: .6875rem;
+  --planner-meta-size: .8125rem;
   --planner-side-bg: var(--panel);
   --planner-content-bg: var(--bg);
   /* Keep structural dividers quieter than interactive control outlines. */
@@ -237,7 +237,7 @@ body.planner-mode > #app > .workspace {
 /* Match the header chevron without browser-specific native disclosure markers. */
 :is(.planner-browse-layer, .planner-browse-relations, .planner-context-questions, .planner-next-questions) > summary { display: flex; align-items: center; gap: 8px; list-style: none; line-height: 1.4; }
 :is(.planner-browse-layer, .planner-browse-relations, .planner-context-questions, .planner-next-questions) > summary::-webkit-details-marker { display: none; }
-:is(.planner-browse-layer, .planner-browse-relations, .planner-context-questions, .planner-next-questions) > summary::before { content: ""; flex: 0 0 14px; width: 14px; height: 14px; background: var(--ui-secondary); mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6' fill='none' stroke='black' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat; transform: rotate(-90deg); transition: transform .15s ease; }
+:is(.planner-browse-layer, .planner-browse-relations, .planner-context-questions, .planner-next-questions) > summary::before { content: ""; flex: 0 0 14px; width: 14px; height: 14px; background: var(--ui-secondary); mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20256%20256'%3E%3Cpath%20d='M213.66%2C101.66l-80%2C80a8%2C8%2C0%2C0%2C1-11.32%2C0l-80-80A8%2C8%2C0%2C0%2C1%2C53.66%2C90.34L128%2C164.69l74.34-74.35a8%2C8%2C0%2C0%2C1%2C11.32%2C11.32Z'%20fill='black'/%3E%3C/svg%3E") center / contain no-repeat; transform: rotate(-90deg); transition: transform .15s ease; }
 :is(.planner-browse-layer, .planner-browse-relations, .planner-context-questions, .planner-next-questions)[open] > summary::before { transform: rotate(0); }
 .planner-browse-type { width: 100%; min-height: 32px; display: grid; grid-template-columns: 14px minmax(0,1fr) auto; align-items: center; gap: 9px; padding: 5px 8px 5px 12px; border: 0; border-radius: 6px; background: transparent; text-align: left; cursor: pointer; }
 .planner-browse-type > span { font-size: .75rem; overflow-wrap: anywhere; }
@@ -257,7 +257,7 @@ body.planner-mode > #app > .workspace {
 .planner-browse-more:hover { color: var(--accent); border-color: var(--accent); }
 .planner-browse-more[hidden] { display: none; }
 .planner-browse-relations { margin: 8px 14px 0; padding-top: 7px; border-top: 1px solid var(--line); }
-.planner-browse-relation-icon { color: var(--accent); font-style: normal; }
+.planner-browse-relation-icon { display: grid; place-items: center; width: 16px; height: 16px; flex: 0 0 16px; color: var(--accent); font-style: normal; }
 .planner-browse-relations .planner-browse-note { padding-inline: 0; }
 .planner-related-questions { flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 14px 14px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--ui-field); color: var(--text); cursor: pointer; }
 .planner-related-questions:hover { border-color: var(--accent); }
@@ -352,7 +352,7 @@ body.planner-mode > #app > .workspace {
 .planner-next-questions summary { color: var(--text); font-size: .9375rem; font-weight: 600; cursor: pointer; }
 .planner-next-questions p { margin: 9px 0 12px; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.5; }
 .planner-next-questions button { width: 100%; display: block; position: relative; margin-top: 8px; padding: 12px 34px 12px 14px; border: 1px solid var(--line); border-radius: 8px; color: var(--text); background: var(--planner-card-bg); text-align: left; font-size: .875rem; line-height: 1.55; cursor: pointer; }
-.planner-next-questions button::after { content: "↗"; position: absolute; right: 11px; top: 9px; color: var(--accent); }
+.planner-next-questions button::after { content: ""; position: absolute; right: 11px; top: 9px; width: 14px; height: 14px; background: var(--accent); -webkit-mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20256%20256'%3E%3Cpath%20d='M200%2C64V168a8%2C8%2C0%2C0%2C1-16%2C0V83.31L69.66%2C197.66a8%2C8%2C0%2C0%2C1-11.32-11.32L172.69%2C72H88a8%2C8%2C0%2C0%2C1%2C0-16H192A8%2C8%2C0%2C0%2C1%2C200%2C64Z'%20fill='black'/%3E%3C/svg%3E") center / contain no-repeat; mask: url("data:image/svg+xml,%3Csvg%20xmlns='http://www.w3.org/2000/svg'%20viewBox='0%200%20256%20256'%3E%3Cpath%20d='M200%2C64V168a8%2C8%2C0%2C0%2C1-16%2C0V83.31L69.66%2C197.66a8%2C8%2C0%2C0%2C1-11.32-11.32L172.69%2C72H88a8%2C8%2C0%2C0%2C1%2C0-16H192A8%2C8%2C0%2C0%2C1%2C200%2C64Z'%20fill='black'/%3E%3C/svg%3E") center / contain no-repeat; }
 .planner-next-questions button:hover { color: var(--text); border-color: var(--ui-border); background: var(--planner-hover-bg); }
 .planner-message-content { color: var(--text); font-size: 1rem; line-height: 1.75; white-space: pre-wrap; overflow-wrap: anywhere; }
 .planner-message-content.markdown { white-space: normal; }
@@ -374,7 +374,7 @@ body.planner-mode > #app > .workspace {
 .planner-result-table-header strong { font-size: .9375rem; font-weight: 600; }
 .planner-result-table-header input { width: min(230px, 100%); padding: 10px 12px; border: 1px solid var(--ui-border); border-radius: 8px; color: var(--text); background: var(--ui-field); font-size: .875rem; }
 .planner-result-table-header input::placeholder { color: var(--ui-secondary); }
-.planner-result-table .planner-answer-table-wrap { max-height: 520px; overflow: auto; }
+.planner-result-table .planner-answer-table-wrap { max-height: none; overflow-x: auto; }
 .planner-result-table :is(th, td) { padding: 10px 12px; }
 .planner-result-table th { position: sticky; top: 0; background: var(--planner-table-heading-bg); }
 .planner-result-table td { white-space: normal; min-width: 110px; overflow-wrap: anywhere; }
@@ -571,7 +571,7 @@ body.planner-mode > #app > .workspace {
   .planner-entity-folder small, .planner-diagram-detail
 ) { font-size: var(--planner-meta-size); }
 #app .planner-shell .planner-message-content { line-height: 1.7; }
-#app .planner-shell .planner-message-content :is(h3, h4, h5, h6) { font-size: var(--planner-text-size); }
+/* Heading sizes live with the rest of the answer type scale, in planner-chat.css. */
 #app .planner-shell .planner-message-content strong { font-weight: 600; }
 #app .planner-shell .planner-selected-entity small { font-family: var(--ui-font); font-size: var(--planner-meta-size); }
 #app .planner-shell .planner-context-header h2 { font-size: 1rem; }

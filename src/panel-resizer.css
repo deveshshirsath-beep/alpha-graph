@@ -1,0 +1,21 @@
+/* Drag handles: a hover safe zone brings the line in on approach, the line is only as tall as the
+   panel it resizes, and every handle carries the same raised grip. No tooltip — the grip is the cue. */
+#app .panel-resizer { --line-top: 0px; --line-height: 100%; }
+
+/* The safe zone reaches past the 9px column so the line appears before the cursor has to be precise. */
+#app .panel-resizer::after { content: ""; position: absolute; inset: 0 -7px; z-index: -1; }
+
+#app .workspace > .panel-resizer::before,
+#app .panel-resizer::before { top: var(--line-top); bottom: auto; height: var(--line-height); border-radius: 1px; opacity: 0; transition: opacity .18s ease, background-color .18s ease; }
+#app .panel-resizer:is(:hover, :focus-visible, .is-dragging)::before { opacity: 1; }
+
+/* The grip: a raised pill, centred on the panel the handle controls. */
+#app main.workspace > .panel-resizer .resize-grip,
+#app .panel-resizer .resize-grip { display: block; position: absolute; top: calc(var(--line-top) + var(--line-height) / 2); left: 50%; width: 6px; height: 44px; border: 0; border-radius: 999px; background: var(--panel); box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 12%, transparent), 0 2px 6px rgba(18, 35, 66, .18), inset 0 1px 0 rgba(255, 255, 255, .7), inset 0 -1px 0 color-mix(in srgb, var(--text) 8%, transparent); opacity: 0; transform: translate(-50%, -50%) scaleX(.6); transition: opacity .18s ease, transform .18s cubic-bezier(.22, 1, .36, 1); pointer-events: none; }
+:root:not([data-theme="light"]) #app .panel-resizer .resize-grip { box-shadow: 0 0 0 1px color-mix(in srgb, var(--text) 18%, transparent), 0 2px 6px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .12), inset 0 -1px 0 rgba(0, 0, 0, .35); }
+#app .panel-resizer:is(:hover, :focus-visible, .is-dragging) .resize-grip { opacity: 1; transform: translate(-50%, -50%) scaleX(1); }
+#app .panel-resizer.is-dragging .resize-grip { box-shadow: 0 0 0 1px var(--accent), 0 2px 8px rgba(18, 35, 66, .24), inset 0 1px 0 rgba(255, 255, 255, .7); }
+
+@media (prefers-reduced-motion: reduce) {
+  #app .panel-resizer::before, #app .panel-resizer .resize-grip { transition: none; }
+}

@@ -19,12 +19,12 @@
 #app .chat-stats .stat-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ui-secondary); }
 
 #app .planner-composer { width: 100%; max-width: 768px; margin: 0 auto; padding: 0; }
-#app .planner-composer-card { display: flex; flex-direction: column; gap: 8px; padding: 12px 10px 10px 16px; overflow: visible; border: 1px solid transparent; border-radius: 16px; background: linear-gradient(var(--planner-card-bg), var(--planner-card-bg)) padding-box, linear-gradient(110deg, #f9ab00, var(--accent) 45%, #f9ab00 90%) border-box; background-size: auto, 260% 100%; background-position: 0 0, 0 0; box-shadow: 0 4px 24px rgba(18, 35, 66, .06); transition: box-shadow 280ms cubic-bezier(.22, 1, .36, 1); }
+#app .planner-composer-card { display: flex; flex-direction: column; gap: 16px; padding: 16px; overflow: visible; border: 1px solid transparent; border-radius: 16px; background: linear-gradient(var(--planner-card-bg), var(--planner-card-bg)) padding-box, linear-gradient(110deg, #f9ab00, var(--accent) 45%, #f9ab00 90%) border-box; background-size: auto, 260% 100%; background-position: 0 0, 0 0; box-shadow: 0 4px 24px rgba(18, 35, 66, .06); transition: box-shadow 280ms cubic-bezier(.22, 1, .36, 1); }
 #app .planner-composer-card:hover { box-shadow: 4px 4px 32px rgba(249, 171, 0, .18), -4px -4px 32px color-mix(in srgb, var(--accent) 22%, transparent); }
 #app .planner-composer-card:focus-within { border-color: transparent; box-shadow: 4px 4px 36px rgba(249, 171, 0, .22), -4px -4px 36px color-mix(in srgb, var(--accent) 26%, transparent); animation: planner-composer-drift 7s linear infinite; }
 @keyframes planner-composer-drift { to { background-position: 0 0, 260% 0; } }
-#app .planner-prompt-input { min-height: 28px; max-height: 200px; overflow-y: auto; outline: 0; color: var(--text); font-size: 16px; line-height: 28px; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
-#app .planner-prompt-input.is-empty::before { content: attr(data-placeholder); color: var(--ui-secondary); pointer-events: none; }
+#app .planner-prompt-input { position: relative; min-height: 28px; max-height: 200px; overflow-y: auto; outline: 0; color: var(--text); font-size: 16px; line-height: 28px; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
+#app .planner-prompt-input.is-empty::before { content: attr(data-placeholder); position: absolute; inset: 0 0 auto 0; color: var(--ui-secondary); pointer-events: none; }
 /* Sigma's mention tokens: outlined while empty, filled once an entity is chosen. */
 #app .mention { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 26px; margin: 0 1px; padding: 0 6px 0 8px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: .9375rem; font-weight: 500; line-height: 1; vertical-align: 1px; cursor: pointer; user-select: none; }
 #app .mention:hover, #app .mention.is-open { background: color-mix(in srgb, var(--accent) 18%, transparent); }
@@ -76,33 +76,26 @@
 #app .planner-message { display: block; }
 #app :is(.planner-message-avatar, .planner-message-header, .planner-next-questions) { display: none; }
 #app .planner-message.user { display: flex; justify-content: flex-end; }
-#app .planner-message.user .planner-message-body { max-width: 80%; padding: 10px 16px; border: 0; border-radius: 22px; background: color-mix(in srgb, var(--text) 7%, var(--planner-content-bg)); }
+#app .planner-message.user .planner-message-body { max-width: 80%; padding: 10px 16px; border: 0; border-radius: 16px; background: color-mix(in srgb, var(--text) 7%, var(--planner-content-bg)); }
 /* One answer scale on the gray page: 16 semibold headings, 15 body, 14 inside cards, 13 medium labels; two ink tones. */
 #app .planner-message { --answer-text: color-mix(in srgb, var(--text) 88%, transparent); --answer-muted: color-mix(in srgb, var(--text) 66%, transparent); --answer-band: color-mix(in srgb, var(--text) 3%, var(--planner-card-bg)); }
 #app .planner-shell .planner-message .planner-message-content { color: var(--answer-text); font-size: .9375rem; line-height: 1.5rem; }
 /* Answers use sigma's rich components: headings, lists, tables, quotes, code-style blocks and pill buttons. */
-#app .planner-message.assistant .planner-message-content { display: grid; gap: 12px; }
-#app .planner-message.assistant .markdown { display: grid; gap: 12px; }
-#app .planner-message.assistant .markdown :is(p, ul, ol, h3, h4, h5, h6) { margin: 0; }
+#app .planner-message.assistant .planner-message-content { display: block; }
 #app .planner-message.assistant .markdown p { color: var(--answer-text); }
-#app .answer-heading { color: var(--answer-text); font-size: 1rem; font-weight: 600; line-height: 1.5rem; }
-#app .answer-list { display: grid; gap: 4px; padding-left: 22px; color: var(--answer-text); font-size: .9375rem; line-height: 1.5rem; }
-#app .answer-list li::marker { color: var(--answer-muted); }
-#app .answer-quote { margin: 0; padding: 0 0 0 14px; border-left: 3px solid var(--ui-border); color: var(--answer-muted); font-size: .9375rem; line-height: 1.5rem; }
 /* Cards (tables, reasoning) sit on the card surface with a faint band for their head, instead of gray on gray. */
-#app .answer-code { overflow: hidden; border: 1px solid var(--line); border-radius: 10px; background: var(--planner-card-bg); }
-#app .answer-code-head { display: flex; align-items: center; justify-content: space-between; min-height: 40px; padding: 4px 6px 4px 12px; border-bottom: 1px solid var(--line); background: var(--answer-band); color: var(--answer-muted); font-size: .8125rem; font-weight: 500; line-height: 1.25rem; }
-#app .answer-code-head > span { display: inline-flex; align-items: center; gap: 6px; }
-#app .answer-code-head .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
-#app .answer-code-head button { height: 28px; padding: 0 8px; border: 0; border-radius: 6px; background: transparent; color: var(--answer-muted); cursor: pointer; font-size: .8125rem; font-weight: 500; }
-#app .answer-code-head button:hover { background: var(--ui-hover); color: var(--answer-text); }
-#app .answer-code pre { margin: 0; padding: 12px 14px; overflow-x: auto; color: var(--answer-text); font: 13px/20px "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
 /* 2. Reasoning takes the code block's place: numbered steps in the answer's own type. */
-#app .answer-reasoning-steps { display: grid; gap: 6px; margin: 0; padding: 12px 14px 12px 32px; color: var(--answer-text); font-size: .875rem; line-height: 1.375rem; }
 #app .answer-reasoning-steps li::marker { color: var(--answer-muted); font-variant-numeric: tabular-nums; }
-#app .answer-open-graph { justify-self: start; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 12px; border: 0; border-radius: 999px; background: var(--planner-hover-bg); color: var(--answer-text); cursor: pointer; font-size: .875rem; font-weight: 500; line-height: 1.25rem; white-space: nowrap; }
+/* The atlas row: the button that opens the snapshot, its name, then copy and retry at the far end. */
+#app .answer-open-graph-wrap { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 10px; }
+#app .answer-open-graph-wrap.has-actions { justify-content: space-between; }
+#app .answer-open-graph-text { min-width: 0; display: grid; gap: 1px; text-align: left; }
+#app .answer-open-graph-text strong { font-size: .875rem; font-weight: 600; line-height: 1.25rem; }
+#app .answer-snapshot { min-width: 0; overflow: hidden; color: var(--answer-muted); font-size: .75rem; line-height: 1.125rem; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+#app .answer-open-graph-wrap .answer-actions { margin: 0 0 0 auto; }
+#app .answer-open-graph { justify-self: start; display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 18px 8px 14px; border: 1px solid var(--ui-border); border-radius: 14px; background: var(--planner-hover-bg); color: var(--answer-text); cursor: pointer; font-size: .875rem; font-weight: 500; line-height: 1.25rem; white-space: nowrap; }
 #app .answer-open-graph:hover { background: color-mix(in srgb, var(--text) 9%, var(--planner-content-bg)); }
-#app .answer-open-graph .ui-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--answer-muted); }
+#app .answer-open-graph .ui-icon { width: 18px; height: 18px; flex-basis: 18px; color: var(--accent); }
 /* Copy and regenerate sit quietly under each answer, aligned to its text. */
 #app .answer-actions { display: flex; align-items: center; gap: 2px; margin: -4px 0 0 -6px; }
 #app .answer-action { display: grid; place-items: center; width: 32px; height: 32px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--answer-muted); cursor: pointer; }
@@ -126,14 +119,14 @@
 #app .answer-table-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent; color: var(--answer-text); font-size: .8125rem; }
 #app .answer-table-search input::placeholder { color: var(--answer-muted); }
 #app .answer-table-search input::-webkit-search-cancel-button { display: none; }
-#app .answer-table-scroll { max-height: 336px; overflow: auto; scrollbar-width: thin; }
+#app .answer-table-scroll { max-height: none; overflow: visible; }
 #app .answer-table table { width: 100%; border-collapse: collapse; font-size: .875rem; line-height: 1.25rem; }
 #app .answer-table th { position: sticky; top: 0; z-index: 1; padding: 8px 12px; border-bottom: 1px solid var(--line); background: var(--answer-band); color: var(--answer-muted); font-size: .8125rem; font-weight: 500; line-height: 1.25rem; text-align: left; white-space: nowrap; }
 #app .answer-table td { padding: 10px 12px; border-top: 1px solid var(--line); color: var(--answer-text); }
 #app .answer-table thead + tbody tr:first-child td { border-top: 0; }
 #app .answer-table tr[hidden] { display: none; }
 #app .answer-table .is-numeric { text-align: right; font-variant-numeric: tabular-nums; }
-#app .answer-table .is-mono { overflow: hidden; max-width: 180px; color: var(--answer-muted); font-family: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, Consolas, monospace; font-size: .8125rem; text-overflow: ellipsis; white-space: nowrap; }
+#app .answer-table .is-mono { overflow: hidden; max-width: 180px; color: var(--answer-muted); font-family: var(--font-mono); font-size: .8125rem; text-overflow: ellipsis; white-space: nowrap; }
 #app .answer-table td:first-child { min-width: 180px; }
 #app .answer-table-name { display: inline-flex; align-items: center; gap: 8px; min-width: 160px; color: var(--answer-text); overflow-wrap: anywhere; }
 #app .answer-table-empty { margin: 0; padding: 12px; color: var(--answer-muted); font-size: .8125rem; }
@@ -226,7 +219,7 @@
 #app .slot-picker-option:has(.slot-picker-option-description) > .planner-type-mark { align-self: flex-start; margin-top: 5px; }
 #app .slot-picker-option-text { display: grid; flex: 1; min-width: 0; }
 #app .slot-picker-option-label { overflow: hidden; font-size: .9375rem; line-height: 1.375rem; text-overflow: ellipsis; white-space: nowrap; }
-#app .slot-picker-option-description { overflow: hidden; color: var(--ui-secondary); font: 12px/1.125rem "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace; text-overflow: ellipsis; white-space: nowrap; }
+#app .slot-picker-option-description { overflow: hidden; color: var(--ui-secondary); font: 12px/1.125rem var(--font-mono); text-overflow: ellipsis; white-space: nowrap; }
 #app .slot-picker-empty, #app .slot-picker-footer { margin: 0; padding: 12px; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; }
 #app .slot-picker-footer { flex: 0 0 auto; border-top: 1px solid var(--line); }
 #app .slot-picker-footer[hidden] { display: none; }
@@ -252,3 +245,120 @@
   --illo-muted: color-mix(in srgb, var(--text) 43%, var(--planner-card-bg));
   --illo-ink: color-mix(in srgb, var(--text) 88%, var(--planner-card-bg));
 }
+
+/* Suggested questions: the heading keeps a quiet refresh at its end. */
+#app .suggestion-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#app .suggestion-refresh { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--answer-muted); cursor: pointer; transition: background-color .15s ease, color .15s ease, transform .35s cubic-bezier(.22, 1, .36, 1); }
+#app .suggestion-refresh:hover { background: var(--planner-hover-bg); color: var(--text); transform: rotate(-90deg); }
+#app .suggestion-refresh .ui-icon { width: 15px; height: 15px; flex-basis: 15px; }
+@media (prefers-reduced-motion: reduce) { #app .suggestion-refresh:hover { transform: none; } }
+
+/* The rest of the answer reader's markdown: emphasis, links, quotes, code blocks and rules. */
+#app .answer-link { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+#app .answer-link:hover { text-decoration-thickness: 2px; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Answer type scale. One face for prose, one for code, and a single ramp so a
+   heading is always larger than the body it introduces. 15px sets the base.
+   ───────────────────────────────────────────────────────────────────────────── */
+#app .planner-message.assistant .markdown {
+  display: block;
+  color: var(--answer-text);
+  font-family: var(--ui-font);
+  font-size: .9375rem;
+  line-height: 1.5rem;
+  font-weight: 400;
+}
+#app .planner-message.assistant .markdown :is(p, ul, ol, li, blockquote, table) { font-size: .9375rem; line-height: 1.5rem; font-weight: 400; }
+#app .planner-message.assistant .markdown :is(h3, h4, h5, h6) { color: var(--answer-text); font-family: var(--ui-font); font-weight: 600; letter-spacing: -.011em; }
+#app .planner-message.assistant .markdown h3 { font-size: 1.375rem; line-height: 1.75rem; }
+#app .planner-message.assistant .markdown h4 { font-size: 1.1875rem; line-height: 1.625rem; }
+#app .planner-message.assistant .markdown h5 { font-size: 1.0625rem; line-height: 1.5rem; }
+#app .planner-message.assistant .markdown h6 { font-size: .9375rem; line-height: 1.375rem; }
+#app .planner-message.assistant .markdown strong { font-weight: 600; }
+#app .planner-message.assistant .markdown em { font-style: italic; font-weight: 400; }
+
+/* Inline code is a pill that rides the text baseline: sized in em so it tracks whatever
+   it sits inside, and line-height 1 so it never opens up the line it is on. */
+#app .planner-message.assistant .markdown :not(pre) > code {
+  padding: .15em .4em;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--answer-band);
+  color: var(--answer-text);
+  font-family: var(--font-mono);
+  font-size: .875em;
+  font-weight: 400;
+  line-height: 1;
+  white-space: nowrap;
+}
+#app .planner-message.assistant .markdown :is(h3, h4, h5, h6) :not(pre) > code { font-weight: 600; }
+
+/* Lists: markers sit in the gutter, in the body's own size, one step quieter. */
+#app .answer-list { display: block; margin: 0; padding-left: 1.25rem; }
+#app .answer-list li + li { margin-top: 6px; }
+#app .answer-list li::marker { color: var(--answer-muted); font-weight: 400; font-variant-numeric: tabular-nums; }
+
+/* Quotes and rules carry the same rhythm as the prose around them. */
+#app .answer-rule { height: 1px; margin: 2px 0; border: 0; background: var(--line); }
+
+/* Code blocks and the reasoning panel are the same card: same border, radius, head and padding. */
+#app :is(.answer-code, .answer-reasoning) { overflow: hidden; border: 1px solid var(--line); border-radius: 12px; background: var(--planner-card-bg); }
+#app :is(.answer-code-head, .answer-reasoning-head) { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 44px; padding: 6px 8px 6px 16px; border-bottom: 1px solid var(--line); background: var(--answer-band); color: var(--answer-muted); font-size: .8125rem; font-weight: 500; line-height: 1.25rem; }
+#app :is(.answer-code-head, .answer-reasoning-head) > span { display: inline-flex; align-items: center; gap: 8px; }
+#app :is(.answer-code-head, .answer-reasoning-head) .ui-icon { width: 15px; height: 15px; flex-basis: 15px; }
+#app :is(.answer-code-head, .answer-reasoning-head) button { height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--answer-muted); cursor: pointer; font-family: var(--ui-font); font-size: .8125rem; font-weight: 500; }
+#app :is(.answer-code-head, .answer-reasoning-head) button:hover { background: var(--ui-hover); color: var(--answer-text); }
+#app .answer-code pre { margin: 0; padding: 14px 16px; overflow-x: auto; background: none; }
+#app .answer-code :is(pre, code) { color: var(--answer-text); font-family: var(--font-mono); font-size: .8125rem; line-height: 1.375rem; white-space: pre; }
+#app .answer-reasoning-steps { display: block; margin: 0; padding: 16px 18px 18px 2.125rem; color: var(--answer-text); font-size: .9375rem; line-height: 1.5rem; }
+#app .answer-reasoning-steps li + li { margin-top: 8px; }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Vertical rhythm. Space is a relationship, not a constant: a heading sits close
+   to the text it introduces and far from the text above it; a list hugs the line
+   that announces it; a card gets more air than a paragraph. 4px base, 15/24 body.
+   ───────────────────────────────────────────────────────────────────────────── */
+#app .planner-message.assistant .markdown > * { margin: 0; }
+
+/* Prose default: paragraph to paragraph. */
+#app .planner-message.assistant .markdown > * + * { margin-top: 16px; }
+
+/* A list belongs to the sentence above it, and its items belong to each other. */
+#app .planner-message.assistant .markdown > p + :is(ul, ol) { margin-top: 8px; }
+
+/* A heading opens a section: air above, tight to what it introduces. */
+#app .planner-message.assistant .markdown > * + :is(h3, h4, h5, h6) { margin-top: 28px; }
+#app .planner-message.assistant .markdown > h3 + * { margin-top: 10px; }
+#app .planner-message.assistant .markdown > :is(h4, h5, h6) + * { margin-top: 8px; }
+
+/* Set pieces — tables, code, quotes, rules — stand apart from running text. */
+#app .planner-message.assistant .markdown > * + :is(.answer-table, .answer-code, .answer-quote, .answer-rule),
+#app .planner-message.assistant .markdown > :is(.answer-table, .answer-code, .answer-quote, .answer-rule) + * { margin-top: 20px; }
+#app .planner-message.assistant .markdown > * + .answer-rule,
+#app .planner-message.assistant .markdown > .answer-rule + * { margin-top: 24px; }
+
+/* Answer sections: narrative, results, note, reasoning, the atlas row, follow-ups. */
+#app .planner-message.assistant .planner-message-content > * { margin: 0; }
+#app .planner-message.assistant .planner-message-content > * + * { margin-top: 20px; }
+#app .planner-message.assistant .planner-message-content > * + :is(.answer-code, .answer-reasoning, .answer-followups-label),
+#app .planner-message.assistant .planner-message-content > :is(.answer-code, .answer-reasoning) + * { margin-top: 24px; }
+
+/* The note reads as an aside, not as disabled text: body colour, carried by its rule. */
+#app .answer-quote { display: block; margin: 0; padding: 2px 0 2px 18px; border-left: 3px solid color-mix(in srgb, var(--accent) 55%, transparent); color: var(--answer-text); font-size: .9375rem; line-height: 1.5rem; }
+#app .answer-quote > * { margin: 0; color: inherit; }
+#app .answer-quote > * + * { margin-top: 10px; }
+
+/* A failed or cancelled query is a state, not prose: named, toned, and carried by its own rule. */
+#app .answer-notice { --notice: var(--ui-secondary); display: block; padding: 2px 0 2px 18px; border-left: 3px solid color-mix(in srgb, var(--notice) 45%, transparent); }
+#app .answer-notice.is-error { --notice: #c0392b; }
+:root:not([data-theme="light"]) #app .answer-notice.is-error { --notice: #ff8a80; }
+#app .answer-notice-label { display: inline-flex; align-items: center; gap: 8px; color: var(--notice); font-size: .8125rem; font-weight: 600; line-height: 1.125rem; }
+#app .answer-notice-label .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app .answer-notice p { margin: 6px 0 0; color: var(--answer-text); font-size: .9375rem; line-height: 1.5rem; }
+
+/* Retry sits on the same button language as the rest of the app. */
+#app .planner-restore-question { display: inline-flex; align-items: center; height: 2.25rem; padding: 0 14px; border: 1px solid var(--ui-border); border-radius: 10px; background: var(--planner-card-bg); color: var(--answer-text); cursor: pointer; font-family: var(--ui-font); font-size: .875rem; font-weight: 500; line-height: 1.25rem; }
+#app .planner-restore-question:hover:not(:disabled) { background: var(--ui-hover); }
+#app .planner-message-meta { margin-top: 10px; color: var(--answer-muted); font-size: .75rem; line-height: 1.125rem; }
+#app .planner-message > .planner-restore-question { margin-top: 16px; }

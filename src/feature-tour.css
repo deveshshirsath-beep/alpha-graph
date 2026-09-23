@@ -1,0 +1,37 @@
+/* Feature walkthroughs: the "?" beside a heading, the ring it draws around the control it is
+   driving, and the card that says what is happening. The app underneath stays live and usable. */
+#app .feature-tour-button { display: grid; place-items: center; width: 1.5rem; height: 1.5rem; flex: 0 0 auto; padding: 0; border: 0; border-radius: 7px; background: transparent; color: var(--ui-secondary); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+#app .feature-tour-button:hover { background: var(--ui-hover); color: var(--text); }
+#app .feature-tour-button .ui-icon { width: 15px; height: 15px; flex-basis: 15px; }
+#app .section-head { display: flex; align-items: flex-start; column-gap: 6px; flex-wrap: wrap; }
+#app .section-head > .sidebar-heading { flex: 1 1 auto; min-width: 0; }
+#app .section-head > .sidebar-hint { flex: 1 1 100%; }
+
+.feature-tour-layer { position: fixed; inset: 0; z-index: 400; pointer-events: none; }
+
+.feature-tour-ring { position: fixed; border-radius: 12px; box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px color-mix(in srgb, var(--accent) 22%, transparent); transition: left .18s cubic-bezier(.22, 1, .36, 1), top .18s cubic-bezier(.22, 1, .36, 1), width .18s cubic-bezier(.22, 1, .36, 1), height .18s cubic-bezier(.22, 1, .36, 1); pointer-events: none; }
+.feature-tour-ring[hidden] { display: none; }
+
+.feature-tour-card { position: fixed; z-index: 401; width: 300px; max-width: calc(100vw - 24px); display: grid; gap: 10px; padding: 14px 16px 12px; border-radius: 14px; background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px rgba(5, 5, 5, .08), 0 18px 40px rgba(18, 35, 66, .18); pointer-events: auto; }
+:root:not([data-theme="light"]) .feature-tour-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 18px 40px rgba(0, 0, 0, .5); }
+[data-theme="light"] .feature-tour-card { background: #fff; }
+
+.feature-tour-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.feature-tour-head strong { font-size: .9375rem; font-weight: 600; line-height: 1.375rem; }
+.feature-tour-close { display: grid; place-items: center; width: 1.75rem; height: 1.75rem; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); cursor: pointer; }
+.feature-tour-close:hover { background: var(--ui-hover); color: var(--text); }
+.feature-tour-close .ui-icon { width: 15px; height: 15px; flex-basis: 15px; }
+
+.feature-tour-copy { margin: 0; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; }
+.feature-tour-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.feature-tour-counter { color: var(--ui-secondary); font-size: .75rem; line-height: 1.125rem; font-variant-numeric: tabular-nums; }
+.feature-tour-actions { display: flex; align-items: center; gap: 6px; }
+.feature-tour-back, .feature-tour-next { height: 2rem; padding: 0 12px; border: 0; border-radius: 8px; font-size: .8125rem; font-weight: 500; cursor: pointer; }
+.feature-tour-back { background: transparent; color: var(--ui-secondary); }
+.feature-tour-back:hover:not(:disabled) { background: var(--ui-hover); color: var(--text); }
+.feature-tour-back:disabled { opacity: .4; cursor: default; }
+.feature-tour-next { background: var(--accent); color: #fff; }
+.feature-tour-next:hover:not(:disabled) { filter: brightness(1.05); }
+.feature-tour-next:disabled { opacity: .6; cursor: progress; }
+
+@media (prefers-reduced-motion: reduce) { .feature-tour-ring { transition: none; } }

@@ -1,6 +1,7 @@
 import { relationshipsForType, searchEntities } from "./planner-discovery.js";
 import { safeCssColor } from "./sanitize.js";
 import { SearchDropdown } from "./search-dropdown.js";
+import { icon } from "./ui-controls.js";
 
 const label = (value) => String(value).replaceAll("-", " ").replaceAll("_", " ");
 const count = (value) => new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(value);
@@ -231,7 +232,9 @@ export class PlannerGraphBrowser {
       button.type = "button";
       button.setAttribute("aria-pressed", String(this.relationship === item.relationship));
       button.title = item.signatures.map((row) => `${row.source} → ${row.relationship} → ${row.target} · ${row.count}`).join("\n");
-      button.append(element("i", "planner-browse-relation-icon", "↗"), element("span", "", label(item.relationship)), element("small", "", count(item.count)));
+      const relationIcon = element("i", "planner-browse-relation-icon");
+      relationIcon.append(icon("arrow-up-right"));
+      button.append(relationIcon, element("span", "", label(item.relationship)), element("small", "", count(item.count)));
       button.addEventListener("click", () => { this.relationship = this.relationship === item.relationship ? "" : item.relationship; this.notify(); this.renderRelationships(); });
       this.relationships.append(button);
       if (this.relationship === item.relationship) {

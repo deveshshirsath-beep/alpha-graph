@@ -1,17 +1,17 @@
 /* Graph explorer panel (Figma 396:45367): intro, Entities | Relationships tabs, then search, layer cards
    and the layer tree. One 12px gutter for every block, 36px rows, 15/13px type, and the chat list's row states. */
-#app #controls-panel { --panel-gutter: 12px; --panel-row: 36px; }
+#app #controls-panel { --panel-gutter: 16px; --panel-row: 36px; }
 #app #controls-panel .explorer-tabpanel > section { margin: 0; border: 0; box-shadow: none; background: none; }
 
 /* Intro */
-#app .explorer-intro { flex-shrink: 0; padding: 6px var(--panel-gutter) 10px; }
+#app .explorer-intro { flex-shrink: 0; padding: 8px var(--panel-gutter) 12px; }
 #app .explorer-intro h2 { margin: 0; color: var(--text); font-size: .9375rem; font-weight: 600; line-height: 1.375rem; letter-spacing: -.01em; }
 #app .explorer-intro p { margin: 3px 0 0; color: var(--ui-secondary); font-size: .8125rem; font-weight: 400; line-height: 1.25rem; }
 
 /* Entities | Relationships: equal underline tabs; the active one carries the darker rule. */
-#app .explorer-tabs { display: flex; flex-shrink: 0; padding: 0 var(--panel-gutter); }
-#app .explorer-tab { flex: 1 1 0; min-width: 0; padding: 4px 8px 12px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; color: var(--text); cursor: pointer; font-size: .9375rem; font-weight: 600; line-height: 1.375rem; white-space: nowrap; transition: border-color .15s ease; }
-#app .explorer-tab:hover:not(.active) { border-bottom-color: color-mix(in srgb, var(--text) 28%, transparent); }
+#app .explorer-tabs { display: flex; flex-shrink: 0; gap: 18px; padding: 0 var(--panel-gutter); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+#app .explorer-tab { flex: 0 0 auto; min-width: 0; padding: 12px 0; margin-bottom: -1px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--text); cursor: pointer; font-size: .9375rem; font-weight: 600; line-height: 1.375rem; white-space: nowrap; transition: border-color .15s ease, color .15s ease; }
+#app .explorer-tab:hover:not(.active) { border-bottom-color: color-mix(in srgb, var(--text) 24%, transparent); }
 #app .explorer-tab:not(.active) { color: var(--ui-secondary); font-weight: 500; }
 #app .explorer-tab:hover:not(.active) { color: var(--text); }
 #app .explorer-tab.active { border-bottom-color: var(--text); }
@@ -22,7 +22,7 @@
 /* Search and layer cards sit on the 12px gutter; the tree insets 4px so its rows' hover reaches the same edge. */
 #app #controls-panel .search-section { position: relative; padding: 0 var(--panel-gutter); }
 #app #controls-panel .layer-section { padding: 0 var(--panel-gutter); }
-#app #controls-panel :is(.entity-section, .edge-filter-section) { padding: 0 4px; }
+#app #controls-panel :is(.entity-section, .edge-filter-section) { padding: 0 8px; }
 #app #controls-panel .panel-search { background: color-mix(in srgb, var(--text) 4%, transparent); }
 #app #controls-panel .search-section .search-results { top: calc(100% + 6px); left: var(--panel-gutter); right: var(--panel-gutter); }
 
@@ -34,12 +34,18 @@
 
 /* Architecture layers: three cards, icon beside a name over its count. */
 #app .layer-tabs { display: grid; grid-template-columns: repeat(var(--layer-columns, 3), minmax(0, 1fr)); gap: 8px; }
-#app .layer-tab { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; height: auto; min-height: 58px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: none; text-align: left; transition: background-color .15s ease, border-color .15s ease; }
+#app .layer-tab { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; height: auto; min-height: 58px; padding: 10px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); box-shadow: none; text-align: left; transition: background-color .15s ease, border-color .15s ease; }
+#app .layer-tab { display: grid; grid-template-columns: 10px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 6px; row-gap: 2px; align-items: center; }
 #app .layer-tab :is(span, small) { align-self: flex-start; margin: 0; text-align: left; }
+/* The colour chip keys the card to its layer, its tree rows and their guide line. */
+#app .layer-mark { grid-column: 1; grid-row: 1; align-self: center; width: 10px; height: 10px; border-radius: 50%; background: var(--layer-color, var(--accent)); }
+#app .layer-tab > span:not(.layer-mark) { grid-column: 2; grid-row: 1; }
+#app .layer-tab > small { grid-column: 2; grid-row: 2; }
 #app .layer-tab span { max-width: 100%; overflow: hidden; color: var(--text); font-size: .8125rem; font-weight: 600; line-height: 1.125rem; text-overflow: ellipsis; white-space: nowrap; }
 #app .layer-tab small { color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; font-variant-numeric: tabular-nums; }
 #app .layer-tab:hover:not(:disabled) { background: var(--ui-hover); }
-#app .layer-tab.active { border-color: color-mix(in srgb, var(--text) 24%, transparent); background: var(--ui-hover); box-shadow: none; }
+#app .layer-tab.active { border-color: color-mix(in srgb, var(--text) 24%, transparent); background: color-mix(in srgb, var(--text) 6%, transparent); box-shadow: inset 0 1px 3px color-mix(in srgb, var(--text) 14%, transparent), inset 0 0 0 1px color-mix(in srgb, var(--text) 5%, transparent); }
+#app .layer-tab.active:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 9%, transparent); }
 
 /* The layer tree: the chat entity map's rows, guides and marks; each layer is marked by its colored stack. */
 #app #controls-panel :is(.entity-tree, #edge-filters) { max-height: none; padding: 0; overflow: visible; }
@@ -47,6 +53,10 @@
 #app #controls-panel .planner-type-row::before { left: calc(.5rem + 7.5px); }
 #app #controls-panel .planner-type-toggle { color: var(--ui-secondary); }
 #app .entity-folder { width: 100%; height: auto; border: 0; border-radius: 8px; background: transparent; cursor: pointer; text-align: left; }
+#app .entity-group { --guide-color: color-mix(in srgb, var(--layer-color, var(--line)) 42%, transparent); }
+#app #controls-panel .entity-children .planner-type-row::before { background: repeating-linear-gradient(to right, var(--guide-color) 0 1px, transparent 1px var(--indent)); }
+#app #controls-panel .entity-folder[aria-expanded="true"] > .planner-type-toggle::after { background: var(--guide-color); }
+#app .entity-folder[aria-expanded="true"] .planner-type-label { font-weight: 650; }
 #app .entity-children { margin: 0; padding: 0; }
 #app .entity-children::before { display: none; }
 #app .tree-joint { display: none; }
@@ -60,6 +70,28 @@
 #app #controls-panel .filter-item input:not(:checked) ~ .planner-type-label { color: var(--ui-secondary); }
 #app #controls-panel .filter-item input:focus-visible ~ .planner-type-mark { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 50%; }
 #app #edge-filters .relationship-dot { width: 10px; height: 10px; flex-basis: 10px; margin: 0 1px; border-radius: 50%; background: currentColor; }
+
+/* Sigma's eye: it takes the count's place on hover, and stays while the type is hidden. */
+#app #edge-filters .planner-type-row { position: relative; }
+#app #edge-filters .planner-type-entry { cursor: pointer; }
+#app .visibility-toggle { position: absolute; top: 50%; right: 4px; display: grid; place-items: center; width: 30px; height: 26px; padding: 0; border: 0; border-radius: 6px; background: var(--ui-hover); color: var(--ui-secondary); opacity: 0; transform: translateY(-50%); cursor: pointer; transition: opacity .12s ease; }
+#app .visibility-toggle .ui-icon { width: 17px; height: 17px; flex-basis: 17px; }
+#app .planner-type-row:hover .visibility-toggle, #app .visibility-toggle:focus-visible { opacity: 1; }
+#app .planner-type-row.has-toggle:hover .planner-type-count,
+#app .planner-type-row.has-toggle.is-muted .planner-type-count { visibility: hidden; }
+#app .visibility-toggle:hover { background: color-mix(in srgb, var(--text) 10%, transparent); color: var(--text); }
+#app .visibility-toggle[aria-pressed="true"] .ui-icon:last-child, #app .visibility-toggle[aria-pressed="false"] .ui-icon:first-child { display: none; }
+#app .planner-type-row.is-muted .planner-type-label { color: var(--ui-secondary); }
+#app .planner-type-row.is-muted .planner-type-mark { opacity: .45; }
+/* A hidden type keeps its eye visible, so the row states read without hovering. */
+#app .planner-type-row.is-muted .visibility-toggle { opacity: 1; background: transparent; }
+#app .planner-type-row.is-muted:hover .visibility-toggle { background: var(--ui-hover); }
+
+/* Each relationship opens onto the source → target paths that use it. */
+#app .relationship-paths { display: grid; }
+#app .relationship-paths[hidden] { display: none; }
+#app .relationship-path .planner-type-label { color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; }
+#app .relationship-path .planner-type-count { font-size: .75rem; }
 
 
 /* The query builder's entity field takes the same field language as every other input. */

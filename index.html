@@ -81,7 +81,7 @@
           </div>
 
         </aside>
-        <div class="panel-resizer panel-resizer-left" role="separator" tabindex="0" aria-label="Resize explorer panel" aria-orientation="vertical" aria-controls="controls-panel" title="Drag to resize explorer · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
+        <div class="panel-resizer panel-resizer-left" role="separator" tabindex="0" aria-label="Resize explorer panel" aria-orientation="vertical" aria-controls="controls-panel"><span class="resize-grip" aria-hidden="true"></span></div>
 
         <section class="stage" aria-label="Interactive graph">
           <button id="explorer-panel-reopen" class="side-panel-toggle panel-reopen graph-panel-reopen-left" type="button" aria-label="Expand explorer panel" data-panel-icon="panel-left-open"></button>
@@ -94,6 +94,7 @@
 
           <div class="view-switcher view-switcher-top">
             <div class="view-options" role="radiogroup" aria-label="Graph layout">
+              <span class="view-switcher-label" aria-hidden="true">View</span>
               <button class="view-option active" type="button" role="radio" aria-checked="true" data-layout="donut" aria-label="Constellation Donut" title="Constellation Donut" disabled><svg data-icon="circle-notch"></svg><span class="view-option-label">Constellation Donut</span></button>
               <button class="view-option" type="button" role="radio" aria-checked="false" data-layout="constellation-v1" aria-label="Constellation V1" title="Constellation V1" disabled><svg data-icon="graph"></svg><span class="view-option-label">Constellation V1</span></button>
               <button class="view-option" type="button" role="radio" aria-checked="false" data-layout="hierarchy" aria-label="Organizational" title="Organizational" disabled><svg data-icon="tree-structure"></svg><span class="view-option-label">Organizational</span></button>
@@ -112,7 +113,7 @@
           <div id="toast" class="toast" role="status"></div>
         </section>
 
-        <div class="panel-resizer panel-resizer-right" role="separator" tabindex="0" aria-label="Resize query panel" aria-orientation="vertical" aria-controls="query-panel" title="Drag to resize query panel · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
+        <div class="panel-resizer panel-resizer-right" role="separator" tabindex="0" aria-label="Resize query panel" aria-orientation="vertical" aria-controls="query-panel"><span class="resize-grip" aria-hidden="true"></span></div>
         <aside id="query-panel" class="query-dock" aria-label="Graph query and traversal">
           <div class="query-card">
           <div class="query-card-head">
@@ -122,7 +123,7 @@
           <section class="conditional-section sidebar-section" data-panel="conditions" aria-labelledby="query-heading">
             <div class="section-head">
               <h2 id="query-heading" class="sidebar-heading">Query builder</h2>
-              <p id="query-empty" class="sidebar-hint">Add conditions, then run them to filter the graph.</p>
+              <p id="query-hint" class="sidebar-hint">Add conditions, then run them to filter the graph.</p>
             </div>
             <div id="condition-list" class="condition-list"></div>
             <button id="add-condition" class="control-row" type="button" disabled><span class="control-lead"><svg data-icon="plus"></svg></span><span class="control-label">Add condition</span></button>
@@ -134,7 +135,7 @@
           <section class="traversal-section sidebar-section" data-panel="traversal" aria-labelledby="traversal-heading">
             <div class="section-head">
               <h2 id="traversal-heading" class="sidebar-heading">Traversal</h2>
-              <p id="traversal-empty" class="sidebar-hint">Add entities or Shift-click nodes to trace paths from them.</p>
+              <p id="traversal-hint" class="sidebar-hint">Add entities or Shift-click nodes to trace paths from them.</p>
             </div>
             <div id="selection-chips" class="entity-list" role="list" aria-label="Traversal starting entities"></div>
             <button id="add-traversal-entity" class="control-row" type="button" data-token="name_or_text" aria-haspopup="dialog" aria-expanded="false" disabled><span class="control-lead"><svg data-icon="plus"></svg></span><span class="control-label">Add entity</span></button>
@@ -207,7 +208,7 @@
               <div id="planner-browse-results" class="planner-browse-results"></div>
               <details class="planner-browse-relations"><summary><span>Relationships</span><small id="planner-browse-relation-count">0</small></summary><div id="planner-browse-relationships"></div></details>
             </div>
-            <button id="planner-show-related-questions" class="planner-related-questions" type="button" hidden><span>View Related Questions</span><span aria-hidden="true">→</span></button>
+            <button id="planner-show-related-questions" class="planner-related-questions" type="button" hidden><span>View Related Questions</span><svg data-icon="arrow-right"></svg></button>
           </section>
           </section>
 
@@ -217,7 +218,7 @@
           </section>
         </aside>
 
-        <div id="planner-library-resizer" class="panel-resizer planner-panel-resizer planner-panel-resizer-left" role="separator" tabindex="0" aria-label="Resize question library" aria-orientation="vertical" aria-controls="planner-catalog-panel" title="Drag to resize library · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
+        <div id="planner-library-resizer" class="panel-resizer planner-panel-resizer planner-panel-resizer-left" role="separator" tabindex="0" aria-label="Resize question library" aria-orientation="vertical" aria-controls="planner-catalog-panel"><span class="resize-grip" aria-hidden="true"></span></div>
 
         <section class="planner-conversation" aria-label="Graph query conversation">
           <button id="planner-library-toggle" class="planner-float-button planner-float-left" type="button" aria-label="Collapse sidebar" data-panel-icon="panel-left-close"></button>
@@ -259,12 +260,12 @@
               <div class="planner-composer-meta"><span id="planner-composer-status" role="status"></span></div>
             </form>
             <div id="planner-suggestions" class="planner-suggestions">
-              <div class="suggestion-layers" role="tablist" aria-label="Concerns">
-                  <button class="suggestion-layer active" type="button" role="tab" aria-selected="true" data-layer="business"><img src="/illustrations/concerns/business.svg" alt="" width="61" height="48" data-inline-svg /><span>Business concerns</span></button>
-                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="api"><img src="/illustrations/concerns/api.svg" alt="" width="61" height="48" data-inline-svg /><span>API concerns</span></button>
-                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="runtime"><img src="/illustrations/concerns/runtime.svg" alt="" width="61" height="48" data-inline-svg /><span>Runtime concerns</span></button>
+              <div class="suggestion-layers" role="tablist" aria-label="Layers">
+                  <button class="suggestion-layer active" type="button" role="tab" aria-selected="true" data-layer="business"><img src="/illustrations/concerns/business.svg" alt="" width="61" height="48" data-inline-svg /><span>Business layers</span></button>
+                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="api"><img src="/illustrations/concerns/api.svg" alt="" width="61" height="48" data-inline-svg /><span>API layers</span></button>
+                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="runtime"><img src="/illustrations/concerns/runtime.svg" alt="" width="61" height="48" data-inline-svg /><span>Runtime layers</span></button>
               </div>
-              <div class="suggestion-head">Suggested questions</div>
+              <div class="suggestion-head"><span>Suggested questions</span><button id="planner-suggestions-refresh" class="suggestion-refresh" type="button" aria-label="Show other questions"><svg data-icon="arrow-counter-clockwise"></svg></button></div>
               <div id="planner-suggestion-list" class="suggestion-list"></div>
             </div>
             </div>
@@ -289,7 +290,7 @@
           </section>
         </section>
 
-        <div id="planner-context-resizer" class="panel-resizer planner-panel-resizer planner-panel-resizer-right" role="separator" tabindex="0" aria-label="Resize result explorer" aria-orientation="vertical" aria-controls="planner-context" title="Drag to resize result explorer · Arrow keys to adjust · Double-click to reset"><span class="resize-grip" aria-hidden="true"></span></div>
+        <div id="planner-context-resizer" class="panel-resizer planner-panel-resizer planner-panel-resizer-right" role="separator" tabindex="0" aria-label="Resize result explorer" aria-orientation="vertical" aria-controls="planner-context"><span class="resize-grip" aria-hidden="true"></span></div>
 
         <aside id="planner-context" class="planner-context" aria-label="Query result context">
           <div class="planner-context-card">
@@ -305,7 +306,7 @@
             </div>
             <section id="planner-type-map-panel" class="planner-context-panel planner-type-map" aria-label="Entity map"></section>
             <section id="planner-diagram-panel" class="planner-context-panel planner-diagram-panel" aria-label="Result graph diagram" hidden>
-              <div class="planner-diagram-toolbar"><div><strong>Result Map</strong><span id="planner-diagram-count">0 nodes · 0 edges</span></div><button id="planner-diagram-expand" type="button" aria-expanded="false" aria-label="Expand map">⤢ <span>Expand</span></button></div>
+              <div class="planner-diagram-toolbar"><div><strong>Result Map</strong><span id="planner-diagram-count">0 nodes · 0 edges</span></div><button id="planner-diagram-expand" type="button" aria-expanded="false" aria-label="Expand map"><svg data-icon="corners-out"></svg><span>Expand</span></button></div>
               <label class="planner-map-focus-label" for="planner-diagram-focus"><span>View connections around</span><select id="planner-diagram-focus" aria-label="Diagram focus entity" disabled><option value="">All returned nodes</option></select></label>
               <div id="planner-diagram-canvas" class="planner-diagram-canvas">
                 <svg id="planner-diagram-svg" role="group" aria-label="Query result graph diagram" tabindex="0"></svg>

@@ -6,11 +6,13 @@ import { captureException, initializeObservability, startTimer, trackEvent } fro
 import { escapeHtml, safeCssColor } from "./sanitize.js";
 import { initializeUIControls, setButtonContent, syncDropdowns, icon } from "./ui-controls.js";
 import { initializePanelResizing } from "./panel-resize.js";
+import { initializePanelChrome } from "./panel-chrome.js";
 import { connectPanelToggle } from "./panel-toggle.js";
 import { workspaceFocus } from "./workspace-focus.js";
 import { initializeTextSizeSettings, textScale } from "./text-size.js";
 import { conditionReadiness, evaluateGraphConditions, traceGraphPaths } from "./graph-query.js";
 import { entityTypeLabel, typeMark } from "./planner-entity-map.js";
+import { attachTourButton, registerTour, setSelect, waitFor } from "./feature-tour.js";
 import { PlannerSlotPicker } from "./planner-slot-picker.js";
 import { createRangeSlider } from "./range-slider.js";
 import "./fonts.css";
@@ -27,7 +29,10 @@ import "./planner-context.css";
 import "./planner-chat.css";
 import "./controls.css";
 import "./explorer-panel.css";
+import "./panel-resizer.css";
+import "./feature-tour.css";
 import "./graph-view.css";
+import "./scale.css";
 import "./query-planner.js";
 
 initializeObservability({
@@ -62,6 +67,7 @@ let visibleConnectionCount = CONNECTION_PAGE_SIZE;
 let hoveredNode = null;
 let focusedNeighborhood = null;
 let activeLayer = "BUSINESS";
+let layerSelected = true;
 let activeTheme = ["light", "dark", "ocean", "sunset"].includes(document.documentElement.dataset.theme) ? document.documentElement.dataset.theme : "light";
 let edgeGlowContext = null;
 let traversalEdges = null;
@@ -574,8 +580,35 @@ function applyLayerDonutLayout(layer, shouldFit = true) {
   if (shouldFit) fitVisibleGraph();
 }
 
+/** Pressing the active layer again clears the selection, so the canvas shows every layer. */
+async function toggleLayer(layer) {
+  if (layerSelected && activeLayer === layer) return showAllLayers();
+  return selectLayer(layer);
+}
+
+async function showAllLayers() {
+  layerSelected = false;
+  focusedNeighborhood = null;
+  traversalEdges = null;
+  conditionalNodes = null;
+  conditionalEdges = null;
+  if (els.conditionalStatus) els.conditionalStatus.textContent = "";
+  state.nodeTypes = new Set(Object.values(LAYERS).flat());
+  $$(".layer-tab").forEach((button) => {
+    button.classList.remove("active");
+    button.setAttribute("aria-selected", "false");
+  });
+  renderEntityTree();
+  clearSelection(false);
+  await loadGraphView(Object.keys(LAYERS));
+  updateCounts();
+  updateFilterUI();
+  fitVisibleGraph();
+}
+
 async function selectLayer(layer, shouldFit = true) {
   activeLayer = layer;
+  layerSelected = true;
   focusedNeighborhood = null;
   traversalEdges = null;
   conditionalNodes = null;
@@ -605,12 +638,23 @@ async function selectLayer(layer, shouldFit = true) {
   }
 }
 
+/** Mirrors a relationship row's checkbox into the eye button and the row's muted state. */
+function syncRelationshipRow(row) {
+  const input = row.querySelector("input");
+  const eye = row.querySelector(".visibility-toggle");
+  if (!input || !eye) return;
+  eye.setAttribute("aria-pressed", String(input.checked));
+  row.classList.toggle("is-muted", !input.checked);
+}
+
 function updateFilterUI() {
   $$("#type-filters input").forEach((input) => {
     input.checked = state.nodeTypes.has(input.value);
   });
   $$("#edge-filters input").forEach((input) => {
     input.checked = state.edgeTypes.has(input.value);
+    const row = input.closest(".planner-type-row");
+    if (row) syncRelationshipRow(row);
   });
   $$(".entity-folder").forEach((folder) => {
     const types = LAYERS[folder.dataset.layer];
@@ -625,6 +669,7 @@ function renderEntityTree() {
   for (const [layer, layerTypes] of Object.entries(LAYERS)) {
     const group = document.createElement("div");
     group.className = "entity-group";
+    group.style.setProperty("--layer-color", themeColor(sampleForType(layerTypes[0]) || { layer, color: "#7068ff" }));
     const folder = document.createElement("button");
     folder.className = "entity-folder planner-type-row";
     folder.style.setProperty("--depth", "0");
@@ -690,12 +735,16 @@ function renderLayerTabs() {
     const count = types.reduce((sum, type) => sum + (graphMeta.counts[type] || 0), 0);
     const sample = sampleForType(types[0]);
     const button = document.createElement("button");
-    button.className = `layer-tab${layer === activeLayer ? " active" : ""}`;
+    const isActive = layerSelected && layer === activeLayer;
+    button.className = `layer-tab${isActive ? " active" : ""}`;
     button.dataset.layer = layer;
     button.setAttribute("role", "tab");
-    button.setAttribute("aria-selected", String(layer === activeLayer));
+    button.setAttribute("aria-selected", String(isActive));
     button.style.setProperty("--layer-color", themeColor(sample || { layer, color: "#7068ff" }));
-    button.innerHTML = `<span>${escapeHtml(layerLabel(layer))}</span><small>${formatNumber.format(count)}</small>`;
+    button.innerHTML = `<span class="layer-mark" aria-hidden="true"></span><span>${escapeHtml(layerLabel(layer))}</span><small>${formatNumber.format(count)}</small>`;
+    // Choosing the active layer again is the undo: it clears filters back to that layer's own view.
+    button.setAttribute("aria-label", isActive ? `Clear the ${layerLabel(layer)} layer filter` : `Show only the ${layerLabel(layer)} layer`);
+    button.addEventListener("click", () => toggleLayer(layer));
     tabs.append(button);
   }
 }
@@ -709,19 +758,70 @@ function makeFilters() {
   const edgeTypes = [...new Set([...Object.keys(graphMeta.edgeCounts), ...recommendedTypes])]
     .map((type) => [type, graphMeta.edgeCounts[type] || 0])
     .sort((a, b) => b[1] - a[1]);
+  const observedPaths = new Map((graphMeta.relationshipSchema || []).map((entry) => [`${entry.source}\u0000${entry.relationship}\u0000${entry.target}`, entry.count || 0]));
   for (const [index, [type, count]] of edgeTypes.entries()) {
-    const label = document.createElement("label");
-    label.className = "filter-item planner-type-row";
-    label.style.setProperty("--depth", "0");
     // Stable, distinct colors, with accessible contrast in every theme.
     const hue = Math.round(index * 137.508) % 360;
-    label.innerHTML = `<span class="planner-type-toggle"></span><span class="planner-type-entry"><input type="checkbox" value="${escapeHtml(type)}"><span class="planner-type-mark relationship-dot" style="--mark-dark:hsl(${hue} 65% 66%);--mark-light:hsl(${hue} 65% 38%);--mark-ocean:hsl(${hue} 70% 62%);--mark-sunset:hsl(${hue} 75% 70%)"></span><span class="planner-type-label">${escapeHtml(relationshipLabel(type))}</span><span class="planner-type-count">${formatNumber.format(count)}</span></span>`;
-    label.querySelector("input").addEventListener("change", (event) => {
-      const input = /** @type {HTMLInputElement} */ (event.currentTarget);
+    const label = relationshipLabel(type);
+    const paths = RELATIONSHIP_RULES.filter(([, relationship]) => relationship === type)
+      .map(([source, , target]) => ({ source, target, count: observedPaths.get(`${source}\u0000${type}\u0000${target}`) || 0 }))
+      .sort((first, second) => second.count - first.count);
+
+    const group = document.createElement("div");
+    group.className = "relationship-group";
+    const row = document.createElement("div");
+    row.className = "filter-item planner-type-row has-toggle";
+    row.style.setProperty("--depth", "0");
+    row.innerHTML = `<span class="planner-type-entry"><input type="checkbox" value="${escapeHtml(type)}"><span class="planner-type-mark relationship-dot" style="--mark-dark:hsl(${hue} 65% 66%);--mark-light:hsl(${hue} 65% 38%);--mark-ocean:hsl(${hue} 70% 62%);--mark-sunset:hsl(${hue} 75% 70%)"></span><span class="planner-type-label">${escapeHtml(label)}</span><span class="planner-type-count">${formatNumber.format(count)}</span></span>`;
+
+    const paneId = `edge-paths-${index}`;
+    const expander = document.createElement("button");
+    expander.type = "button";
+    expander.className = "planner-type-toggle";
+    expander.setAttribute("aria-expanded", "false");
+    expander.setAttribute("aria-controls", paneId);
+    expander.setAttribute("aria-label", `Show the paths that use ${label}`);
+    expander.disabled = !paths.length;
+    expander.append(icon("chevron"));
+    row.prepend(expander);
+
+    // Sigma's eye: it replaces the count on hover, and stays put while the type is hidden.
+    const input = /** @type {HTMLInputElement} */ (row.querySelector("input"));
+    const eye = document.createElement("button");
+    eye.type = "button";
+    eye.className = "visibility-toggle";
+    eye.setAttribute("aria-label", `Show or hide ${label} relationships`);
+    eye.append(icon("eye"), icon("eye-slash"));
+    eye.addEventListener("click", () => {
+      input.checked = !input.checked;
       input.checked ? state.edgeTypes.add(type) : state.edgeTypes.delete(type);
+      syncRelationshipRow(row);
       refresh();
     });
-    els.edgeFilters.append(label);
+    row.append(eye);
+
+    row.querySelector(".planner-type-entry").addEventListener("click", () => eye.click());
+
+    const pane = document.createElement("div");
+    pane.className = "relationship-paths";
+    pane.id = paneId;
+    pane.hidden = true;
+    for (const path of paths) {
+      const line = document.createElement("div");
+      line.className = "relationship-path planner-type-row";
+      line.style.setProperty("--depth", "1");
+      line.innerHTML = `<span class="planner-type-toggle"></span><span class="planner-type-entry"><span class="planner-type-label">${escapeHtml(entityTypeLabel(path.source))} \u2192 ${escapeHtml(entityTypeLabel(path.target))}</span><span class="planner-type-count">${formatNumber.format(path.count)}</span></span>`;
+      pane.append(line);
+    }
+    expander.addEventListener("click", () => {
+      const expanded = expander.getAttribute("aria-expanded") === "true";
+      expander.setAttribute("aria-expanded", String(!expanded));
+      pane.hidden = expanded;
+    });
+
+    group.append(row, pane);
+    els.edgeFilters.append(group);
+    syncRelationshipRow(row);
   }
   renderConditionalFilters();
 }
@@ -768,7 +868,7 @@ async function renderConditionSuggestions(condition, input, panel) {
   }
   const heading = document.createElement("div");
   heading.className = "condition-suggestion-heading";
-  heading.textContent = `${available.toLocaleString()} ${pluralEntityLabel(condition.entityType).toLowerCase()}`;
+  heading.innerHTML = `<span>${escapeHtml(entityLabel(condition.entityType))} suggestions</span><small>${available.toLocaleString()} available</small>`;
   panel.append(heading);
   for (const item of suggestions) {
     const button = document.createElement("button");
@@ -810,9 +910,8 @@ function updateConditionState(changed = false) {
 
 function renderConditionalFilters() {
   els.conditionList.replaceChildren();
-  // Until there is a condition, the section is just its heading, a hint and "Add condition".
+  // Run and the status row belong to a section that has conditions; the description always stays.
   const empty = !conditionalConditions.length;
-  $("#query-empty").hidden = !empty;
   $("#apply-conditions").hidden = empty;
   $(".conditional-section .status-row").hidden = empty;
   conditionalConditions.forEach((condition, index) => {
@@ -853,6 +952,9 @@ function renderConditionalFilters() {
 
     const entityWrap = document.createElement("div");
     entityWrap.className = "condition-entity-wrap";
+    const entityField = document.createElement("div");
+    entityField.className = "condition-entity-field";
+    entityField.append(icon("search"));
     const entityInput = document.createElement("input");
     entityInput.className = `condition-entity-input${condition.nodeId ? " entity-selected" : ""}`;
     entityInput.type = "search";
@@ -872,7 +974,8 @@ function renderConditionalFilters() {
       window.clearTimeout(condition.suggestionTimer);
       condition.suggestionTimer = window.setTimeout(() => renderConditionSuggestions(condition, entityInput, suggestionPanel), 110);
     });
-    entityWrap.append(entityInput, suggestionPanel);
+    entityField.append(entityInput);
+    entityWrap.append(entityField, suggestionPanel);
 
     const relationshipSelect = document.createElement("select");
     relationshipSelect.className = "condition-relationship";
@@ -1096,7 +1199,8 @@ function renderInspectorConnections(node) {
       const button = document.createElement("button");
       button.type = "button";
       button.className = "connection-row relation-row";
-      button.innerHTML = `<i style="--node-color:${safeCssColor(themeColor(neighborAttrs))}"></i><span class="relation-name"></span><small class="relation-kind"></small>`;
+      button.innerHTML = `<span class="relation-name"></span><small class="relation-kind"></small>`;
+      button.prepend(typeMark(String(neighborAttrs.type || ""), graphMeta));
       button.querySelector(".relation-name").textContent = neighborAttrs.name;
       button.querySelector(".relation-kind").textContent = `${relationship}${descriptions.length > 1 ? ` +${descriptions.length - 1}` : ""}`;
       button.title = `${neighborAttrs.name}\n${descriptions.join("\n")}\n${neighbor}`;
@@ -1214,7 +1318,6 @@ function updateTraversalUI() {
     const meta = traversalMeta.get(node) || { name: node, type: "" };
     return entityRow(meta, { detail: entityLabel(meta.type), removeLabel: `Remove ${meta.name} from traversal`, onRemove: () => toggleTraversalNode(node) });
   }));
-  $("#traversal-empty").hidden = traversalSelections.size > 0;
   $("#traversal-footer").hidden = traversalSelections.size === 0;
   if (selectedNode) {
     const included = traversalSelections.has(selectedNode);
@@ -1430,7 +1533,7 @@ function renderSearchDiscovery() {
   els.searchResults.replaceChildren();
   const heading = document.createElement("div");
   heading.className = "search-result-heading";
-  heading.innerHTML = "<span>Choose an entity type</span><small>Suggestions appear instantly</small>";
+  heading.innerHTML = "<span>Choose an entity type</span>";
   els.searchResults.append(heading);
   for (const [layer, types] of Object.entries(LAYERS)) {
     const layerHeading = document.createElement("div");
@@ -1554,9 +1657,108 @@ function wireExplorerTabs(selector = ".explorer-tab") {
   });
 }
 
+
+/** Presses a slider thumb's arrow key, so a walkthrough moves the real control. */
+function nudgeThumb(name, presses, key = "ArrowRight") {
+  const thumb = $(`.range-thumb[data-thumb="${name}"]`);
+  if (!thumb) return;
+  for (let press = 0; press < presses; press += 1) {
+    thumb.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+  }
+}
+
+const firstCard = () => els.conditionList?.querySelector(".condition-card");
+const entityOption = () => [...document.querySelectorAll(".slot-picker-option")]
+  .find((option) => option.querySelector(".slot-picker-option-description")) || null;
+
+/** The two graph-panel walkthroughs: they drive the real controls, one value per step. */
+function registerGraphTours() {
+  registerTour("query-builder", {
+    title: "Query builder",
+    steps: [
+      {
+        text: "Every filter starts as a condition. Adding one gives you an empty row to fill in.",
+        target: () => $("#add-condition"),
+        run: () => { $("#add-condition")?.click(); },
+        settle: 200,
+      },
+      {
+        text: "First pick the entity type the condition is about — we've chosen the first type this graph has.",
+        target: () => firstCard()?.querySelector(".select-control") || firstCard(),
+        run: async () => {
+          const select = /** @type {HTMLSelectElement | null} */ (await waitFor(() => firstCard()?.querySelector(".condition-type")));
+          setSelect(select, "");
+        },
+        settle: 300,
+      },
+      {
+        text: "Then choose the relationship to follow from that type. Together they read as one sentence.",
+        target: () => firstCard()?.querySelectorAll(".select-control")[1] || firstCard(),
+        run: async () => {
+          const select = /** @type {HTMLSelectElement | null} */ (await waitFor(() => {
+            const candidate = firstCard()?.querySelector(".condition-relationship");
+            return candidate && !candidate.disabled ? candidate : null;
+          }));
+          setSelect(select, "");
+        },
+        settle: 250,
+      },
+      {
+        text: "Run it. The canvas drops everything the condition doesn't match.",
+        target: () => $("#apply-conditions"),
+        run: () => { const run = $("#apply-conditions"); if (run && !run.disabled) run.click(); },
+        settle: 700,
+      },
+      {
+        text: "Clear puts the whole graph back. Add more conditions to narrow further — AND keeps only what matches both, OR adds alternatives.",
+        target: () => $("#clear-conditions"),
+      },
+    ],
+  });
+
+  registerTour("traversal", {
+    title: "Traversal",
+    steps: [
+      {
+        text: "Traversal follows relationships out from entities you choose. This opens the entity picker.",
+        target: () => $("#add-traversal-entity"),
+        run: () => { const add = $("#add-traversal-entity"); if (add && !add.disabled) add.click(); },
+        settle: 350,
+      },
+      {
+        text: "Pick any entity and it becomes a starting point. Shift-clicking a node on the canvas does the same thing.",
+        target: () => entityOption() || document.querySelector(".slot-picker-option") || $("#selection-chips")?.firstElementChild,
+        run: async () => {
+          // The picker opens on entity types; an entity row is the one carrying its id.
+          let option = /** @type {HTMLElement | null} */ (await waitFor(entityOption, 1200));
+          if (!option) {
+            /** @type {HTMLElement | null} */ (document.querySelector(".slot-picker-option"))?.click();
+            option = /** @type {HTMLElement | null} */ (await waitFor(entityOption, 1800));
+          }
+          option?.click();
+        },
+        settle: 500,
+      },
+      {
+        text: "Now set how far to trace. The right thumb follows outgoing relationships, the left one incoming — we've gone two hops out.",
+        target: () => $(".range-track"),
+        run: () => nudgeThumb("to", 2),
+        settle: 600,
+      },
+      {
+        text: "The canvas keeps only the paths within that distance. Clear resets the trace and gives you the full graph back.",
+        target: () => $("#traversal-footer")?.hidden ? $("#traversal-range") : $("#traversal-footer"),
+      },
+    ],
+  });
+
+  attachTourButton($("#query-heading")?.parentElement, "query-builder", "the query builder");
+  attachTourButton($("#traversal-heading")?.parentElement, "traversal", "traversal");
+}
+
 function wireControls() {
   $$("button, input, select").forEach((element) => { element.disabled = false; });
-  $$(".layer-tab").forEach((button) => button.addEventListener("click", () => selectLayer(button.dataset.layer)));
+  registerGraphTours();
   $("#reset-view")?.addEventListener("click", () => selectLayer(activeLayer));
   $("#empty-reset").addEventListener("click", () => selectLayer(activeLayer));
   $("#add-condition").addEventListener("click", addConditionalCondition);
@@ -1765,6 +1967,12 @@ async function start() {
     const name = String(entry.name || entry.id);
     option.textContent = /\s/.test(name) ? name : name.replaceAll("_", "-").split("-").filter(Boolean).join(" ").toLowerCase().replace(/^./, letter => letter.toUpperCase());
     option.title = entry.sourceName;
+    // Every dataset is a snapshot, so the picker says when it was captured.
+    const captured = entry.generatedAt ? new Date(entry.generatedAt) : null;
+    if (captured && !Number.isNaN(captured.valueOf())) {
+      option.dataset.sub = `Captured ${captured.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}`;
+      option.title = `${entry.sourceName} · ${option.dataset.sub}`;
+    }
     els.graphSelect.append(option);
   }
 
@@ -1938,6 +2146,7 @@ initializePanelResizing(() => {
   renderer.resize(true);
   renderer.refresh();
 });
+initializePanelChrome();
 wireWorkspaceShell();
 
 start().catch((error) => {
