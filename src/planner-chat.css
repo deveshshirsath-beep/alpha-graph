@@ -309,8 +309,10 @@
 #app :is(.answer-code-head, .answer-reasoning-head) .ui-icon { width: 15px; height: 15px; flex-basis: 15px; }
 #app :is(.answer-code-head, .answer-reasoning-head) button { height: 30px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--answer-muted); cursor: pointer; font-family: var(--ui-font); font-size: .8125rem; font-weight: 500; }
 #app :is(.answer-code-head, .answer-reasoning-head) button:hover { background: var(--ui-hover); color: var(--answer-text); }
-#app .answer-code pre { margin: 0; padding: 14px 16px; overflow-x: auto; background: none; }
-#app .answer-code :is(pre, code) { color: var(--answer-text); font-family: var(--font-mono); font-size: .8125rem; line-height: 1.375rem; white-space: pre; }
+/* A fenced block puts the class on the <pre> itself; a labelled block wraps one. Both take the same inset. */
+#app :is(.answer-code pre, pre.answer-code) { margin: 0; padding: 14px 16px; overflow-x: auto; }
+#app .answer-code pre { background: none; }
+#app :is(.answer-code :is(pre, code), pre.answer-code) { color: var(--answer-text); font-family: var(--font-mono); font-size: .8125rem; line-height: 1.375rem; white-space: pre; }
 #app .answer-reasoning-steps { display: block; margin: 0; padding: 16px 18px 18px 2.125rem; color: var(--answer-text); font-size: .9375rem; line-height: 1.5rem; }
 #app .answer-reasoning-steps li + li { margin-top: 8px; }
 
