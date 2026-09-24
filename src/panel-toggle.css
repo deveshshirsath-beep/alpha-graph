@@ -81,7 +81,7 @@ body.sidebar-collapsed #app .stage-title { left: 60px; max-width: calc(100% - 11
 /* Below 1300px there is no room for three columns: the right panel starts collapsed and opens over the conversation. */
 @media (max-width: 1299px) {
   #app .planner-shell { --context-column: 0px; --context-divider: 0px; }
-  #app .planner-context { position: absolute; z-index: 35; top: 0; right: 0; bottom: 0; width: min(400px, calc(100% - var(--planner-rail-width))); box-shadow: -18px 0 45px var(--shadow-color); }
+  #app .planner-context { position: absolute; z-index: 35; top: 0; right: 0; bottom: 0; width: min(400px, calc(100% - var(--planner-rail-width))); padding-left: 1rem; box-shadow: -18px 0 45px var(--shadow-color); }
 }
 @media (max-width: 780px) {
   #app .planner-shell { --planner-rail-width: 56px; --library-column: 0px; --library-divider: 0px; height: calc(100% - max(54px, 3.375rem)); }

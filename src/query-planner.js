@@ -1640,9 +1640,10 @@ function renderMessage(message) {
     const empty = document.createElement("div");
     empty.className = "answer-empty";
     const title = document.createElement("strong");
-    title.textContent = "No answer to show";
+    title.textContent = message.cancelled ? "Stopped" : "No answer to show";
     const detail = document.createElement("p");
-    detail.textContent = "This demo is not connected to a query planner. Open one of the saved chats to see a full answer.";
+    detail.textContent = message.cancelled ? "You stopped this answer before it finished. Ask again to run it."
+      : "This demo is not connected to a query planner. Open one of the saved chats to see a full answer.";
     empty.append(title, detail);
     content.append(empty);
   } else if (message.role === "assistant") {

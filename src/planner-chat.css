@@ -70,6 +70,12 @@
 /* Voice input (Figma 211:76960): an empty composer offers the microphone in place of send. */
 #app #planner-voice { width: 34px; height: 34px; min-height: 34px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: var(--text); color: var(--planner-card-bg); cursor: pointer; }
 #app #planner-voice .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+/* While an answer loads, the same round button becomes Stop and takes the voice or send button's place. */
+#app #planner-cancel { width: 34px; height: 34px; min-height: 34px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: var(--text); color: var(--planner-card-bg); cursor: pointer; animation: voice-in 200ms ease; }
+#app #planner-cancel:hover { background: color-mix(in srgb, var(--text) 86%, var(--planner-card-bg)); }
+#app #planner-cancel[hidden] { display: none; }
+#app .planner-stop-square { width: 12px; height: 12px; border-radius: 2px; background: currentColor; }
+#app .planner-submit-wrap:has(#planner-cancel:not([hidden])) :is(#planner-voice, #planner-run) { display: none; }
 #app .planner-composer:has(.planner-prompt-input.is-empty) #planner-run,
 #app .planner-composer:not(:has(.planner-prompt-input.is-empty)) #planner-voice { display: none; }
 /* Recording: the composer becomes one row of cancel, a dotted waveform around a playhead, stop and send. */
@@ -113,8 +119,8 @@
 #app .suggestion-text { min-width: 0; }
 #app .suggestion-path { flex: 0 0 auto; color: var(--ui-secondary); white-space: nowrap; opacity: .75; }
 
-/* Messages share the composer's column: 24px in from each side of the conversation, never wider than 768px, centred. */
-#app .planner-messages { width: calc(100% - 48px); max-width: 768px; margin: 0 auto; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 56px 0 16px; }
+/* Messages share the composer's column: at least 32px in from each side of the conversation, never wider than 768px, centred. */
+#app .planner-messages { width: calc(100% - 64px); max-width: 768px; margin: 0 auto; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 56px 0 16px; }
 #app .planner-message { display: block; }
 #app :is(.planner-message-avatar, .planner-message-header, .planner-next-questions) { display: none; }
 #app .planner-message.user { display: flex; justify-content: flex-end; }
@@ -196,7 +202,7 @@
   #app .planner-step, #app .planner-step .ui-icon, #app .planner-message.is-fresh .planner-message-content > * { animation: none !important; transition: none; }
 }
 
-#app .planner-composer-dock { padding: 0 24px 20px; border-top: 0; background: transparent; box-shadow: none; }
+#app .planner-composer-dock { padding: 0 32px 20px; border-top: 0; background: transparent; box-shadow: none; }
 
 /* Questions page: layer push buttons over one filterable table. A question with values opens the parameter sheet on the right. */
 #app #planner-workspace.questions-open :is(#planner-chat-scroll, #planner-composer-dock, #planner-context-reopen) { display: none; }

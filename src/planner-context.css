@@ -1,8 +1,10 @@
 /* Ask-mode right panel: sigma's floating card, pill tabs and entity map on Alpha's tokens. */
-#app .planner-context { --context-line: color-mix(in srgb, var(--planner-content-bg) 88%, var(--text)); padding: 1rem; border-top: 1px solid var(--nav-stroke); background: var(--planner-content-bg); }
+/* No left padding: the chat's own 32px margin is the whole gap to this card. */
+#app .planner-context { --context-line: color-mix(in srgb, var(--planner-content-bg) 88%, var(--text)); padding: 1rem 1rem 1rem 0; border-top: 1px solid var(--nav-stroke); background: var(--planner-content-bg); }
 [data-theme="light"] #app .planner-context { --context-line: #d9ddd6; }
 /* The handle covers the seam between the panels, so it carries their top stroke across it. */
-#app .planner-panel-resizer-right { background: var(--planner-content-bg); box-shadow: inset 0 1px 0 var(--line); }
+/* The handle now sits over the card's edge, so it stays clear and only carries the top stroke across the seam. */
+#app .planner-panel-resizer-right { background: transparent; box-shadow: inset 0 1px 0 var(--nav-stroke); }
 #app .planner-panel-resizer-right::before { background: transparent; }
 #app .planner-context-card { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; border-radius: 16px; background: var(--planner-side-bg); box-shadow: 0 0 0 1px var(--nav-stroke), 0 4px 10px -2px rgba(18, 35, 66, .08); }
 :root:not([data-theme="light"]) #app .planner-context-card { box-shadow: 0 0 0 1px var(--nav-stroke), 0 4px 10px -2px rgba(0, 0, 0, .45); }
