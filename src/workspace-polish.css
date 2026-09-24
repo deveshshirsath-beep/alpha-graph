@@ -227,7 +227,7 @@
 }
 
 /* Reference-led controls: quiet rounded surfaces, outline icons, clear selection. */
-#app .brand-logo { width: 36px; height: 30px; flex: 0 0 auto; object-fit: contain; }
+#app .brand-logo { width: 28px; height: 23px; flex: 0 0 auto; object-fit: contain; }
 #app .ui-icon { width: 17px; height: 17px; flex: 0 0 17px; fill: currentColor; stroke: none; }
 #app .ui-icon-flip { transform: scaleX(-1); }
 #app .icon-action { align-items: center; justify-content: center; gap: 7px; }

@@ -211,16 +211,16 @@
 #app #planner-workspace.questions-open :is(#planner-context, #planner-context-resizer) { display: none !important; }
 #app .planner-questions-page { position: relative; display: flex; flex: 1 1 auto; min-width: 0; min-height: 0; }
 #app .planner-questions-page[hidden] { display: none; }
-#app .qb-main { display: flex; flex-direction: column; gap: 20px; flex: 1 1 auto; min-width: 0; min-height: 0; padding: 32px 32px 24px; container: questions / inline-size; }
+#app .qb-main { display: flex; flex-direction: column; gap: 12px; flex: 1 1 auto; min-width: 0; min-height: 0; padding: 32px 32px 24px; container: questions / inline-size; }
 
 /* Layer cards (Figma 461:54452): the chat's art at 88x69 beside a 20px name and its count. One layer at a time; the chosen card is outlined. */
 #app .qb-layers { display: flex; flex-wrap: wrap; gap: 12px; flex: 0 0 auto; }
 #app .qb-layer { display: flex; align-items: center; gap: 16px; min-width: 322px; padding: 10px 24px 10px 10px; border: 1px solid var(--nav-stroke); border-radius: 14px; background: var(--planner-card-bg); color: var(--text); cursor: pointer; text-align: left; transition: border-color .15s ease, box-shadow .15s ease; }
 /* The art keeps its own proportions at any size. */
 #app .qb-layer :is(img, svg.illustration) { flex: 0 0 auto; width: 104px; height: auto; aspect-ratio: 61 / 48; }
-#app .qb-layer-copy { display: grid; row-gap: 8px; min-width: 0; }
-#app .qb-layer-copy > span { color: var(--text); font-size: 18px; font-weight: 500; line-height: 22px; white-space: nowrap; }
-#app .qb-layer-count { color: var(--ui-secondary); font-size: 16px; font-weight: 400; line-height: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#app .qb-layer-copy { display: grid; row-gap: 2px; min-width: 0; }
+#app .qb-layer-copy > span { color: var(--text); font-size: 16px; font-weight: 500; line-height: 22px; white-space: nowrap; }
+#app .qb-layer-count { color: var(--ui-secondary); font-size: 14px; font-weight: 400; line-height: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 #app .qb-layer:hover { border-color: var(--ui-border); }
 #app .qb-layer[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 @container questions (max-width: 1040px) { #app .qb-layer { min-width: 0; } }

@@ -4,8 +4,8 @@
  */
 import { icon } from "./ui-controls.js";
 
-/** @typedef {{ text: string, target?: () => Element | null | undefined, run?: () => void | Promise<void>, settle?: number }} TourStep */
-/** @typedef {{ title: string, steps: TourStep[], cleanup?: () => void | Promise<void> }} Tour */
+/** @typedef {{ text: string, target?: () => Element | null | undefined, enter?: () => void | Promise<void>, run?: () => void | Promise<void>, settle?: number }} TourStep */
+/** @typedef {{ title: string, steps: TourStep[], cleanup?: () => void | Promise<void>, spotlight?: boolean }} Tour */
 
 /** @type {Map<string, Tour>} */
 const tours = new Map();
@@ -90,6 +90,15 @@ async function show(session, next) {
   session.counter.textContent = `Step ${next + 1} of ${session.steps.length}`;
   session.back.disabled = next === 0;
   session.next.textContent = next === session.steps.length - 1 ? "Done" : "Next";
+  // A step's enter runs every time it is shown, so Back lands in the same state as Next did.
+  if (step.enter) {
+    session.next.disabled = session.back.disabled = true;
+    try { await step.enter(); } catch { /* the step still shows its copy */ }
+    if (active !== session) return;
+    session.next.disabled = false;
+    session.back.disabled = next === 0;
+    session.signature = "";
+  }
   place(session);
   if (!session.done.has(next) && step.run) {
     session.done.add(next);
@@ -121,7 +130,7 @@ export async function startTour(id) {
   if (!tour) return;
   stopTour();
 
-  const layer = element("div", "feature-tour-layer");
+  const layer = element("div", `feature-tour-layer${tour.spotlight ? " is-spotlight" : ""}`);
   const ring = element("div", "feature-tour-ring");
   ring.hidden = true;
   const card = element("div", "feature-tour-card");

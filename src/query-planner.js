@@ -789,8 +789,12 @@ async function hydrateDocuments() {
   }
   const project = workspace.projects.find((item) => item.id === state.activeProjectId) || workspace.projects[0];
   state.activeProjectId = project.id;
-  if (!project.chats.length) project.chats.push(await documents.createChat(workspace.id, project.id));
-  state.activeChatId = project.chats.find((item) => item.id === state.activeChatId)?.id || project.chats[0].id;
+  // Every visit opens on a fresh chat's welcome screen. An empty chat left from before is reused, so they never pile up.
+  let blank = project.chats.find((item) => !(item.messages || []).length);
+  if (blank) project.chats.splice(project.chats.indexOf(blank), 1);
+  else blank = await documents.createChat(workspace.id, project.id);
+  project.chats.unshift(blank);
+  state.activeChatId = blank.id;
   rememberSelection();
   renderWorkspaceTree();
   renderActiveChat();
@@ -2201,6 +2205,8 @@ function wirePlanner() {
     workspaceFocus.register(connectPanelToggle({
       panel: q(`#planner-${side}`), toggles: [q(`#planner-${side}-toggle`)], reopen: [q(`#planner-${side}-reopen`)].filter(Boolean),
       label, storageKey: `atlas-planner-${side}-visibility`, compact: window.matchMedia(`(max-width: ${breakpoint}px)`),
+      // The right panel opens on demand: every visit starts with it closed.
+      startOpen: side === "context" ? false : undefined,
       onChange: open => {
         planner.classList.toggle(`${side}-collapsed`, !open);
         q(`#planner-${side}-resizer`).hidden = !open;

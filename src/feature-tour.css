@@ -7,12 +7,13 @@
 #app .section-head > .sidebar-heading { flex: 1 1 auto; min-width: 0; }
 #app .section-head > .sidebar-hint { flex: 1 1 100%; }
 
-.feature-tour-layer { position: fixed; inset: 0; z-index: 400; pointer-events: none; }
+/* Tours sit above every other layer: menus, pickers and dialogs. */
+.feature-tour-layer { position: fixed; inset: 0; z-index: 1000; pointer-events: none; transition: background-color .3s ease; }
 
 .feature-tour-ring { position: fixed; border-radius: 12px; box-shadow: 0 0 0 2px var(--accent), 0 0 0 7px color-mix(in srgb, var(--accent) 22%, transparent); transition: left .18s cubic-bezier(.22, 1, .36, 1), top .18s cubic-bezier(.22, 1, .36, 1), width .18s cubic-bezier(.22, 1, .36, 1), height .18s cubic-bezier(.22, 1, .36, 1); pointer-events: none; }
 .feature-tour-ring[hidden] { display: none; }
 
-.feature-tour-card { position: fixed; z-index: 401; width: 300px; max-width: calc(100vw - 24px); display: grid; gap: 10px; padding: 14px 16px 12px; border-radius: 14px; background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px rgba(5, 5, 5, .08), 0 18px 40px rgba(18, 35, 66, .18); pointer-events: auto; }
+.feature-tour-card { position: fixed; z-index: 1001; width: 300px; max-width: calc(100vw - 24px); display: grid; gap: 10px; padding: 14px 16px 12px; border-radius: 14px; background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px rgba(5, 5, 5, .08), 0 18px 40px rgba(18, 35, 66, .18); pointer-events: auto; }
 :root:not([data-theme="light"]) .feature-tour-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 18px 40px rgba(0, 0, 0, .5); }
 [data-theme="light"] .feature-tour-card { background: #fff; }
 
@@ -34,4 +35,9 @@
 .feature-tour-next:hover:not(:disabled) { filter: brightness(1.05); }
 .feature-tour-next:disabled { opacity: .6; cursor: progress; }
 
-@media (prefers-reduced-motion: reduce) { .feature-tour-ring { transition: none; } }
+/* The app tour spotlights one area at a time: everything else dims, and a step with no target dims the whole screen. */
+.feature-tour-layer.is-spotlight .feature-tour-ring { box-shadow: 0 0 0 2px var(--accent), 0 0 0 9999px rgba(10, 12, 20, .5); }
+.feature-tour-layer.is-spotlight:has(.feature-tour-ring[hidden]) { background: rgba(10, 12, 20, .5); }
+.feature-tour-layer.is-spotlight .feature-tour-card { width: 340px; }
+
+@media (prefers-reduced-motion: reduce) { .feature-tour-ring, .feature-tour-layer { transition: none; } }

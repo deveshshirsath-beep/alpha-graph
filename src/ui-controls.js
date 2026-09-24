@@ -66,7 +66,7 @@ export function setButtonContent(button, name, label) {
 const actions = {
   'empty-reset': ['reset', 'Reset filters'],
   'focus-neighbors': ['focus', 'Focus network'], 'add-to-traversal': ['plus', 'Add to traversal'],
-  'close-inspector': ['close', 'Close'], 'close-shortcuts': ['close', 'Close'], 'open-shortcuts': ['help', 'Keyboard shortcuts'],
+  'close-inspector': ['close', 'Close'], 'close-shortcuts': ['close', 'Close'], 'open-tour': ['help', 'Take a tour of Atlas'],
 };
 
 function decorateButtons() {

@@ -1,5 +1,5 @@
 /** A visibility preference never changes the panel's content or saved width. */
-export function connectPanelToggle({ panel, toggles, reopen, label, storageKey, onChange = (_open) => {}, compact = null, compactOpen = false, storage = () => globalThis.localStorage, activeElement = () => document.activeElement }) {
+export function connectPanelToggle({ panel, toggles, reopen, label, storageKey, onChange = (_open) => {}, compact = null, compactOpen = false, startOpen = undefined, storage = () => globalThis.localStorage, activeElement = () => document.activeElement }) {
   const key = () => storageKey + (compact?.matches ? ':compact' : '');
   const read = () => {
     try {
@@ -8,7 +8,8 @@ export function connectPanelToggle({ panel, toggles, reopen, label, storageKey, 
     } catch { /* Visibility remains usable with storage blocked. */ }
     return compact?.matches ? compactOpen : true;
   };
-  let open = read();
+  /** @type {boolean} */
+  let open = typeof startOpen === 'boolean' ? startOpen : read();
   const listeners = new Set();
   const render = () => {
     panel.hidden = !open;

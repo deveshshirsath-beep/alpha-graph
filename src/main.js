@@ -12,7 +12,8 @@ import { workspaceFocus } from "./workspace-focus.js";
 import { initializeTextSizeSettings, textScale } from "./text-size.js";
 import { conditionReadiness, evaluateGraphConditions, traceGraphPaths } from "./graph-query.js";
 import { entityTypeLabel, typeMark } from "./planner-entity-map.js";
-import { attachTourButton, registerTour, setSelect, waitFor } from "./feature-tour.js";
+import { attachTourButton, registerTour, setSelect, startTour, waitFor } from "./feature-tour.js";
+import { registerAppTour } from "./app-tour.js";
 import { PlannerSlotPicker } from "./planner-slot-picker.js";
 import { createRangeSlider } from "./range-slider.js";
 import "./fonts.css";
@@ -1957,7 +1958,6 @@ function wireControls() {
     }
   });
   $("#close-shortcuts").addEventListener("click", () => { $("#shortcut-modal").hidden = true; });
-  $("#open-shortcuts").addEventListener("click", () => { $("#shortcut-modal").hidden = false; });
   $("#shortcut-modal").addEventListener("click", (event) => {
     if (/** @type {Element} */ (event.target).id === "shortcut-modal") /** @type {HTMLElement} */ (event.currentTarget).hidden = true;
   });
@@ -1970,6 +1970,9 @@ let queryPanelToggle = null;
 
 function wireWorkspaceShell() {
   $$('[data-panel-icon]').forEach(button => button.replaceChildren(icon(button.dataset.panelIcon)));
+  // The top bar's "?" tours the whole app, ready from the first moment; the ? key still opens the keyboard shortcuts.
+  registerAppTour();
+  $("#open-tour").addEventListener("click", () => startTour("atlas"));
   // Chat says which answer's snapshot it opened the canvas from, or that it opened it plainly.
   for (const button of [els.stageBack, els.stageTitle]) button.addEventListener("click", () => resetGraphView());
   window.addEventListener("atlas:snapshot", (event) => {
