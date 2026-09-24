@@ -113,7 +113,8 @@
 #app .suggestion-text { min-width: 0; }
 #app .suggestion-path { flex: 0 0 auto; color: var(--ui-secondary); white-space: nowrap; opacity: .75; }
 
-#app .planner-messages { width: 100%; max-width: 768px; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 56px 4px 16px; }
+/* Messages share the composer's column: 24px in from each side of the conversation, never wider than 768px, centred. */
+#app .planner-messages { width: calc(100% - 48px); max-width: 768px; margin: 0 auto; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 56px 0 16px; }
 #app .planner-message { display: block; }
 #app :is(.planner-message-avatar, .planner-message-header, .planner-next-questions) { display: none; }
 #app .planner-message.user { display: flex; justify-content: flex-end; }
