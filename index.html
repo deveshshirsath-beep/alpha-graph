@@ -92,7 +92,17 @@
 
           <div id="loading-panel" class="loading-panel"><div class="loader-orbit"><i></i><i></i><i></i></div><div><span id="loading-label">Reading graph source</span><div class="progress-track"><span id="loading-progress"></span></div><small id="loading-detail">Large graphs are prepared off the main browser thread.</small></div></div>
 
-          <div class="view-switcher view-switcher-top">
+          <header id="stage-header" class="stage-header" hidden>
+            <nav class="stage-crumbs" aria-label="Graph location">
+              <h2 id="stage-header-title" class="stage-crumb-root"></h2>
+              <span class="stage-crumb-sep" aria-hidden="true">/</span>
+              <select id="stage-snapshot" aria-label="Graph snapshot" data-icon="database"><option>Loading…</option></select>
+              <span class="stage-crumb-sep" aria-hidden="true">/</span>
+              <span id="stage-header-detail" class="stage-crumb"></span>
+            </nav>
+            <span id="stage-header-eyebrow" class="stage-header-eyebrow" hidden><svg data-icon="chat-teardrop-dots"></svg><span id="stage-header-chat">From chat</span></span>
+          </header>
+          <div class="view-switcher">
             <div class="view-options" role="radiogroup" aria-label="Graph layout">
               <span class="view-switcher-label" aria-hidden="true">View</span>
               <button class="view-option active" type="button" role="radio" aria-checked="true" data-layout="donut" aria-label="Constellation Donut" title="Constellation Donut" disabled><svg data-icon="circle-notch"></svg><span class="view-option-label">Constellation Donut</span></button>
@@ -128,7 +138,7 @@
             <div id="condition-list" class="condition-list"></div>
             <button id="add-condition" class="control-row" type="button" disabled><span class="control-lead"><svg data-icon="plus"></svg></span><span class="control-label">Add condition</span></button>
             <button id="apply-conditions" class="primary-action" type="button" disabled>Run query</button>
-            <div class="status-row"><span id="condition-count" class="status-line"></span><button id="clear-conditions" class="link-button" type="button" disabled>Clear</button></div>
+            <div class="status-row"><span id="condition-count" class="status-line"></span><button id="clear-conditions" class="link-button clear-button" type="button" disabled><svg data-icon="arrow-counter-clockwise"></svg><span>Clear</span></button></div>
             <div id="conditional-status" class="status-line" aria-live="polite"></div>
           </section>
 
@@ -140,7 +150,7 @@
             <div id="selection-chips" class="entity-list" role="list" aria-label="Traversal starting entities"></div>
             <button id="add-traversal-entity" class="control-row" type="button" data-token="name_or_text" aria-haspopup="dialog" aria-expanded="false" disabled><span class="control-lead"><svg data-icon="plus"></svg></span><span class="control-label">Add entity</span></button>
             <div id="traversal-range" class="traversal-range"></div>
-            <div id="traversal-footer" class="status-row" hidden><span id="traversal-status" class="status-line" aria-live="polite"></span><button id="clear-traversal" class="link-button" type="button">Clear</button></div>
+            <div id="traversal-footer" class="status-row" hidden><span id="traversal-status" class="status-line" aria-live="polite"></span><button id="clear-traversal" class="link-button clear-button" type="button"><svg data-icon="arrow-counter-clockwise"></svg><span>Clear</span></button></div>
           </section>
           </div>
           <aside id="inspector" class="inspector" aria-live="polite" aria-hidden="true">
@@ -157,12 +167,12 @@
               <button id="add-to-traversal" class="link-button with-icon" type="button"><svg data-icon="path"></svg><span class="add-traversal-label">Add to traversal</span></button>
             </div>
             <div class="entity-tabs" role="tablist" aria-label="Entity details">
-              <button class="entity-tab active" type="button" role="tab" aria-selected="true" data-entity-tab="relations" aria-controls="inspector-connections">Relations <small id="relations-count">0</small></button>
-              <button class="entity-tab" type="button" role="tab" aria-selected="false" data-entity-tab="properties" aria-controls="inspector-properties">Properties</button>
+              <button class="entity-tab active" type="button" role="tab" aria-selected="true" data-entity-tab="properties" aria-controls="inspector-properties">Properties</button>
+              <button class="entity-tab" type="button" role="tab" aria-selected="false" tabindex="-1" data-entity-tab="relations" aria-controls="inspector-connections">Relations <small id="relations-count">0</small></button>
             </div>
             <div class="entity-content">
-              <div id="inspector-connections" class="entity-panel" role="tabpanel" data-entity-panel="relations"></div>
-              <div id="inspector-properties" class="entity-panel" role="tabpanel" data-entity-panel="properties" hidden></div>
+              <div id="inspector-properties" class="entity-panel" role="tabpanel" data-entity-panel="properties"></div>
+              <div id="inspector-connections" class="entity-panel" role="tabpanel" data-entity-panel="relations" hidden></div>
             </div>
           </aside>
         </aside>
@@ -180,8 +190,10 @@
           <nav class="planner-nav" aria-label="Chat">
             <button id="planner-new-chat-nav" class="planner-nav-row" type="button"><svg data-icon="chat-circle-dots"></svg><span>New chat</span></button>
             <button id="planner-questions-nav" class="planner-nav-row" type="button" aria-controls="planner-catalog-panel"><span data-planner-heading-icon="question" aria-hidden="true"></span><span>Questions</span></button>
-            <button id="planner-search-nav" class="planner-nav-row" type="button" aria-controls="planner-chat-search-panel"><span data-planner-heading-icon="search" aria-hidden="true"></span><span>Search</span></button>
+            <button id="planner-search-nav" class="planner-nav-row" type="button" aria-controls="planner-chat-search-results"><span data-planner-heading-icon="search" aria-hidden="true"></span><span>Search</span></button>
+            <label id="planner-nav-search" class="planner-nav-search" hidden><svg data-icon="magnifying-glass"></svg><input id="planner-chat-search" type="search" placeholder="Search chats" aria-label="Search chats" aria-controls="planner-chat-search-results" autocomplete="off" /><button id="planner-nav-search-close" type="button" aria-label="Close search" title="Close search"><svg data-icon="x"></svg></button></label>
           </nav>
+          <div id="planner-chat-search-results" class="planner-chat-search-results" aria-live="polite" hidden></div>
 
           <section class="planner-discovery" aria-labelledby="planner-drill-title">
           <header class="planner-drill-header"><button id="planner-drill-back" type="button" aria-label="Back to chats and projects" title="Back"></button><h3 id="planner-drill-title">Questions</h3></header>
@@ -192,11 +204,6 @@
             </div>
             <div id="planner-catalog-context" class="planner-catalog-context" hidden><div><strong id="planner-catalog-context-title"></strong><span id="planner-catalog-context-detail"></span></div><button id="planner-catalog-context-clear" type="button" aria-label="Clear catalog entity and relationship filters" title="Show all catalog questions"><svg data-icon="x"></svg></button></div>
             <div id="planner-question-tree" class="planner-tree" aria-live="polite"></div>
-          </section>
-
-          <section id="planner-chat-search-panel" class="planner-library-panel planner-chat-search" aria-labelledby="planner-drill-title" hidden>
-            <label class="panel-search"><svg data-icon="magnifying-glass" class="search-icon"></svg><input id="planner-chat-search" type="search" placeholder="Search chats" aria-label="Search chats" autocomplete="off" /></label>
-            <div id="planner-chat-search-results" class="planner-chat-search-results" aria-live="polite"></div>
           </section>
 
           <section id="planner-browse-panel" class="planner-library-panel planner-browse-panel" aria-labelledby="planner-drill-title" hidden>
@@ -261,9 +268,9 @@
             </form>
             <div id="planner-suggestions" class="planner-suggestions">
               <div class="suggestion-layers" role="tablist" aria-label="Layers">
-                  <button class="suggestion-layer active" type="button" role="tab" aria-selected="true" data-layer="business"><img src="/illustrations/concerns/business.svg" alt="" width="61" height="48" data-inline-svg /><span>Business layers</span></button>
-                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="api"><img src="/illustrations/concerns/api.svg" alt="" width="61" height="48" data-inline-svg /><span>API layers</span></button>
-                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="runtime"><img src="/illustrations/concerns/runtime.svg" alt="" width="61" height="48" data-inline-svg /><span>Runtime layers</span></button>
+                  <button class="suggestion-layer active" type="button" role="tab" aria-selected="true" data-layer="business"><img src="/illustrations/concerns/business.svg" alt="" width="61" height="48" data-inline-svg /><span>Business layer</span></button>
+                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="api"><img src="/illustrations/concerns/api.svg" alt="" width="61" height="48" data-inline-svg /><span>API layer</span></button>
+                  <button class="suggestion-layer" type="button" role="tab" aria-selected="false" data-layer="runtime"><img src="/illustrations/concerns/runtime.svg" alt="" width="61" height="48" data-inline-svg /><span>Runtime layer</span></button>
               </div>
               <div class="suggestion-head"><span>Suggested questions</span><button id="planner-suggestions-refresh" class="suggestion-refresh" type="button" aria-label="Show other questions"><svg data-icon="arrow-counter-clockwise"></svg></button></div>
               <div id="planner-suggestion-list" class="suggestion-list"></div>
@@ -273,20 +280,58 @@
           </div>
           <div id="planner-composer-dock" class="planner-composer-dock" hidden></div>
           <section id="planner-questions-page" class="planner-questions-page" aria-labelledby="planner-questions-title" hidden>
-            <header class="qb-header">
-              <div class="qb-title-row">
-                <h1 id="planner-questions-title" class="qb-title">Questions</h1>
-                <label class="qb-search"><svg data-icon="magnifying-glass"></svg><input type="search" placeholder="Search questions" aria-label="Search questions" autocomplete="off" /></label>
+            <div class="qb-main">
+              <div class="qb-layers" role="group" aria-label="Filter by layer">
+                <button class="qb-layer" type="button" aria-pressed="false" data-layer="business"><img src="/illustrations/concerns/business.svg" alt="" width="61" height="48" data-inline-svg /><span class="qb-layer-copy"><span>Business layer</span><small class="qb-layer-count"></small></span></button>
+                <button class="qb-layer" type="button" aria-pressed="false" data-layer="api"><img src="/illustrations/concerns/api.svg" alt="" width="61" height="48" data-inline-svg /><span class="qb-layer-copy"><span>API layer</span><small class="qb-layer-count"></small></span></button>
+                <button class="qb-layer" type="button" aria-pressed="false" data-layer="runtime"><img src="/illustrations/concerns/runtime.svg" alt="" width="61" height="48" data-inline-svg /><span class="qb-layer-copy"><span>Runtime layer</span><small class="qb-layer-count"></small></span></button>
               </div>
-              <div class="qb-layers" role="tablist" aria-label="Layer">
-                <button class="qb-layer active" type="button" role="tab" aria-selected="true" data-layer=""><span class="qb-layer-art"><img src="/illustrations/questions/inventory.svg" alt="" data-inline-svg /></span><span>All Questions</span></button>
-                <button class="qb-layer" type="button" role="tab" aria-selected="false" data-layer="business"><span class="qb-layer-art"><img src="/illustrations/questions/business-execution.svg" alt="" data-inline-svg /></span><span>Business Layer</span></button>
-                <button class="qb-layer" type="button" role="tab" aria-selected="false" data-layer="api"><span class="qb-layer-art"><img src="/illustrations/questions/api-lineage.svg" alt="" data-inline-svg /></span><span>API Layer</span></button>
-                <button class="qb-layer" type="button" role="tab" aria-selected="false" data-layer="runtime"><span class="qb-layer-art"><img src="/illustrations/questions/execution.svg" alt="" data-inline-svg /></span><span>Runtime Layer</span></button>
+              <div class="qb-table-card">
+                <header class="qb-table-head">
+                  <div class="qb-heading">
+                    <h1 id="planner-questions-title" class="qb-title">Questions <span class="qb-count"></span></h1>
+                    <p class="qb-subtitle">Everything Atlas can answer about this graph. Pick a question to ask it.</p>
+                  </div>
+                  <div class="qb-filter" hidden></div>
+                  <button class="qb-clear" type="button" hidden>Clear filters</button>
+                  <select class="qb-entity-filter" aria-label="Entity type" data-label="Entity"><option value="">All entity types</option></select>
+                  <select class="qb-type-filter" aria-label="Question type" data-label="Question" data-icon="question"><option value="">All question types</option></select>
+                  <label class="qb-search"><svg data-icon="magnifying-glass"></svg><input type="search" placeholder="Search questions" aria-label="Search questions" autocomplete="off" /></label>
+                </header>
+                <div class="qb-table-scroll">
+                  <table class="qb-table">
+                    <colgroup><col /><col class="qb-col-entity" /><col class="qb-col-type" /></colgroup>
+                    <thead><tr><th scope="col">Question</th><th scope="col">Entity type</th><th scope="col">Question type</th></tr></thead>
+                    <tbody></tbody>
+                  </table>
+                  <div class="qb-empty" hidden><strong>No questions match</strong><span>Try another search, or clear the filters.</span></div>
+                </div>
               </div>
-              <div class="qb-filter" hidden></div>
-            </header>
-            <div class="qb-groups"></div>
+            </div>
+            <aside class="qb-sheet" aria-labelledby="qb-sheet-title" hidden>
+              <header class="qb-sheet-head">
+                <div class="qb-sheet-heading">
+                  <h2 id="qb-sheet-title">Select the parameter values first</h2>
+                  <p>Then ask AI. The answer opens in chat.</p>
+                </div>
+                <button class="qb-sheet-close" type="button" aria-label="Close" title="Close"><svg data-icon="x"></svg></button>
+              </header>
+              <div class="qb-sheet-body">
+                <section class="qb-sheet-block">
+                  <span class="qb-sheet-label">Question</span>
+                  <p class="qb-sheet-question"></p>
+                  <div class="qb-sheet-meta"></div>
+                </section>
+                <section class="qb-sheet-block">
+                  <span class="qb-sheet-label">Parameters</span>
+                  <div class="qb-sheet-params"></div>
+                </section>
+              </div>
+              <footer class="qb-sheet-foot">
+                <button class="qb-sheet-ask" type="button" disabled><svg data-icon="sparkle"></svg><span>Ask AI</span></button>
+                <button class="qb-sheet-copy" type="button" aria-label="Copy question" title="Copy question"><svg data-icon="copy"></svg></button>
+              </footer>
+            </aside>
           </section>
         </section>
 
@@ -295,7 +340,6 @@
         <aside id="planner-context" class="planner-context" aria-label="Query result context">
           <div class="planner-context-card">
             <div class="planner-context-tabbar">
-              <div class="planner-context-pill"><svg data-icon="flow-arrow"></svg><span>Ask About Entities</span></div>
               <div class="planner-context-tabs" role="tablist" aria-label="Result context views">
                 <button class="active" data-context-tab="map" role="tab" aria-selected="true" aria-controls="planner-type-map-panel">Entity map</button>
                 <button data-context-tab="diagram" role="tab" aria-selected="false" aria-controls="planner-diagram-panel">Map</button>
@@ -319,7 +363,6 @@
             </section>
             <section id="planner-entities-panel" class="planner-context-panel" hidden><div class="planner-context-copy"><strong>Result Entities</strong><span>Navigate by layer and entity type.</span></div><div id="planner-entity-tree" class="planner-entity-tree"></div></section>
             <section id="planner-followups-panel" class="planner-context-panel" hidden><div class="planner-context-copy"><strong>Continue This Investigation</strong><span>Follow-up questions use the current result as context.</span></div><div id="planner-followups" class="planner-followups"><div class="planner-context-empty"><strong>No follow-ups yet</strong><span>Run a graph question first.</span></div></div></section>
-              <section id="planner-ask-entities-panel" class="planner-context-panel planner-type-map planner-ask-entities" aria-label="Ask about entities"></section>
           </div>
         </aside>
       </main>

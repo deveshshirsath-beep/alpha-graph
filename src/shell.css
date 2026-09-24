@@ -5,6 +5,8 @@
 #app .sidebar > .sidebar-switch { position: sticky; top: 0; z-index: 20; background: var(--panel); }
 #app .mode-switch { --switch-collapsed: 3.25rem; --switch-duration: 460ms; --switch-ease: cubic-bezier(.22, 1, .36, 1); --switch-track: color-mix(in srgb, var(--panel) 95%, var(--text)); position: relative; display: grid; grid-template-columns: var(--switch-collapsed) calc(100% - var(--switch-collapsed)); padding: 2px; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--switch-track); transition: grid-template-columns var(--switch-duration) var(--switch-ease); }
 [data-theme="light"] #app .mode-switch { --switch-track: #f3f4f1; }
+/* Floating side cards share this nav's stroke, captured where the nav reads it so every theme and panel matches. */
+#app :is(.planner-shell, main.workspace) { --nav-stroke: var(--ui-border); }
 #app .mode-switch[data-active="chat"] { grid-template-columns: calc(100% - var(--switch-collapsed)) var(--switch-collapsed); }
 /* Sigma's sliding thumb: one surface that travels between the options. */
 #app .mode-switch::before { content: ""; box-sizing: border-box; position: absolute; z-index: 0; top: 2px; bottom: 2px; left: 2px; width: calc(100% - 4px - var(--switch-collapsed)); border: 1px solid var(--ui-border); border-radius: 10px; background: var(--panel); box-shadow: 0 1px 2px rgba(18, 35, 66, .05); transform: translateX(var(--switch-collapsed)); transition: transform var(--switch-duration) var(--switch-ease); }

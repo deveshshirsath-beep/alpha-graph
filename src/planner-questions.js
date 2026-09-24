@@ -1,8 +1,6 @@
-import { icon } from "./ui-controls.js";
+import { icon, syncDropdowns } from "./ui-controls.js";
 import { entityTypeLabel } from "./planner-entity-map.js";
 
-const LAYERS = { business: "Business", api: "API", runtime: "Runtime" };
-const LAYER_ORDER = Object.keys(LAYERS);
 /** Each catalog category as the question type shown beside its questions (sigma's group names). */
 const QUESTION_TYPES = {
   inventory_and_coverage: "Inventory & Coverage",
@@ -18,10 +16,15 @@ const QUESTION_TYPES = {
   top_down_execution_and_data_lineage: "Execution & Data",
   telemetry_and_operational_observation: "Operations & Activity",
 };
+const TYPE_ORDER = Object.keys(QUESTION_TYPES);
 const ACRONYMS = { api: "API", http: "HTTP", pci: "PCI", pii: "PII", sla: "SLA", id: "ID" };
 
 function heading(value) {
   return String(value || "Other").split(/_+/).filter(Boolean).map((word) => ACRONYMS[word] || word[0].toUpperCase() + word.slice(1)).join(" ");
+}
+
+export function questionTypeLabel(category) {
+  return QUESTION_TYPES[category] || heading(category);
 }
 
 /** A placeholder read as prose: "{business_node}" becomes "a business node". */
@@ -47,45 +50,54 @@ export function templateRoute(template) {
   return match ? `${entityTypeLabel(match[1])} → ${entityTypeLabel(match[2])}` : "";
 }
 
+const plural = (count, noun) => `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
+const keyOf = (item) => `${item.template || item.question}\u0000${item.question}`;
+
+function cell(className) {
+  const td = document.createElement("td");
+  td.className = className;
+  return td;
+}
+
 /**
- * The Questions page: layer cards, search, and one section of questions per entity type.
- * The sections follow the entity map's order so the map beside them reads as their table of contents.
+ * The Questions page: layer cards over one table of the catalog.
+ * Search and the two column filters narrow the same rows, and each control only offers values that still have questions.
  */
 export class PlannerQuestionBrowser {
-  constructor({ root, getQuestions, getOrder, onChoose, onClearFilter = null, onActiveChange = null, onRender = null, markFor = null }) {
+  constructor({ root, getQuestions, getOrder, onChoose, onClearFilter = null, markFor = null }) {
     this.root = root;
     this.getQuestions = getQuestions;
     this.getOrder = getOrder;
     this.markFor = markFor;
     this.onChoose = onChoose;
     this.onClearFilter = onClearFilter;
-    this.onActiveChange = onActiveChange;
-    this.onRender = onRender;
+    /** The chosen layer; none shows every layer. */
     this.layer = "";
     this.query = "";
+    this.entityType = "";
+    this.questionType = "";
     this.filter = null;
-    /** @type {string | null} */
-    this.active = "";
-    this.pinned = false;
-    this.unpin = 0;
-    this.layers = /** @type {HTMLElement[]} */ ([...root.querySelectorAll(".qb-layer")]);
+    this.selected = "";
+    this.layerCards = /** @type {HTMLButtonElement[]} */ ([...root.querySelectorAll(".qb-layer")]);
     this.search = /** @type {HTMLInputElement} */ (root.querySelector(".qb-search input"));
-    this.groups = /** @type {HTMLElement} */ (root.querySelector(".qb-groups"));
+    this.entitySelect = /** @type {HTMLSelectElement} */ (root.querySelector(".qb-entity-filter"));
+    this.typeSelect = /** @type {HTMLSelectElement} */ (root.querySelector(".qb-type-filter"));
+    this.body = /** @type {HTMLElement} */ (root.querySelector(".qb-table tbody"));
+    this.scroller = /** @type {HTMLElement} */ (root.querySelector(".qb-table-scroll"));
+    this.empty = /** @type {HTMLElement} */ (root.querySelector(".qb-empty"));
+    this.count = /** @type {HTMLElement} */ (root.querySelector(".qb-count"));
+    this.clear = /** @type {HTMLButtonElement} */ (root.querySelector(".qb-clear"));
     this.filterBar = /** @type {HTMLElement} */ (root.querySelector(".qb-filter"));
-    this.layers.forEach((card) => card.addEventListener("click", () => this.setLayer(card.dataset.layer || "")));
+    this.layerCards.forEach((card) => card.addEventListener("click", () => {
+      const layer = card.dataset.layer || "";
+      // Choosing the chosen layer again clears it.
+      this.layer = this.layer === layer ? "" : layer;
+      this.render();
+    }));
     this.search.addEventListener("input", () => { this.query = this.search.value.trim().toLowerCase(); this.render(); });
-    let frame = 0;
-    this.groups.addEventListener("scroll", () => {
-      // A jump from the table of contents keeps its entry lit until the scroll settles.
-      if (this.pinned) { this.holdPin(); return; }
-      if (!frame) frame = requestAnimationFrame(() => { frame = 0; this.spy(); });
-    }, { passive: true });
-    for (const type of ["wheel", "touchstart", "pointerdown", "keydown"]) this.groups.addEventListener(type, () => { this.pinned = false; }, { passive: true });
-  }
-
-  setLayer(layer) {
-    this.layer = layer;
-    this.render();
+    this.entitySelect.addEventListener("change", () => { this.entityType = this.entitySelect.value; this.render(); });
+    this.typeSelect.addEventListener("change", () => { this.questionType = this.typeSelect.value; this.render(); });
+    this.clear.addEventListener("click", () => this.reset());
   }
 
   setFilter(filter) {
@@ -93,42 +105,118 @@ export class PlannerQuestionBrowser {
     this.render();
   }
 
+  reset() {
+    this.layer = this.query = this.entityType = this.questionType = "";
+    this.search.value = "";
+    if (this.filter) { this.filter = null; this.onClearFilter?.(); }
+    this.render();
+  }
+
+  /** Highlights the row whose parameter sheet is open. */
+  setSelected(item) {
+    this.selected = item ? keyOf(item) : "";
+    for (const row of /** @type {HTMLElement[]} */ ([...this.body.children])) row.classList.toggle("is-selected", row.dataset.key === this.selected);
+  }
+
   render() {
-    this.layers.forEach((card) => {
-      const active = (card.dataset.layer || "") === this.layer;
-      card.classList.toggle("active", active);
-      card.setAttribute("aria-selected", String(active));
-    });
-    this.renderFilter();
     const rank = new Map(this.getOrder().map((type, index) => [type, index]));
-    const groups = new Map();
-    for (const choice of this.getQuestions(this.filter)) {
-      const { layer, question } = choice.item;
-      if (this.layer && layer !== this.layer) continue;
-      if (this.query && !question.toLowerCase().replace(/[{}_]/g, " ").includes(this.query)) continue;
-      if (!groups.has(choice.anchor)) groups.set(choice.anchor, []);
-      groups.get(choice.anchor).push(choice);
+    const choices = this.getQuestions(this.filter).map((choice) => ({
+      ...choice,
+      text: `${choice.item.question.replace(/[{}_]/g, " ")} ${entityTypeLabel(choice.anchor || "")} ${questionTypeLabel(choice.item.category)}`.toLowerCase(),
+    }));
+    /** Every filter except the one named, so a control lists what the others leave. */
+    const passes = (choice, skip = "") => (skip === "layer" || !this.layer || choice.item.layer === this.layer)
+      && (skip === "entity" || !this.entityType || choice.anchor === this.entityType)
+      && (skip === "type" || !this.questionType || choice.item.category === this.questionType)
+      && (!this.query || choice.text.includes(this.query));
+    const rows = choices.filter((choice) => passes(choice))
+      .sort((a, b) => (rank.get(a.anchor) ?? Infinity) - (rank.get(b.anchor) ?? Infinity) || String(a.anchor).localeCompare(String(b.anchor)));
+
+    for (const card of this.layerCards) {
+      const layer = card.dataset.layer || "";
+      card.setAttribute("aria-pressed", String(this.layer === layer));
+      const small = card.querySelector(".qb-layer-count");
+      if (small) small.textContent = plural(choices.filter((choice) => choice.item.layer === layer && passes(choice, "layer")).length, "question");
     }
-    const sorted = [...groups].sort(([a], [b]) => (rank.get(a) ?? Infinity) - (rank.get(b) ?? Infinity) || a.localeCompare(b));
-    this.groups.replaceChildren(...sorted.map(([type, choices]) => this.group(type, choices)));
-    if (!groups.size) {
-      const empty = document.createElement("p");
-      empty.className = "qb-empty";
-      empty.textContent = this.filter ? "No questions match this entity. Try another layer or clear the filter." : "No questions match. Try another search or layer.";
-      this.groups.append(empty);
-    }
-    this.groups.scrollTop = 0;
-    this.pinned = false;
-    this.onRender?.([...groups.keys()]);
-    this.active = null;
-    this.spy();
+    const entityTypes = [...new Set(choices.filter((choice) => choice.anchor && passes(choice, "entity")).map((choice) => choice.anchor))]
+      .sort((a, b) => (rank.get(a) ?? Infinity) - (rank.get(b) ?? Infinity) || a.localeCompare(b));
+    const questionTypes = [...new Set(choices.filter((choice) => passes(choice, "type")).map((choice) => choice.item.category))]
+      .sort((a, b) => (TYPE_ORDER.indexOf(a) + 1 || Infinity) - (TYPE_ORDER.indexOf(b) + 1 || Infinity));
+    this.options(this.entitySelect, "All entity types", entityTypes, entityTypeLabel, this.entityType);
+    this.options(this.typeSelect, "All question types", questionTypes, questionTypeLabel, this.questionType);
+    syncDropdowns();
+
+    this.renderFilter();
+    this.body.replaceChildren(...rows.map((choice) => this.row(choice)));
+    this.empty.hidden = rows.length > 0;
+    const filtered = this.layer || this.query || this.entityType || this.questionType || this.filter;
+    this.count.textContent = filtered ? `${rows.length.toLocaleString()} of ${choices.length.toLocaleString()}` : choices.length.toLocaleString();
+    this.clear.hidden = !filtered;
+    this.scroller.scrollTop = 0;
+  }
+
+  /** Rebuilds a filter's options; a chosen value stays listed even when nothing else leaves it any rows. */
+  options(select, allLabel, values, label, chosen) {
+    const list = chosen && !values.includes(chosen) ? [...values, chosen] : values;
+    select.replaceChildren(new Option(allLabel, ""), ...list.map((value) => new Option(label(value), value)));
+    select.value = chosen;
+  }
+
+  row({ item, personalized, anchor }) {
+    const row = document.createElement("tr");
+    row.dataset.key = keyOf(item);
+    row.classList.toggle("is-selected", row.dataset.key === this.selected);
+    const question = document.createElement("button");
+    question.type = "button";
+    question.className = "qb-question";
+    question.title = item.template || item.question;
+    const text = document.createElement("span");
+    text.className = "qb-question-text";
+    appendQuestionProse(text, item.question);
+    question.append(text);
+    question.addEventListener("click", () => this.onChoose(item, personalized, anchor));
+    const entityLabel = () => {
+      const label = document.createElement("span");
+      label.className = "qb-entity";
+      if (anchor && this.markFor) label.append(this.markFor(anchor));
+      label.append(document.createTextNode(anchor ? entityTypeLabel(anchor) : "—"));
+      return label;
+    };
+    const tag = () => {
+      const label = document.createElement("span");
+      label.className = "qb-kind";
+      label.textContent = questionTypeLabel(item.category);
+      return label;
+    };
+    // A narrow table folds its two side columns into this line under the question.
+    const meta = document.createElement("span");
+    meta.className = "qb-question-meta";
+    meta.append(entityLabel(), tag());
+    const first = cell("qb-cell-question");
+    first.append(question, meta);
+
+    const entity = cell("qb-cell-entity");
+    entity.append(entityLabel());
+
+    const kind = cell("qb-cell-type");
+    const wrap = document.createElement("span");
+    wrap.className = "qb-type";
+    const go = icon("arrow-up-right");
+    go.classList.add("qb-row-go");
+    wrap.append(tag(), go);
+    kind.append(wrap);
+
+    row.append(first, entity, kind);
+    // The whole row answers a click; the question button is its keyboard stop.
+    row.addEventListener("click", (event) => { if (!(event.target instanceof Element && event.target.closest("button"))) question.click(); });
+    return row;
   }
 
   renderFilter() {
     this.filterBar.hidden = !this.filter;
-    if (!this.filter) return;
+    if (!this.filter) { this.filterBar.replaceChildren(); return; }
     const label = document.createElement("span");
-    label.textContent = `Questions about ${this.filter.entity?.name || (this.filter.type ? entityTypeLabel(this.filter.type) : heading(this.filter.relationship))}`;
+    label.textContent = `About ${this.filter.entity?.name || (this.filter.type ? entityTypeLabel(this.filter.type) : heading(this.filter.relationship))}`;
     const clear = document.createElement("button");
     clear.type = "button";
     clear.setAttribute("aria-label", "Show all questions");
@@ -136,83 +224,5 @@ export class PlannerQuestionBrowser {
     clear.append(icon("x"));
     clear.addEventListener("click", () => { this.setFilter(null); this.onClearFilter?.(); });
     this.filterBar.replaceChildren(label, clear);
-  }
-
-  group(type, choices) {
-    const section = document.createElement("section");
-    section.className = "qb-group";
-    section.dataset.type = type;
-    const head = document.createElement("header");
-    head.className = "qb-group-head";
-    const copy = document.createElement("div");
-    const name = document.createElement("h3");
-    name.textContent = type ? entityTypeLabel(type) : "Other Questions";
-    if (type && this.markFor) name.prepend(this.markFor(type));
-    const detail = document.createElement("p");
-    const layers = LAYER_ORDER.filter((layer) => choices.some((choice) => choice.item.layer === layer)).map((layer) => LAYERS[layer]);
-    detail.textContent = `${layers.join(", ")} · ${choices.length} Question${choices.length === 1 ? "" : "s"}`;
-    copy.append(name, detail);
-    const meta = document.createElement("span");
-    meta.className = "qb-group-meta";
-    meta.textContent = "Question Type";
-    head.append(copy, meta);
-    section.append(head);
-    for (const choice of choices) {
-      const row = document.createElement("button");
-      row.type = "button";
-      row.className = "qb-question";
-      row.title = choice.item.template || choice.item.question;
-      const text = document.createElement("span");
-      text.className = "qb-question-text";
-      appendQuestionProse(text, choice.item.question);
-      const kind = document.createElement("span");
-      kind.className = "qb-question-type";
-      kind.textContent = QUESTION_TYPES[choice.item.category] || heading(choice.item.category);
-      const action = document.createElement("span");
-      action.className = "qb-question-action";
-      action.append(icon("arrow-up-right"));
-      row.append(text, kind, action);
-      row.addEventListener("click", () => this.onChoose(choice.item, choice.personalized));
-      section.append(row);
-    }
-    return section;
-  }
-
-  /** Lights the section being read: the last one whose heading has reached the top quarter of the list. */
-  spy() {
-    const sections = /** @type {HTMLElement[]} */ ([...this.groups.querySelectorAll(".qb-group")]);
-    if (!sections.length) { this.activate(""); return; }
-    const { scrollTop, clientHeight, scrollHeight } = this.groups;
-    let current = sections[0];
-    if (scrollTop > 0 && scrollTop + clientHeight >= scrollHeight - 2) current = sections[sections.length - 1];
-    else {
-      const line = scrollTop + Math.min(160, clientHeight / 4);
-      for (const section of sections) {
-        if (section.offsetTop > line) break;
-        current = section;
-      }
-    }
-    this.activate(current.dataset.type || "");
-  }
-
-  activate(type) {
-    if (type === this.active) return;
-    this.active = type;
-    this.onActiveChange?.(type);
-  }
-
-  holdPin() {
-    clearTimeout(this.unpin);
-    this.unpin = window.setTimeout(() => { this.pinned = false; }, 150);
-  }
-
-  /** Scrolls a type's section to the top of the list, as a table-of-contents link does. */
-  scrollToType(type) {
-    const section = /** @type {HTMLElement[]} */ ([...this.groups.querySelectorAll(".qb-group")]).find((item) => item.dataset.type === type);
-    if (!section) return;
-    this.pinned = true;
-    this.holdPin();
-    this.activate(type);
-    this.groups.scrollTo({ top: section.offsetTop, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
   }
 }

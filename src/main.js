@@ -66,6 +66,10 @@ const CONNECTION_PAGE_SIZE = 25;
 let visibleConnectionCount = CONNECTION_PAGE_SIZE;
 let hoveredNode = null;
 let focusedNeighborhood = null;
+let focusedLabel = "";
+/** The answer snapshot the canvas was opened from, if it came from chat. */
+let chatSnapshot = null;
+let visibleEntityCount = 0;
 let activeLayer = "BUSINESS";
 let layerSelected = true;
 let activeTheme = ["light", "dark", "ocean", "sunset"].includes(document.documentElement.dataset.theme) ? document.documentElement.dataset.theme : "light";
@@ -182,6 +186,12 @@ const els = {
   inspector: $("#inspector"),
   emptyState: $("#empty-state"),
   toast: $("#toast"),
+  stageHeader: $("#stage-header"),
+  stageEyebrow: $("#stage-header-eyebrow"),
+  stageTitle: $("#stage-header-title"),
+  stageDetail: $("#stage-header-detail"),
+  stageSnapshot: $("#stage-snapshot"),
+  stageChat: $("#stage-header-chat"),
 };
 
 const ENTITY_LABELS = {
@@ -489,6 +499,38 @@ function updateCounts() {
     });
   }
   els.emptyState.hidden = nodeCount > 0;
+  visibleEntityCount = nodeCount;
+  renderStageHeader();
+}
+
+/** A dataset's display name, as the picker shows it: "merged-graph-v4" reads "Merged graph v4". */
+function datasetLabel(entry) {
+  const name = String(entry?.name || entry?.id || "Graph");
+  return /\s/.test(name) ? name : name.replaceAll("_", "-").split("-").filter(Boolean).join(" ").toLowerCase().replace(/^./, (letter) => letter.toUpperCase());
+}
+
+/** The canvas header: which graph and snapshot this is, then what the canvas shows right now. */
+function renderStageHeader() {
+  const entry = graphRegistry?.graphs?.find((candidate) => candidate.id === currentGraphId);
+  if (!entry) return;
+  const captured = entry.generatedAt ? new Date(entry.generatedAt) : null;
+  const day = captured && !Number.isNaN(captured.valueOf()) ? captured.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+  // The layers the canvas actually draws, whether picked from a layer tab or the entity tree.
+  const layers = Object.keys(LAYERS).filter((layer) => LAYERS[layer].some((type) => state.nodeTypes.has(type)));
+  const scope = layers.length === Object.keys(LAYERS).length ? "All layers" : layers.length ? `${layers.map(layerLabel).join(" + ")} layer${layers.length > 1 ? "s" : ""}` : "No layers";
+  const view = conditionalNodes ? "Query results" : traversalEdges ? "Traversal" : focusedNeighborhood ? `Neighborhood of ${focusedLabel}` : scope;
+  const count = `${visibleEntityCount.toLocaleString()} ${visibleEntityCount === 1 ? "entity" : "entities"}`;
+  els.stageHeader.hidden = false;
+  els.stageTitle.textContent = datasetLabel(entry);
+  if (els.stageSnapshot.value !== entry.id) { els.stageSnapshot.value = entry.id; syncDropdowns(); }
+  els.stageDetail.textContent = `${view} · ${count}`;
+  // Opened from a chat answer: the answer's own snapshot rides along as a quiet pill.
+  els.stageEyebrow.hidden = !chatSnapshot;
+  if (chatSnapshot) {
+    els.stageChat.textContent = `From chat · snapshot ${chatSnapshot.code}`;
+    els.stageEyebrow.title = chatSnapshot.captured ? `Captured ${chatSnapshot.captured}` : "";
+  }
+  els.stageHeader.title = day ? `${datasetLabel(entry)}, captured ${day}` : "";
 }
 
 function refresh() {
@@ -650,13 +692,15 @@ function syncRelationshipRow(row) {
 function updateFilterUI() {
   $$("#type-filters input").forEach((input) => {
     input.checked = state.nodeTypes.has(input.value);
+    const row = input.closest(".planner-type-row");
+    if (row) syncRelationshipRow(row);
   });
   $$("#edge-filters input").forEach((input) => {
     input.checked = state.edgeTypes.has(input.value);
     const row = input.closest(".planner-type-row");
     if (row) syncRelationshipRow(row);
   });
-  $$(".entity-folder").forEach((folder) => {
+  $$("#type-filters .entity-folder").forEach((folder) => {
     const types = LAYERS[folder.dataset.layer];
     const selected = types.filter((type) => state.nodeTypes.has(type)).length;
     folder.querySelector(".folder-selected").textContent = `${selected}/${types.length}`;
@@ -704,13 +748,22 @@ function renderEntityTree() {
 
     for (const type of layerTypes) {
       const count = graphMeta.counts[type] || 0;
-      const label = document.createElement("label");
-      label.className = "filter-item entity-leaf planner-type-row";
+      const label = document.createElement("div");
+      label.className = "filter-item entity-leaf planner-type-row has-toggle";
       label.style.setProperty("--depth", "1");
-      label.innerHTML = `<span class="planner-type-toggle"></span><span class="planner-type-entry"><input type="checkbox" value="${escapeHtml(type)}"><span class="planner-type-label">${escapeHtml(entityTypeLabel(type))}</span><span class="planner-type-count">${formatNumber.format(count)}</span></span>`;
-      label.querySelector("input").after(typeMark(type, graphMeta));
-      label.querySelector("input").addEventListener("change", async (event) => {
-        const input = /** @type {HTMLInputElement} */ (event.currentTarget);
+      label.innerHTML = `<span class="planner-type-toggle"></span><span class="planner-type-entry"><input type="checkbox" value="${escapeHtml(type)}" tabindex="-1" aria-hidden="true"><span class="planner-type-label">${escapeHtml(entityTypeLabel(type))}</span><span class="planner-type-count">${formatNumber.format(count)}</span></span>`;
+      const input = /** @type {HTMLInputElement} */ (label.querySelector("input"));
+      input.after(typeMark(type, graphMeta));
+      // The same eye as the relationship rows: it replaces the count on hover, and stays put while the type is hidden.
+      const eye = document.createElement("button");
+      eye.type = "button";
+      eye.className = "visibility-toggle";
+      eye.setAttribute("aria-label", `Show or hide ${entityTypeLabel(type)}`);
+      eye.append(icon("eye"), icon("eye-slash"));
+      label.append(eye);
+      label.querySelector(".planner-type-entry").addEventListener("click", () => eye.click());
+      eye.addEventListener("click", async () => {
+        input.checked = !input.checked;
         input.checked ? state.nodeTypes.add(type) : state.nodeTypes.delete(type);
         focusedNeighborhood = null;
         traversalEdges = null;
@@ -1089,6 +1142,23 @@ function fitVisibleGraph() {
   renderer.getCamera().animatedReset({ duration: 650 });
 }
 
+/** Moves the camera so a node sits in the middle of the canvas the entity sheet leaves visible. */
+function revealNode(node, zoomIn = false) {
+  const data = renderer?.getNodeDisplayData(node);
+  if (!data) return;
+  const camera = renderer.getCamera();
+  const state = camera.getState();
+  const ratio = zoomIn ? Math.min(state.ratio, 0.12) : state.ratio;
+  const { width, height } = renderer.getDimensions();
+  const canvas = $("#sigma-container").getBoundingClientRect();
+  const sheet = els.inspector.classList.contains("open") ? els.inspector.getBoundingClientRect() : null;
+  const covered = sheet && sheet.width ? Math.max(0, Math.min(canvas.right - sheet.left, canvas.width)) : 0;
+  // Centred on the node the camera would show it mid-canvas; shifting by half the covered strip shows it mid-visible.
+  const target = renderer.viewportToFramedGraph({ x: width / 2 + covered / 2, y: height / 2 }, { cameraState: { ...state, x: data.x, y: data.y, ratio } });
+  camera.animate({ x: target.x, y: target.y, ratio }, { duration: 650 });
+}
+
+/** @param {string} node @param {boolean | "pan"} [moveCamera] true zooms in on the node, "pan" only brings it into view */
 function selectNode(node, moveCamera = true) {
   if (!graph.hasNode(node) || !isNodeVisible(node)) return;
   if (selectedNode !== node) {
@@ -1114,12 +1184,7 @@ function selectNode(node, moveCamera = true) {
   renderInspectorProperties(node, attrs);
   renderInspectorConnections(node);
 
-  if (moveCamera) {
-    const displayData = renderer.getNodeDisplayData(node);
-    if (displayData) {
-      renderer.getCamera().animate({ x: displayData.x, y: displayData.y, ratio: Math.min(renderer.getCamera().getState().ratio, 0.12) }, { duration: 650 });
-    }
-  }
+  if (moveCamera) revealNode(node, moveCamera !== "pan");
   renderer.refresh();
 }
 
@@ -1235,6 +1300,7 @@ function clearSelection(refreshRenderer = true) {
 function focusNeighborhood() {
   if (!selectedNode) return;
   focusedNeighborhood = new Set([selectedNode, ...graph.neighbors(selectedNode)]);
+  focusedLabel = String(graph.getNodeAttribute(selectedNode, "label") || selectedNode);
   updateCounts();
   updateFilterUI();
   fitVisibleGraph();
@@ -1841,6 +1907,11 @@ let queryPanelToggle = null;
 
 function wireWorkspaceShell() {
   $$('[data-panel-icon]').forEach(button => button.replaceChildren(icon(button.dataset.panelIcon)));
+  // Chat says which answer's snapshot it opened the canvas from, or that it opened it plainly.
+  window.addEventListener("atlas:snapshot", (event) => {
+    chatSnapshot = /** @type {CustomEvent} */ (event).detail || null;
+    renderStageHeader();
+  });
   const sidebar = $(".sidebar");
   const queryDock = $(".query-dock");
   // Sigma's sidebar never collapses on desktop, so an old saved "collapsed" state must not strand it closed.
@@ -1875,7 +1946,7 @@ function initializeRenderer() {
     edgeReducer,
     renderEdgeLabels: false,
     enableEdgeEvents: false,
-    labelFont: "-apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif",
+    labelFont: "Geist, -apple-system, BlinkMacSystemFont, Segoe UI, system-ui, sans-serif",
     labelColor: { color: graphLabelPalette(activeTheme).label },
     defaultDrawNodeHover: (context, data, settings) => drawGraphNodeHover(context, data, settings, activeTheme),
     labelSize: 12 * textScale(),
@@ -1898,7 +1969,7 @@ function initializeRenderer() {
   renderer.on("afterRender", drawConnectionGlow);
   renderer.on("afterRender", drawMinimap);
   renderer.on("clickNode", ({ node, event }) => {
-    selectNode(node, false);
+    selectNode(node, "pan");
     if (event?.original?.shiftKey) toggleTraversalNode(node);
   });
   renderer.on("clickStage", () => clearSelection());
@@ -1961,11 +2032,11 @@ async function start() {
   if (graphRegistry.formatVersion !== 10 || !Array.isArray(graphRegistry.graphs) || !graphRegistry.graphs.length) throw new Error("Invalid or empty graph registry");
 
   els.graphSelect.replaceChildren();
+  els.stageSnapshot.replaceChildren();
   for (const entry of graphRegistry.graphs) {
     const option = document.createElement("option");
     option.value = entry.id;
-    const name = String(entry.name || entry.id);
-    option.textContent = /\s/.test(name) ? name : name.replaceAll("_", "-").split("-").filter(Boolean).join(" ").toLowerCase().replace(/^./, letter => letter.toUpperCase());
+    option.textContent = datasetLabel(entry);
     option.title = entry.sourceName;
     // Every dataset is a snapshot, so the picker says when it was captured.
     const captured = entry.generatedAt ? new Date(entry.generatedAt) : null;
@@ -1974,10 +2045,18 @@ async function start() {
       option.title = `${entry.sourceName} · ${option.dataset.sub}`;
     }
     els.graphSelect.append(option);
+    // The breadcrumb lists the same snapshots by when they were captured.
+    const snapshot = document.createElement("option");
+    snapshot.value = entry.id;
+    snapshot.textContent = option.dataset.sub ? `Snapshot · ${option.dataset.sub.replace(/^Captured /, "")}` : "Snapshot";
+    snapshot.dataset.sub = option.textContent;
+    els.stageSnapshot.append(snapshot);
   }
 
   const openGraph = async (graphId) => {
     const entry = graphRegistry.graphs.find((candidate) => candidate.id === graphId) || graphRegistry.graphs[0];
+    // A different dataset is no longer the snapshot an answer was opened from.
+    if (currentGraphId && currentGraphId !== entry.id) chatSnapshot = null;
     currentGraphId = entry.id;
     localStorage.setItem("atlas-v2-graph", currentGraphId);
     els.graphSelect.value = currentGraphId;
@@ -2124,6 +2203,12 @@ async function start() {
     dataWorker.postMessage({ kind: "initialize", manifestUrl: new URL(`/graph-data/${entry.manifest}`, location.href).href });
   };
 
+  // Switching snapshot in the breadcrumb is the same as choosing that dataset in the top bar.
+  els.stageSnapshot.addEventListener("change", () => {
+    if (els.stageSnapshot.value === els.graphSelect.value) return;
+    els.graphSelect.value = els.stageSnapshot.value;
+    els.graphSelect.dispatchEvent(new Event("change", { bubbles: true }));
+  });
   els.graphSelect.addEventListener("change", async (event) => {
     await openGraph(/** @type {HTMLSelectElement} */ (event.currentTarget).value);
     trackEvent("graph_dataset_selected", { availableGraphs: graphRegistry.graphs.length });

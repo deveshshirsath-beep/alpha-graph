@@ -27,6 +27,8 @@ export function icon(name = 'entity') {
   return paintIcon(document.createElementNS('http://www.w3.org/2000/svg', 'svg'), name);
 }
 
+let inlined = 0;
+
 /** Swaps `img[data-inline-svg]` for its own SVG markup, so the illustration's --illo-* colors follow the theme. */
 /** @param {Document|HTMLElement} [root] */
 export async function inlineIllustrations(root = document) {
@@ -34,7 +36,14 @@ export async function inlineIllustrations(root = document) {
     try {
       const response = await fetch(image.getAttribute('src') || '');
       if (!response.ok) return;
-      const svg = new DOMParser().parseFromString(await response.text(), 'image/svg+xml').documentElement;
+      // The same art can appear twice on a page; each copy gets its own clip and mask ids,
+      // or a hidden copy's definitions would blank the visible one.
+      const suffix = `-i${++inlined}`;
+      let markup = await response.text();
+      for (const [, id] of markup.matchAll(/\bid="([^"]+)"/g)) {
+        markup = markup.replaceAll(`id="${id}"`, `id="${id}${suffix}"`).replaceAll(`#${id})`, `#${id}${suffix})`).replaceAll(`"#${id}"`, `"#${id}${suffix}"`);
+      }
+      const svg = new DOMParser().parseFromString(markup, 'image/svg+xml').documentElement;
       if (svg.nodeName !== 'svg') return;
       for (const name of ['width', 'height']) if (image.hasAttribute(name)) svg.setAttribute(name, image.getAttribute(name) || '');
       svg.classList.add('illustration');
@@ -79,6 +88,7 @@ function decorateButtons() {
 }
 
 function optionIcon(select, option) {
+  if (select.dataset.icon) return select.dataset.icon;
   if (select.id === 'theme-select') return { light: 'sun', dark: 'moon', ocean: 'waves', sunset: 'sunset' }[option.value] || 'sun';
   if (select.id === 'text-size-select') return 'text-size';
   if (select.id === 'graph-select') return 'database';
@@ -224,11 +234,18 @@ function enhanceSelect(select) {
     signature = next;
     trigger.disabled = select.disabled;
     setButtonContent(trigger, optionIcon(select, option || { value: '' }), option?.textContent || 'Choose option…');
+    // A labelled filter reads "Entity  All entity types": a grey name, then the value in the text colour.
+    if (select.dataset.label) {
+      const name = document.createElement('span');
+      name.className = 'select-trigger-label';
+      name.textContent = select.dataset.label;
+      trigger.querySelector('.action-label')?.before(name);
+    }
     trigger.append(icon('chevron'));
     trigger.lastElementChild.classList.add('select-chevron');
     trigger.title = option?.textContent || label;
-    // A field with nothing chosen reads as a placeholder, not as a value.
-    trigger.dataset.placeholder = String(!option?.value);
+    // A field with nothing chosen reads as a placeholder, not as a value, unless its label already names it.
+    trigger.dataset.placeholder = String(!option?.value && !select.dataset.label);
     if (select.disabled) close();
     else if (!menu.hidden) { rebuild(); position(); activate(select.selectedIndex); }
   };

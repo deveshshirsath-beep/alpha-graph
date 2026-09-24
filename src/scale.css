@@ -45,7 +45,9 @@
 
 /* Answers: table cells were 14px beside 13px mono in the same row; the atlas
    button's title 14px; its caption and the failure meta 12px and 11px. */
-#app .answer-table :is(th, td) { font-size: var(--text-small); line-height: var(--lh-small); }
+#app .answer-table th { font-size: var(--text-small); line-height: var(--lh-small); }
+/* Table cells read at the answer's body size. */
+#app .answer-table td, #app .answer-table td.is-mono { font-size: .9375rem; line-height: 1.375rem; }
 #app .answer-open-graph-text strong { font-size: var(--text-body); line-height: var(--lh-body); }
 #app .answer-snapshot { font-size: var(--text-small); line-height: var(--lh-small); }
 #app .planner-restore-question { font-size: var(--text-body); line-height: var(--lh-body); }
@@ -124,9 +126,13 @@
 #app .layer-tab > .layer-mark { align-self: center; }
 
 /* ── One continuous guide per open layer, drawn once instead of per row ────── */
-#app #controls-panel .entity-children { position: relative; }
-#app #controls-panel .entity-children::before { content: ""; display: block; position: absolute; top: 0; bottom: 0; left: calc(.5rem + 7.5px); width: 1px; background: var(--guide-color); border: 0; pointer-events: none; }
-#app #controls-panel .entity-children .planner-type-row::before { display: none; }
+/* Layer guides, in the graph view's entity tree and the chat's entity map alike: one continuous line from just under
+   the caret to the last type, drawn by the list alone and on whole pixels, so no joint, dash or half-pixel blur shows. */
+#app :is(#controls-panel, #planner-type-map-panel) .entity-children { position: relative; }
+#app :is(#controls-panel, #planner-type-map-panel) .entity-children::before { content: ""; display: block; position: absolute; top: -9px; bottom: 0; left: calc(.5rem + 7px); width: 1px; border: 0; background: var(--guide-color); pointer-events: none; }
+#app #planner-type-map-panel .entity-children::before { left: calc(.75rem + 7px); }
+#app :is(#controls-panel, #planner-type-map-panel) .entity-children .planner-type-row::before,
+#app :is(#controls-panel, #planner-type-map-panel) .entity-folder > .planner-type-toggle::after { content: none; }
 
 /* ── The diagram's Expand button: a control, not a glyph pushed against a word.
    It lost its spacing when the ⤢ text glyph became a Phosphor icon. ─────── */

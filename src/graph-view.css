@@ -1,4 +1,4 @@
-/* Graph view after sigma: the canvas keeps only a layout switch (bottom left) and the map corner (bottom right),
+/* Graph view after sigma: the canvas keeps a header (top left), the layout switch (bottom centre) and the map corner (bottom left),
    and the right panel is sigma's "Query builder" and "Traversal" sections on Alpha's tokens. */
 #app .view-options { box-shadow: 0 0 0 1px rgba(5, 5, 5, .06), 0 4px 12px -2px rgba(18, 35, 66, .12); }
 :root:not([data-theme="light"]) #app .view-options { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 4px 12px -2px rgba(0, 0, 0, .45); }
@@ -16,7 +16,7 @@
 #app .view-switcher-label { padding: 0 4px 0 8px; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; align-self: center; }
 
 /* Map corner: minimap and zoom controls together, stacked above the view switch in the bottom-left. */
-#app .map-corner { position: absolute; z-index: 6; left: 12px; right: auto; bottom: 12px; width: 132px; display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+#app .map-corner { position: absolute; z-index: 6; left: 20px; right: auto; bottom: 20px; width: 132px; display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
 #app .map-corner .minimap { position: static; inset: auto; width: auto; height: auto; padding: 0; border: 0; border-radius: 10px; background: none; box-shadow: none; backdrop-filter: none; }
 #app .map-corner .minimap canvas { display: block; width: 100%; height: 72px; border-radius: 8px; background: var(--panel); box-shadow: 0 0 0 1px var(--line); cursor: crosshair; }
 #app .zoom-controls { display: flex; align-items: center; justify-content: space-between; gap: 2px; padding: 4px; border-radius: 12px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .06), 0 4px 12px -2px rgba(18, 35, 66, .12); }
@@ -28,9 +28,9 @@
 
 /* Right panel: one white card hanging in the column with the chat entity panel's inset, radius and shadow. */
 #app #query-panel { padding: 20px 20px 24px; background: transparent; overflow: hidden; }
-#app #query-panel .query-card { display: flex; flex-direction: column; flex: 0 1 auto; height: auto; max-height: 100%; overflow-y: auto; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); scrollbar-width: thin; }
+#app #query-panel .query-card { display: flex; flex-direction: column; flex: 0 1 auto; height: auto; max-height: 100%; overflow-y: auto; border-radius: 16px; background: var(--panel); box-shadow: 0 0 0 1px var(--nav-stroke), 0 4px 10px -2px rgba(18, 35, 66, .08); scrollbar-width: thin; }
 [data-theme="light"] #app #query-panel .query-card { background: #fff; }
-:root:not([data-theme="light"]) #app #query-panel .query-card { box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 4px 10px -2px rgba(0, 0, 0, .45); }
+:root:not([data-theme="light"]) #app #query-panel .query-card { box-shadow: 0 0 0 1px var(--nav-stroke), 0 4px 10px -2px rgba(0, 0, 0, .45); }
 /* On desktop the canvas runs under the right column, so the card floats on the grid and the map corner sits below it. */
 @media (min-width: 1051px) {
   #app .workspace > .stage { grid-column: 4 / 7; }
@@ -132,18 +132,55 @@
 #app #query-panel .query-card-head { display: grid; gap: 2px; padding: 18px 20px 16px; border-bottom: 1px solid var(--line); }
 #app #query-panel .query-card-head + .sidebar-section { padding-top: 14px; }
 
-/* The entity sheet takes the query card's place in the column instead of hiding behind it. */
-#app #query-panel .inspector { position: static; inset: auto; z-index: auto; display: none; flex-direction: column; width: auto; max-height: calc(100% - 120px); padding: 0; overflow: hidden; border: 0; border-radius: 16px; background: var(--panel); backdrop-filter: none; box-shadow: 0 0 0 1px rgba(5, 5, 5, .04), 0 4px 10px -2px rgba(18, 35, 66, .08); opacity: 1; pointer-events: auto; transform: none; transition: none; scrollbar-width: thin; }
+/* The entity sheet: a card like the query card, shown when a node is selected. */
+#app #query-panel .inspector { position: static; inset: auto; z-index: auto; display: none; flex-direction: column; width: auto; max-height: calc(100% - 120px); padding: 0; overflow: hidden; border: 0; border-radius: 16px; background: var(--panel); backdrop-filter: none; box-shadow: 0 0 0 1px var(--nav-stroke), 0 4px 10px -2px rgba(18, 35, 66, .08); opacity: 1; pointer-events: auto; transform: none; transition: none; scrollbar-width: thin; }
 [data-theme="light"] #app #query-panel .inspector { background: #fff; }
-:root:not([data-theme="light"]) #app #query-panel .inspector { box-shadow: 0 0 0 1px rgba(255, 255, 255, .06), 0 4px 10px -2px rgba(0, 0, 0, .45); }
+:root:not([data-theme="light"]) #app #query-panel .inspector { box-shadow: 0 0 0 1px var(--nav-stroke), 0 4px 10px -2px rgba(0, 0, 0, .45); }
 #app #query-panel .inspector.open { display: flex; }
-#app #query-panel .inspector.open ~ .query-card, #app #query-panel .query-card:has(~ .inspector.open) { display: none; }
-@media (min-width: 1051px) { #app .workspace > .query-dock .inspector { pointer-events: auto; } }
+/* Desktop: the entity sheet opens beside the query card, to its left, so both stay in reach. */
+@media (min-width: 1051px) {
+  #app #query-panel { overflow: visible; }
+  #app #query-panel .inspector { position: absolute; top: 20px; right: calc(100% - 8px); width: 340px; max-height: calc(100% - 44px); pointer-events: auto; }
+  /* The resize handle stays usable where the sheet meets the column. */
+  #app .workspace > .panel-resizer-right { z-index: 8; }
+}
+/* Compact: the column only fits one card, so the sheet takes the query card's place. */
+@media (max-width: 1050px) {
+  #app #query-panel .query-card:has(~ .inspector.open) { display: none; }
+}
 
 /* Placeholder dropdowns read as placeholders, in every panel. */
 #app .select-trigger[data-placeholder="true"] { color: var(--ui-secondary); font-weight: 400; }
 #app .select-trigger[data-placeholder="true"] > .ui-icon:first-child { color: var(--ui-secondary); }
-#app .view-switcher-top { top: 12px; bottom: auto; }
+/* The layout switch sits at the bottom centre of the canvas that shows, clear of the query card. */
+#app .view-switcher { left: 0; right: 0; bottom: 20px; margin-inline: auto; }
+@media (min-width: 1051px) { body.query-dock-open #app .view-switcher { right: var(--query-width, 0px); } }
+
+/* Canvas header: one breadcrumb row across the top of the canvas (dataset / snapshot / what shows now).
+   The canvas, the query card and the entity sheet all start below it. */
+#app .workspace { --stage-bar: 44px; }
+#app .stage-header { position: absolute; z-index: 8; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 12px; height: var(--stage-bar); padding: 0 20px; border-bottom: 1px solid var(--nav-stroke); border-top-left-radius: 15px; background: var(--panel); }
+[data-theme="light"] #app .stage-header { background: #fff; }
+#app .stage-header[hidden], #app .stage-header-eyebrow[hidden] { display: none; }
+#app .stage-crumbs { display: flex; align-items: center; gap: 6px; min-width: 0; }
+#app .stage-crumb-root { flex: 0 0 auto; margin: 0; color: var(--text); font-family: var(--ui-font); font-size: 14px; font-weight: 500; letter-spacing: 0; line-height: 20px; white-space: nowrap; }
+#app .stage-crumb-sep { flex: 0 0 auto; color: var(--ui-secondary); font-size: 13px; opacity: .7; }
+#app .stage-crumb { min-width: 0; overflow: hidden; color: var(--ui-secondary); font-size: 13px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* The snapshot is a quiet inline dropdown: text with a caret until hovered. */
+#app .stage-crumbs .select-control { flex: 0 0 auto; width: auto; margin: 0 -2px 0 -6px; }
+#app .stage-crumbs .select-control .select-trigger { height: 28px; min-height: 28px; gap: 4px; padding: 0 6px; border-radius: 7px; background: transparent; color: var(--ui-secondary); font-size: 13px; font-weight: 400; }
+#app .stage-crumbs .select-control .select-trigger:is(:hover, [aria-expanded="true"]) { background: var(--ui-hover); color: var(--text); }
+#app .stage-crumbs .select-control .select-trigger > .ui-icon:first-child { display: none; }
+#app .stage-header-eyebrow { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; height: 26px; margin-left: 4px; padding: 0 10px 0 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); font-size: .75rem; font-weight: 600; line-height: 1rem; white-space: nowrap; }
+#app .stage-header-eyebrow .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
+#app .stage #sigma-container { top: var(--stage-bar); }
+#app .graph-panel-reopen-left, #app .graph-panel-reopen-right { top: 7px; }
+@media (min-width: 1051px) {
+  #app #query-panel { padding-top: calc(var(--stage-bar) + 21px); }
+  #app #query-panel .inspector { top: calc(var(--stage-bar) + 21px); max-height: calc(100% - var(--stage-bar) - 45px); }
+}
+/* Phones show the explorer toggle in the bar's corner, so the crumbs step past it. */
+@media (max-width: 700px) { #app .stage-header { padding-left: 58px; } }
 
 /* Entity sheet, after sigma: header with a mark, two quiet actions, underline tabs, then key/value blocks. */
 #app .inspector .entity-header { display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0; padding: 14px 8px 8px 12px; }
@@ -169,8 +206,8 @@
 #app .inspector .kv-row { display: flex; align-items: baseline; gap: 12px; min-height: 36px; margin: 0; padding: 7px 8px; border: 0; }
 #app .inspector .kv-key { flex: 0 0 112px; overflow: hidden; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.375rem; text-overflow: ellipsis; white-space: nowrap; }
 #app .inspector .kv-values { flex: 1; min-width: 0; color: var(--text); font-size: .9375rem; line-height: 1.375rem; overflow-wrap: anywhere; }
-#app .inspector .entity-id { margin: 0; padding: 6px 8px; color: var(--ui-secondary); font-family: var(--mono-font, ui-monospace, SFMono-Regular, Menlo, monospace); font-size: .75rem; line-height: 1.25rem; overflow-wrap: anywhere; }
-#app .inspector .relation-rows { display: grid; max-height: none; gap: 0; overflow: visible; }
+#app .inspector .entity-id { margin: 0; padding: 6px 8px; color: var(--ui-secondary); font-family: var(--font-mono); font-size: .75rem; line-height: 1.25rem; overflow-wrap: anywhere; }
+#app .inspector .relation-rows { display: grid; grid-template-columns: minmax(0, 1fr); max-height: none; gap: 0; overflow: visible; }
 #app .inspector .relation-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 36px; padding: 6px 8px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; text-align: left; }
 #app .inspector .relation-row:hover { background: var(--ui-hover); }
 #app .inspector .relation-row > i { width: 8px; height: 8px; flex: 0 0 8px; border-radius: 50%; background: var(--node-color, var(--accent)); }
@@ -190,3 +227,8 @@
 
 /* The canvas fills the stage: its old insets left room for chrome that no longer exists. */
 #app #sigma-container { top: 0; bottom: 0; }
+
+/* Clear: a small filled button, so it reads as an action beside the status line without outweighing Run query. */
+#app #query-panel .link-button.clear-button { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 8px; border-radius: 8px; background: var(--control-fill); color: var(--text); font-size: .8125rem; font-weight: 500; }
+#app #query-panel .link-button.clear-button:hover:not(:disabled) { background: var(--control-fill-hover); }
+#app #query-panel .link-button.clear-button .ui-icon { width: 14px; height: 14px; flex-basis: 14px; color: var(--ui-secondary); }

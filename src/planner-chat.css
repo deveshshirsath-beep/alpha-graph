@@ -6,7 +6,7 @@
 #app .chat-greeting { display: flex; flex-direction: column; align-items: center; gap: 20px; }
 #app .chat-title-row { display: flex; align-items: center; gap: 8px; max-width: 100%; color: var(--text); }
 #app .chat-title-icon { width: 22px; height: 22px; flex-basis: 22px; }
-#app .chat-dataset-name { max-width: 560px; overflow: hidden; color: var(--text); font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; font-size: 16px; font-weight: 600; line-height: 24px; letter-spacing: -.1px; text-overflow: ellipsis; white-space: nowrap; }
+#app .chat-dataset-name { max-width: 560px; overflow: hidden; color: var(--text); font-family: var(--ui-font); font-size: 16px; font-weight: 600; line-height: 24px; letter-spacing: -.1px; text-overflow: ellipsis; white-space: nowrap; }
 #app .chat-intro { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 620px; text-align: center; }
 #app .planner-empty-chat .chat-intro-title { margin: 0; color: var(--text); font-family: "Libre Baskerville", Georgia, serif; font-size: 30px; font-weight: 500; line-height: 40px; letter-spacing: -.6px; text-wrap: balance; }
 #app .planner-empty-chat .chat-intro p { margin: 0; color: var(--ui-secondary); font-size: .9375rem; line-height: 1.6; text-wrap: pretty; }
@@ -19,10 +19,24 @@
 #app .chat-stats .stat-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ui-secondary); }
 
 #app .planner-composer { width: 100%; max-width: 768px; margin: 0 auto; padding: 0; }
-#app .planner-composer-card { display: flex; flex-direction: column; gap: 16px; padding: 16px; overflow: visible; border: 1px solid transparent; border-radius: 16px; background: linear-gradient(var(--planner-card-bg), var(--planner-card-bg)) padding-box, linear-gradient(110deg, #f9ab00, var(--accent) 45%, #f9ab00 90%) border-box; background-size: auto, 260% 100%; background-position: 0 0, 0 0; box-shadow: 0 4px 24px rgba(18, 35, 66, .06); transition: box-shadow 280ms cubic-bezier(.22, 1, .36, 1); }
-#app .planner-composer-card:hover { box-shadow: 4px 4px 32px rgba(249, 171, 0, .18), -4px -4px 32px color-mix(in srgb, var(--accent) 22%, transparent); }
-#app .planner-composer-card:focus-within { border-color: transparent; box-shadow: 4px 4px 36px rgba(249, 171, 0, .22), -4px -4px 36px color-mix(in srgb, var(--accent) 26%, transparent); animation: planner-composer-drift 7s linear infinite; }
-@keyframes planner-composer-drift { to { background-position: 0 0, 260% 0; } }
+/* The composer keeps its warm-to-accent stroke, muted toward the border colour in every theme,
+   and a faint wash of the same colours drifts slowly through its fill. */
+#app .planner-composer-card {
+  --composer-warm: color-mix(in srgb, #f9ab00 38%, var(--ui-border));
+  --composer-cool: color-mix(in srgb, var(--accent) 42%, var(--ui-border));
+  --composer-wash: 4%;
+  display: flex; flex-direction: column; gap: 16px; padding: 16px; overflow: visible; border: 1px solid transparent; border-radius: 16px;
+  background:
+    linear-gradient(110deg, var(--planner-card-bg), color-mix(in srgb, #f9ab00 var(--composer-wash), var(--planner-card-bg)) 22%, var(--planner-card-bg) 46%, color-mix(in srgb, var(--accent) var(--composer-wash), var(--planner-card-bg)) 72%, var(--planner-card-bg) 96%) padding-box,
+    linear-gradient(110deg, var(--composer-warm), var(--composer-cool) 45%, var(--composer-warm) 90%) border-box;
+  background-size: 260% 100%, 260% 100%;
+  box-shadow: 0 4px 24px rgba(18, 35, 66, .06);
+  animation: planner-composer-drift 16s linear infinite;
+  transition: box-shadow 280ms cubic-bezier(.22, 1, .36, 1);
+}
+#app .planner-composer-card:hover { box-shadow: 0 6px 28px rgba(18, 35, 66, .08); }
+#app .planner-composer-card:focus-within { --composer-warm: color-mix(in srgb, #f9ab00 55%, var(--ui-border)); --composer-cool: color-mix(in srgb, var(--accent) 60%, var(--ui-border)); --composer-wash: 6%; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 7%, transparent), 0 6px 28px rgba(18, 35, 66, .08); }
+@keyframes planner-composer-drift { to { background-position: 260% 0, 260% 0; } }
 #app .planner-prompt-input { position: relative; min-height: 28px; max-height: 200px; overflow-y: auto; outline: 0; color: var(--text); font-size: 16px; line-height: 28px; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
 #app .planner-prompt-input.is-empty::before { content: attr(data-placeholder); position: absolute; inset: 0 0 auto 0; color: var(--ui-secondary); pointer-events: none; }
 /* Sigma's mention tokens: outlined while empty, filled once an entity is chosen. */
@@ -55,7 +69,7 @@
 #app .planner-composer:has(.planner-prompt-input.is-empty) #planner-run { opacity: .35; }
 #app .planner-composer-meta { min-height: 0; padding: 6px 4px 0; color: var(--ui-secondary); font-size: 12px; }
 #app .planner-composer-meta:has(#planner-composer-status:empty) { display: none; }
-@media (prefers-reduced-motion: reduce) { #app .planner-composer-card:focus-within { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #app .planner-composer-card { animation: none; } }
 
 #app .planner-suggestions { display: flex; flex-direction: column; width: 100%; max-width: 754px; margin: 0 auto; }
 #app .planner-suggestions[hidden] { display: none; }
@@ -72,7 +86,7 @@
 #app .suggestion-text { min-width: 0; }
 #app .suggestion-path { flex: 0 0 auto; color: var(--ui-secondary); white-space: nowrap; opacity: .75; }
 
-#app .planner-messages { width: 100%; max-width: 768px; gap: 24px; padding: 56px 4px 16px; }
+#app .planner-messages { width: 100%; max-width: 768px; grid-template-columns: minmax(0, 1fr); gap: 24px; padding: 56px 4px 16px; }
 #app .planner-message { display: block; }
 #app :is(.planner-message-avatar, .planner-message-header, .planner-next-questions) { display: none; }
 #app .planner-message.user { display: flex; justify-content: flex-end; }
@@ -145,58 +159,151 @@
 
 #app .planner-composer-dock { padding: 0 24px 20px; border-top: 0; background: transparent; box-shadow: none; }
 
-/* Questions page (Figma 360:23511): layer cards over one section per entity type; the entity map on the right is their table of contents. */
-#app #planner-workspace.questions-open :is(#planner-chat-scroll, #planner-composer-dock) { display: none; }
-#app .planner-questions-page { --qb-muted: color-mix(in srgb, var(--text) 45%, transparent); --qb-soft-line: color-mix(in srgb, var(--line) 55%, transparent); display: flex; flex-direction: column; gap: 8px; flex: 1 1 auto; min-width: 0; min-height: 0; padding: 32px 32px 0; container: questions / inline-size; }
+/* Questions page: layer push buttons over one filterable table. A question with values opens the parameter sheet on the right. */
+#app #planner-workspace.questions-open :is(#planner-chat-scroll, #planner-composer-dock, #planner-context-reopen) { display: none; }
+/* The table carries its own filters, so the right panel and its divider step aside. */
+#app #planner-workspace.questions-open { --context-column: 0px; --context-divider: 0px; }
+#app #planner-workspace.questions-open :is(#planner-context, #planner-context-resizer) { display: none !important; }
+#app .planner-questions-page { position: relative; display: flex; flex: 1 1 auto; min-width: 0; min-height: 0; }
 #app .planner-questions-page[hidden] { display: none; }
-#app .qb-header { display: flex; flex-direction: column; gap: 24px; flex: 0 0 auto; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
-#app .qb-title-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; height: 24px; }
-#app .qb-title { margin: 0; color: var(--text); font-family: "Libre Baskerville", Georgia, serif; font-size: 20px; font-weight: 600; line-height: 24px; }
-#app .qb-search { display: flex; align-items: center; gap: 8px; height: 36px; margin: -6px 0; padding: 0 9px; border: 1px solid transparent; border-radius: 10px; color: var(--ui-secondary); cursor: text; transition: border-color .15s ease; }
-#app .qb-search .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
-#app .qb-search input { width: 0; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 14px; line-height: 20px; transition: width .18s ease; }
-#app .qb-search:focus-within, #app .qb-search:has(input:not(:placeholder-shown)) { border-color: var(--ui-border); }
-#app .qb-search:focus-within input, #app .qb-search input:not(:placeholder-shown) { width: 220px; }
-/* One row of four as in Figma; the cards narrow before they wrap. */
-#app .qb-layers { display: grid; grid-template-columns: repeat(4, minmax(0, 162px)); gap: 8px 12px; }
-@container questions (max-width: 480px) { #app .qb-layers { grid-template-columns: repeat(2, minmax(0, 162px)); } }
-#app .qb-layer { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 8px; border: 1px solid var(--qb-soft-line); border-radius: 12px; background: var(--planner-card-bg); box-shadow: 0 0 .5px rgba(0, 0, 0, .25); color: var(--text); cursor: pointer; text-align: center; transition: border-color .15s ease, box-shadow .15s ease; }
-#app .qb-layer:hover { border-color: var(--ui-border); }
-#app .qb-layer.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-#app .qb-layer-art { display: grid; place-items: center; height: 81px; overflow: hidden; border: 1px solid var(--illo-surface); border-radius: 12px; background: var(--illo-ghost); }
-#app .qb-layer-art :is(img, svg) { display: block; max-width: 100%; }
-#app .qb-layer span { overflow: hidden; font-size: 13px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
-#app .qb-filter { display: inline-flex; align-self: flex-start; align-items: center; gap: 6px; margin-top: -8px; padding: 4px 4px 4px 12px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); font-size: 13px; font-weight: 500; }
-#app .qb-filter[hidden] { display: none; }
-#app .qb-filter button { width: 24px; height: 24px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
-#app .qb-filter .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
-#app .qb-groups { position: relative; display: flex; flex-direction: column; gap: 32px; flex: 1 1 auto; min-height: 0; padding: 0 0 48px; overflow-y: auto; scrollbar-width: thin; }
-#app .qb-group { display: flex; flex-direction: column; }
-#app .qb-group-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 0 10px; border-bottom: 1px solid var(--line); }
-#app .qb-group-head h3 { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--text); font-size: 17px; font-weight: 600; line-height: 26px; }
-#app .qb-group-head p { margin: 0; color: var(--ui-secondary); font-size: 14px; line-height: 20px; }
-#app .qb-group-meta { flex: 0 0 auto; color: var(--qb-muted); font-size: 14px; line-height: 20px; }
-#app .qb-question { display: flex; align-items: center; width: 100%; padding: 6px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ui-secondary); cursor: pointer; font-size: .875rem; line-height: 1.375rem; text-align: left; transition: color .15s ease; }
-#app .qb-question:hover { color: var(--text); }
-#app .qb-question-text { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#app .qb-question-type { flex: 0 0 auto; max-width: 40%; padding-left: 16px; overflow: hidden; color: var(--ui-secondary); opacity: .75; text-overflow: ellipsis; white-space: nowrap; }
-#app .qb-question-action { display: grid; flex: 0 0 auto; place-items: center; width: 22px; height: 22px; margin-left: 6px; color: var(--ui-secondary); opacity: 0; transition: opacity .12s ease; }
-#app .qb-question-action .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
-#app .qb-question:is(:hover, :focus-visible) .qb-question-action { opacity: 1; }
-#app .qb-slot { color: var(--text); font-weight: 400; text-decoration: none; }
-#app .qb-empty { margin: 0; padding: 24px 0; color: var(--ui-secondary); font-size: 15px; }
+#app .qb-main { display: flex; flex-direction: column; gap: 20px; flex: 1 1 auto; min-width: 0; min-height: 0; padding: 32px 32px 24px; container: questions / inline-size; }
 
-#app .planner-context-pill, #app #planner-ask-entities-panel { display: none; }
-#app #planner-workspace.questions-open .planner-context-pill { display: inline-flex; align-items: center; gap: 8px; height: 2.25rem; padding: 0 .75rem; border-radius: 10px; background: var(--planner-section-bg); color: var(--text); font-size: .9375rem; font-weight: 500; white-space: nowrap; }
-#app .planner-context-pill .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; }
-#app #planner-workspace.questions-open .planner-context-tabs { display: none; }
-#app #planner-workspace.questions-open #planner-ask-entities-panel { display: block; }
-#app #planner-workspace.questions-open .planner-context-panel:not(#planner-ask-entities-panel) { display: none; }
-#app #planner-ask-entities-panel .planner-type-row { transition: background-color .15s ease; }
-#app .planner-type-row.is-active { background: color-mix(in srgb, var(--accent) 10%, transparent); }
-#app .planner-type-row.is-active .planner-type-label { font-weight: 500; }
-#app .planner-type-row.is-unavailable:hover { background: transparent; }
-#app .planner-type-row.is-unavailable .planner-type-entry { cursor: default; opacity: .45; }
+/* Layer cards (Figma 461:54452): the chat's art at 88x69 beside a 20px name and its count. One layer at a time; the chosen card is outlined. */
+#app .qb-layers { display: flex; flex-wrap: wrap; gap: 12px; flex: 0 0 auto; }
+#app .qb-layer { display: flex; align-items: center; gap: 16px; min-width: 322px; padding: 10px 24px 10px 10px; border: 1px solid var(--line); border-radius: 14px; background: var(--planner-card-bg); color: var(--text); cursor: pointer; text-align: left; transition: border-color .15s ease, box-shadow .15s ease; }
+/* The art keeps its own proportions at any size. */
+#app .qb-layer :is(img, svg.illustration) { flex: 0 0 auto; width: 88px; height: auto; aspect-ratio: 61 / 48; }
+#app .qb-layer-copy { display: grid; row-gap: 8px; min-width: 0; }
+#app .qb-layer-copy > span { color: var(--text); font-size: 20px; font-weight: 500; line-height: 22px; white-space: nowrap; }
+#app .qb-layer-count { color: var(--ui-secondary); font-size: 16px; font-weight: 400; line-height: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+#app .qb-layer:hover { border-color: var(--ui-border); }
+#app .qb-layer[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+@container questions (max-width: 1040px) { #app .qb-layer { min-width: 0; } }
+@container questions (max-width: 700px) {
+  #app .qb-layer { gap: 10px; padding-right: 16px; }
+  #app .qb-layer :is(img, svg.illustration) { width: 56px; }
+  #app .qb-layer-copy { row-gap: 2px; }
+  #app .qb-layer-copy > span { font-size: 15px; }
+  #app .qb-layer-count { font-size: 13px; }
+}
+
+/* The table card: its own header (title and count on the left, filters and search on the right), a sticky column row, then the questions. */
+#app .qb-table-card { --qb-field: color-mix(in srgb, var(--text) 3.5%, transparent); display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: var(--planner-card-bg); box-shadow: 0 1px 2px rgba(18, 35, 66, .04); }
+#app .qb-table-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px; border-bottom: 1px solid var(--line); }
+#app .qb-heading { display: grid; flex: 1 1 0; gap: 2px; min-width: 180px; padding: 0 4px; }
+#app .qb-title { display: flex; align-items: baseline; gap: 8px; margin: 0; color: var(--text); font-family: var(--ui-font); font-size: 16px; font-weight: 600; letter-spacing: -.5px; line-height: 28px; }
+#app .qb-title .qb-count { display: inline-flex; align-items: center; height: 22px; margin: 0; padding: 0 8px; border: 0; border-radius: 999px; background: var(--qb-field); color: var(--ui-secondary); font: 500 12px/1 var(--ui-font); letter-spacing: 0; transform: none; font-variant-numeric: tabular-nums; }
+#app .qb-subtitle { margin: 0; overflow: hidden; color: var(--ui-secondary); font-size: 14px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
+#app .qb-table-head .select-control { flex: 0 1 auto; width: auto; min-width: 0; }
+#app .qb-table-head .select-control .select-trigger { height: 36px; min-height: 36px; max-width: 280px; gap: 8px; padding: 0 8px 0 10px; border-radius: 10px; background: var(--qb-field); color: var(--text); font-size: 14px; font-weight: 500; }
+#app .qb-table-head .select-control .select-trigger:is(:hover:not(:disabled), [aria-expanded="true"]) { background: var(--control-fill-hover); }
+#app .qb-table-head .select-control .select-trigger > .ui-icon:first-child { width: 16px; height: 16px; flex-basis: 16px; color: var(--ui-secondary); }
+#app .select-trigger .select-trigger-label { flex: 0 0 auto; color: var(--ui-secondary); font-weight: 400; }
+#app .qb-search { display: flex; align-items: center; gap: 8px; flex: 0 1 180px; min-width: 140px; height: 36px; padding: 0 12px; border-radius: 10px; background: var(--qb-field); color: var(--ui-secondary); cursor: text; transition: background-color .15s ease, box-shadow .15s ease; }
+#app .qb-search:hover:not(:focus-within) { background: var(--control-fill-hover); }
+#app .qb-search:focus-within { box-shadow: 0 0 0 1px var(--field-focus); }
+#app .qb-search .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app .qb-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 14px; }
+#app .qb-search input::placeholder { color: var(--ui-secondary); }
+#app .qb-search input::-webkit-search-cancel-button { display: none; }
+#app .qb-filter { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 4px 0 12px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); font-size: .8125rem; font-weight: 500; white-space: nowrap; }
+#app .qb-filter[hidden], #app .qb-clear[hidden] { display: none; }
+#app .qb-filter button { width: 24px; height: 24px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
+#app .qb-filter button:hover { background: color-mix(in srgb, var(--accent) 14%, transparent); }
+#app .qb-filter .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
+#app .qb-clear { height: 36px; padding: 0 10px; border: 0; border-radius: 10px; background: transparent; color: var(--text); cursor: pointer; font-size: 14px; font-weight: 500; white-space: nowrap; }
+#app .qb-clear:hover { background: var(--qb-field); }
+
+#app .qb-table-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; overscroll-behavior: contain; scrollbar-width: thin; }
+#app .qb-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-size: 15px; line-height: 22px; }
+#app .qb-col-entity { width: 200px; }
+#app .qb-col-type { width: 220px; }
+#app .qb-table th { position: sticky; top: 0; z-index: 1; height: 40px; padding: 0 16px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--text) 3%, var(--planner-card-bg)); color: var(--ui-secondary); font-size: 13px; font-weight: 500; line-height: 20px; text-align: left; white-space: nowrap; }
+#app .qb-table td { padding: 14px 16px; border-bottom: 1px solid var(--line); color: var(--text); vertical-align: middle; transition: background-color .12s ease; }
+#app .qb-table tbody tr { cursor: pointer; }
+#app .qb-table tbody tr:last-child td { border-bottom: 0; }
+#app .qb-table tbody tr:hover td { background: color-mix(in srgb, var(--text) 2.5%, transparent); }
+#app .qb-table tbody tr.is-selected td { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+#app .qb-table tbody tr.is-selected td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+#app .qb-question { display: block; width: 100%; padding: 0; border: 0; background: transparent; color: var(--text); cursor: pointer; font-size: 15px; line-height: 22px; text-align: left; }
+#app .qb-question:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+#app .qb-question-text { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+/* Values the question needs read in the accent colour, as in the chat's suggestions. */
+#app .qb-table .qb-slot { color: var(--accent); font-weight: 500; }
+#app .qb-entity { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-width: 0; overflow: hidden; color: var(--text); white-space: nowrap; }
+#app .qb-entity .planner-type-mark { width: 10px; height: 10px; flex: 0 0 10px; }
+#app .qb-type { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+#app .qb-kind { min-width: 0; overflow: hidden; color: var(--ui-secondary); font-size: 15px; text-overflow: ellipsis; white-space: nowrap; }
+#app .qb-row-go { width: 16px; height: 16px; flex: 0 0 16px; color: var(--ui-secondary); opacity: 0; transition: opacity .12s ease; }
+#app .qb-table tbody tr:is(:hover, :focus-within, .is-selected) .qb-row-go { opacity: 1; }
+#app .qb-question-meta { display: none; align-items: center; gap: 12px; margin-top: 6px; }
+#app .qb-empty { display: grid; justify-items: center; gap: 4px; padding: 56px 24px; text-align: center; }
+#app .qb-empty[hidden] { display: none; }
+#app .qb-empty strong { color: var(--text); font-size: .9375rem; font-weight: 600; line-height: 1.375rem; }
+#app .qb-empty span { color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; }
+/* The question sheet's own type tag. */
+#app .qb-tag { display: inline-block; max-width: 100%; height: 24px; padding: 0 8px; overflow: hidden; border-radius: 6px; background: var(--control-fill); color: var(--ui-secondary); font-size: .8125rem; font-weight: 500; line-height: 24px; text-overflow: ellipsis; white-space: nowrap; }
+@container questions (max-width: 900px) {
+  #app .qb-col-entity { width: 160px; }
+  #app .qb-col-type { width: 180px; }
+}
+/* Narrow: the side columns fold into a line under each question. */
+@container questions (max-width: 700px) {
+  #app .qb-col-entity, #app .qb-col-type { width: 0; }
+  #app .qb-table :is(th, td):not(:first-child) { display: none; }
+  #app .qb-question-meta { display: flex; }
+}
+
+/* Parameter sheet: the right panel's card, with sigma's fields, a primary Ask AI and a small Copy. */
+#app .qb-sheet { display: flex; flex-direction: column; flex: 0 0 380px; align-self: flex-start; width: 380px; min-height: 0; max-height: calc(100% - 32px); margin: 16px 16px 16px 0; overflow: hidden; border-radius: 16px; background: var(--planner-side-bg); box-shadow: 0 0 0 1px var(--nav-stroke), 0 4px 10px -2px rgba(18, 35, 66, .08); animation: qb-sheet-in 220ms cubic-bezier(.22, 1, .36, 1); }
+:root:not([data-theme="light"]) #app .qb-sheet { box-shadow: 0 0 0 1px var(--nav-stroke), 0 4px 10px -2px rgba(0, 0, 0, .45); }
+#app .qb-sheet[hidden] { display: none; }
+@keyframes qb-sheet-in { from { opacity: 0; transform: translateX(12px); } }
+@media (prefers-reduced-motion: reduce) { #app .qb-sheet { animation: none; } }
+#app .qb-sheet-head { display: flex; align-items: flex-start; gap: 12px; padding: 18px 12px 16px 20px; border-bottom: 1px solid var(--line); }
+#app .qb-sheet-heading { display: grid; flex: 1; gap: 2px; min-width: 0; }
+#app .qb-sheet-heading h2 { margin: 0; color: var(--text); font-size: .9375rem; font-weight: 600; line-height: 1.375rem; }
+#app .qb-sheet-heading p { margin: 0; color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; }
+#app .qb-sheet-close { display: grid; place-items: center; flex: 0 0 auto; width: 32px; height: 32px; margin-top: -4px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); cursor: pointer; }
+#app .qb-sheet-close:hover { background: var(--ui-hover); color: var(--text); }
+#app .qb-sheet-close .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app .qb-sheet-body { flex: 0 1 auto; min-height: 0; overflow-y: auto; scrollbar-width: thin; }
+#app .qb-sheet-block { display: grid; gap: 10px; padding: 16px 20px 20px; }
+#app .qb-sheet-block + .qb-sheet-block { border-top: 1px solid var(--line); }
+#app .qb-sheet-label { color: var(--ui-secondary); font-size: .8125rem; font-weight: 600; line-height: 1.25rem; }
+#app .qb-sheet-question { margin: 0; color: var(--text); font-size: .9375rem; line-height: 1.625rem; }
+#app .qb-sheet-slot { padding: 1px 6px; border-radius: 6px; background: var(--control-fill); box-shadow: inset 0 0 0 1px var(--ui-border); color: var(--ui-secondary); font-weight: 500; -webkit-box-decoration-break: clone; box-decoration-break: clone; transition: background-color .15s ease, color .15s ease; }
+#app .qb-sheet-slot.is-filled { background: color-mix(in srgb, var(--accent) 12%, transparent); box-shadow: none; color: var(--accent); }
+#app .qb-sheet-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+#app .qb-sheet-type { display: inline-flex; align-items: center; gap: 8px; color: var(--text); font-size: .8125rem; line-height: 1.25rem; }
+#app .qb-sheet-type .planner-type-mark { width: 12px; height: 12px; flex: 0 0 12px; }
+#app .qb-sheet-params { display: grid; gap: 16px; }
+#app .qb-param { display: grid; gap: 6px; }
+#app .qb-param-label { color: var(--text); font-size: .8125rem; font-weight: 500; line-height: 1.25rem; }
+#app .qb-param-field { display: flex; align-items: center; gap: 10px; width: 100%; height: 2.5rem; padding: 0 10px 0 12px; border: 0; border-radius: 10px; background: var(--control-fill); color: var(--text); cursor: pointer; font-size: .9375rem; font-weight: 500; text-align: left; transition: background-color .15s ease; }
+#app .qb-param-field:is(:hover, [aria-expanded="true"]) { background: var(--control-fill-hover); }
+#app .qb-param-field.is-empty { color: var(--ui-secondary); font-weight: 400; }
+#app .qb-param-field .qb-param-mark { width: 14px; height: 14px; flex: 0 0 14px; }
+#app .qb-param-field .ui-icon.qb-param-mark { color: var(--ui-secondary); }
+#app .qb-param-value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app .qb-param-caret { width: 14px; height: 14px; flex: 0 0 14px; color: var(--ui-secondary); transition: transform 200ms cubic-bezier(.22, 1, .36, 1); }
+#app .qb-param-field[aria-expanded="true"] .qb-param-caret { transform: rotate(180deg); }
+#app .qb-param-input { width: 100%; height: 2.5rem; padding: 0 12px; border: 0; border-radius: 10px; outline: 0; background: var(--control-fill); color: var(--text); font-size: .9375rem; transition: box-shadow .15s ease; }
+#app .qb-param-input:focus { box-shadow: 0 0 0 1px var(--field-focus); }
+#app .qb-param-input::placeholder { color: var(--ui-secondary); }
+#app .qb-param-hint { margin: 0; color: var(--ui-secondary); font-size: .75rem; line-height: 1.125rem; }
+#app .qb-sheet-foot { display: flex; align-items: center; gap: 8px; padding: 14px 16px 16px; border-top: 1px solid var(--line); }
+#app .qb-sheet-ask { display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; height: 2.5rem; padding: 0 16px; border: 0; border-radius: 10px; background: var(--text); color: var(--planner-side-bg); cursor: pointer; font-size: .9375rem; font-weight: 500; transition: background-color .15s ease, opacity .15s ease; }
+#app .qb-sheet-ask:hover:not(:disabled) { background: color-mix(in srgb, var(--text) 86%, var(--planner-side-bg)); }
+#app .qb-sheet-ask:disabled { opacity: .35; cursor: default; }
+#app .qb-sheet-ask .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app .qb-sheet-copy { display: grid; place-items: center; flex: 0 0 auto; width: 2.5rem; height: 2.5rem; padding: 0; border: 0; border-radius: 10px; background: var(--control-fill); color: var(--text); cursor: pointer; transition: background-color .15s ease; }
+#app .qb-sheet-copy:hover { background: var(--control-fill-hover); }
+#app .qb-sheet-copy .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+/* Where the page cannot spare the column, the sheet floats over the table. */
+@media (max-width: 1040px) {
+  #app .qb-sheet { position: absolute; top: 0; right: 0; z-index: 30; width: min(380px, calc(100% - 24px)); max-height: calc(100% - 24px); margin: 12px; box-shadow: 0 0 0 1px rgba(5, 5, 5, .06), 0 18px 38px rgba(18, 35, 66, .18); }
+}
 #app .planner-nav-row.active { background: var(--ui-hover); }
 
 /* Sigma's entity picker for question placeholders, anchored to the composer. */
@@ -225,9 +332,21 @@
 #app .slot-picker-footer[hidden] { display: none; }
 
 /* Sidebar Search: chats only, in sigma's field. */
-#app .planner-chat-search { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
-#app .planner-chat-search[hidden] { display: none; }
-#app .planner-chat-search-results { display: flex; flex-direction: column; gap: 2px; min-height: 0; overflow-y: auto; }
+/* Chat search opens in place: the Search row turns into the field, and results take the project list's place. */
+#app .planner-nav-search { display: flex; align-items: center; gap: .625rem; min-height: 2.5rem; padding: 0 4px 0 .75rem; border-radius: 10px; background: var(--ui-hover); color: var(--ui-secondary); cursor: text; animation: planner-search-in 180ms ease; }
+#app .planner-nav-search[hidden], #app .planner-nav-row[hidden] { display: none; }
+#app .planner-nav-search:focus-within { box-shadow: inset 0 0 0 1px var(--field-focus, var(--ui-border)); }
+#app .planner-nav-search > .ui-icon { width: 1.25rem; height: 1.25rem; flex: 0 0 1.25rem; }
+#app .planner-nav-search input { flex: 1; min-width: 0; height: 2.5rem; padding: 0; border: 0; outline: 0; background: transparent; box-shadow: none; color: var(--text); font-size: .9375rem; }
+#app .planner-nav-search input::placeholder { color: var(--ui-secondary); }
+#app .planner-nav-search input::-webkit-search-cancel-button { display: none; }
+#app .planner-nav-search button { display: grid; place-items: center; flex: 0 0 auto; width: 2rem; height: 2rem; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); cursor: pointer; }
+#app .planner-nav-search button:hover { background: var(--ui-hover); color: var(--text); }
+#app .planner-nav-search button .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; }
+@keyframes planner-search-in { from { opacity: 0; } }
+#app .planner-library.is-searching .planner-workspaces-panel { display: none; }
+#app .planner-chat-search-results { display: flex; flex: 1 1 auto; flex-direction: column; gap: 2px; min-height: 0; padding: .5rem .75rem 1rem; overflow-y: auto; scrollbar-width: thin; }
+#app .planner-chat-search-results[hidden] { display: none; }
 #app .planner-chat-search-row { display: grid; grid-template-columns: 16px minmax(0, 1fr); align-items: center; column-gap: 10px; width: 100%; padding: 7px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; text-align: left; }
 #app .planner-chat-search-row:hover { background: var(--ui-hover); }
 #app .planner-chat-search-row .ui-icon { grid-row: span 2; width: 16px; height: 16px; color: var(--ui-secondary); }
@@ -290,7 +409,11 @@
   font-size: .875em;
   font-weight: 400;
   line-height: 1;
-  white-space: nowrap;
+  /* Long paths and topic names break instead of widening the column; the pill carries across the break. */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 #app .planner-message.assistant .markdown :is(h3, h4, h5, h6) :not(pre) > code { font-weight: 600; }
 

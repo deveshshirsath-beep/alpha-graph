@@ -12,10 +12,12 @@ import { PlannerApi, resultPagination } from "./planner-api.js";
 import { connectPanelToggle } from "./panel-toggle.js";
 import { connectCatalogExpansion } from "./planner-catalog-toggle.js";
 import { PlannerQuestionBrowser, appendQuestionProse, templateRoute } from "./planner-questions.js";
+import { PlannerQuestionSheet } from "./planner-question-sheet.js";
 import { followSidebarWidth, shareSidebarWidth } from "./sidebar-width.js";
 import { PlannerSlotPicker } from "./planner-slot-picker.js";
 import { createComposer } from "./planner-composer.js";
 import { SAMPLE_PROJECTS } from "./planner-samples.js";
+import { DEMO_CHAT } from "./planner-demo.js";
 import { workspaceFocus } from "./workspace-focus.js";
 
 const q = (selector, root = document) => root.querySelector(selector);
@@ -71,8 +73,8 @@ const state = {
 
 let typeMap;
 let questionBrowser;
+let questionSheet;
 let slotPicker;
-let askEntities;
 let suggestionLayer = "business";
 const composer = createComposer(ui.prompt, {
   onSubmit: () => ui.form.requestSubmit(),
@@ -450,6 +452,24 @@ function renderPromptContext() {
   pill.title = `Asking about ${names.join(", ")}${hidden.length > names.length ? ` (${hidden.length} entities)` : ""}`;
 }
 
+/** Ask AI from the Questions page: the question goes to chat with the sheet's values filled in, and runs. */
+function askCatalogQuestion(item, values) {
+  let question = item.template || item.question;
+  for (const [name, value] of values) if (!value.entity) question = question.replaceAll(`{${name}}`, String(value.text));
+  setQuestionsPage(false);
+  setPrompt(question);
+  const entities = [];
+  for (const token of composer.emptyTokens()) {
+    const entity = values.get(token.dataset.token || "")?.entity;
+    if (!entity) continue;
+    composer.fillToken(token, entity, typeMark(entity.type, graphBrowser?.meta || state.discoveryMeta));
+    tokenEntityIds.add(String(entity.id));
+    if (!entities.some((known) => String(known.id) === String(entity.id))) entities.push(entity);
+  }
+  setPromptEntities(entities);
+  ui.form.requestSubmit();
+}
+
 function chooseCatalogQuestion(item, personalized = false) {
   setPrompt(item.question, true);
   if (personalized && item.bound.length) setPromptEntity(state.browseContext.entity);
@@ -706,6 +726,35 @@ async function seedSampleChats() {
   if (first) Object.assign(state, { activeWorkspaceId: workspace.id, activeProjectId: first.id, activeChatId: first.chats[0]?.id || "" });
 }
 
+const DEMO_CHAT_KEY = "atlas-demo-chat-v1";
+
+/** The staged blast-radius demo: one chat of five questions, added once at the top of its project. */
+async function seedDemoChat() {
+  try { if (localStorage.getItem(DEMO_CHAT_KEY)) return; } catch { return; }
+  const workspace = state.workspaces[0];
+  if (!workspace) return;
+  let project = (workspace.projects || []).find((item) => item.name === DEMO_CHAT.project);
+  if (!project) {
+    project = { ...(await documents.createProject(workspace.id, DEMO_CHAT.project)), chats: [] };
+    workspace.projects.push(project);
+  }
+  project.chats ||= [];
+  if (!project.chats.some((chat) => chat.title === DEMO_CHAT.title)) {
+    const graphId = currentApiGraphId();
+    const chat = await documents.createChat(workspace.id, project.id, DEMO_CHAT.title);
+    let stamp = Date.now() - 20 * 60_000;
+    const messages = [];
+    for (const { question, answer } of DEMO_CHAT.turns) {
+      const user = { id: makeId("message"), role: "user", content: question, createdAt: new Date(stamp += 60_000).toISOString(), graphId };
+      messages.push(user, sampleReply(answer, user, graphId, new Date(stamp += 45_000).toISOString()));
+    }
+    Object.assign(chat, { title: DEMO_CHAT.title, graphId, messages });
+    await documents.updateChat(workspace.id, project.id, chat.id, { title: chat.title, graphId, messages });
+    project.chats.unshift(chat);
+  }
+  try { localStorage.setItem(DEMO_CHAT_KEY, "1"); } catch { /* A later visit only re-checks the title. */ }
+}
+
 async function hydrateDocuments() {
   const workspaces = await documents.listWorkspaces();
   state.workspaces = await Promise.all(workspaces.map(async (workspace) => {
@@ -724,6 +773,7 @@ async function hydrateDocuments() {
     state.workspaces = [{ ...workspace, projects: [{ ...project, chats: [chat] }] }];
   }
   await seedSampleChats();
+  await seedDemoChat();
 
   const workspace = state.workspaces.find((item) => item.id === state.activeWorkspaceId) || state.workspaces[0];
   state.activeWorkspaceId = workspace.id;
@@ -992,6 +1042,13 @@ function appendInlineMarkdown(target, value) {
   if (cursor < value.length) target.append(document.createTextNode(value.slice(cursor)));
 }
 
+/** Whether a line opens its own block (code, rule, quote, heading, list item, table) rather than continuing a paragraph. */
+function opensBlock(line, next = "") {
+  const text = line.trim();
+  return !text || text.startsWith("```") || /^(?:---|\*\*\*|___)$/.test(text) || text.startsWith(">") || /^#{1,4}\s/.test(text)
+    || /^(?:[-*]|\d+[.)])\s+/.test(text) || (text.startsWith("|") && /^\s*\|?[\s:|-]+\|\s*$/.test(next));
+}
+
 function renderMarkdown(target, value) {
   target.classList.add("markdown");
   const lines = String(value || "").split(/\r?\n/);
@@ -1033,15 +1090,19 @@ function renderMarkdown(target, value) {
       list = null;
       const block = document.createElement("blockquote");
       block.className = "answer-quote";
-      const paragraph = document.createElement("p");
-      appendInlineMarkdown(paragraph, quote[1]);
-      block.append(paragraph);
+      // Quoted lines run together as one paragraph; an empty quoted line starts the next.
+      const paragraphs = [[quote[1]]];
       index += 1;
       while (index < lines.length && /^>\s?/.test(lines[index])) {
-        const next = document.createElement("p");
-        appendInlineMarkdown(next, lines[index].replace(/^>\s?/, ""));
-        block.append(next);
+        const text = lines[index].replace(/^>\s?/, "");
+        if (!text.trim()) paragraphs.push([]);
+        else paragraphs[paragraphs.length - 1].push(text);
         index += 1;
+      }
+      for (const part of paragraphs.filter((item) => item.length)) {
+        const paragraph = document.createElement("p");
+        appendInlineMarkdown(paragraph, part.map((text) => text.trim()).join(" "));
+        block.append(paragraph);
       }
       target.append(block);
       continue;
@@ -1106,10 +1167,13 @@ function renderMarkdown(target, value) {
       continue;
     }
     list = null;
-    const paragraph = document.createElement("p");
-    appendInlineMarkdown(paragraph, line);
-    target.append(paragraph);
+    // Lines of one paragraph are soft-wrapped source, not separate paragraphs: join them until a blank line or a new block.
+    const text = [line.trim()];
     index += 1;
+    while (index < lines.length && !opensBlock(lines[index], lines[index + 1])) text.push(lines[index].trim()), index += 1;
+    const paragraph = document.createElement("p");
+    appendInlineMarkdown(paragraph, text.join(" "));
+    target.append(paragraph);
   }
 }
 
@@ -1370,7 +1434,7 @@ function renderAnswerExtras(host, message) {
     text.append(title, name);
     open.append(icon("graph"), text);
     open.title = `This answer's graph snapshot${message.createdAt ? `, captured ${new Date(message.createdAt).toLocaleString()}` : ""}`;
-    open.addEventListener("click", () => setPlannerMode(false));
+    open.addEventListener("click", () => { announceSnapshot(message); setPlannerMode(false); });
     const wrap = document.createElement("div");
     wrap.className = "answer-open-graph-wrap";
     wrap.append(open);
@@ -1524,8 +1588,8 @@ function setQuestionsPage(open, options = {}) {
   const nav = q("#planner-questions-nav");
   nav.classList.toggle("active", open);
   nav.setAttribute("aria-pressed", String(open));
+  if (!open) questionSheet?.close();
   if (!open || !questionBrowser) return;
-  if (options.layer !== undefined) questionBrowser.layer = options.layer;
   if (options.filter === undefined) { questionBrowser.render(); return; }
   questionBrowser.setFilter(options.filter);
 }
@@ -1693,8 +1757,8 @@ async function persistChat(workspaceId, projectId, chat, graphId) {
   if (activeChat()?.id === chat.id && currentApiGraphId() === graphId) renderActiveChat();
 }
 
-/** A stable, readable name for the graph snapshot an answer carries. */
-function snapshotName(message) {
+/** An answer's graph snapshot: a stable code from the message, its dataset, and when it was captured. */
+function snapshotInfo(message) {
   const id = String(message.id || "");
   let hash = 0;
   for (let index = 0; index < id.length; index += 1) hash = (hash * 31 + id.charCodeAt(index)) >>> 0;
@@ -1706,7 +1770,18 @@ function snapshotName(message) {
   const stamp = captured && !Number.isNaN(captured.valueOf())
     ? captured.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
     : "";
-  return `${dataset} · snapshot ${code}${stamp ? ` · captured ${stamp}` : ""}`;
+  return { code, dataset, captured: stamp };
+}
+
+/** A stable, readable name for the graph snapshot an answer carries. */
+function snapshotName(message) {
+  const { code, dataset, captured } = snapshotInfo(message);
+  return `${dataset} · snapshot ${code}${captured ? ` · captured ${captured}` : ""}`;
+}
+
+/** Tells the canvas which answer's snapshot it is about to show, or that it opens without one. */
+function announceSnapshot(message = null) {
+  window.dispatchEvent(new CustomEvent("atlas:snapshot", { detail: message ? snapshotInfo(message) : null }));
 }
 
 function graphSummary(payload) {
@@ -2039,9 +2114,7 @@ function wirePlanner() {
   }
   qa("[data-planner-heading-icon]").forEach(element => element.append(icon(element.dataset.plannerHeadingIcon)));
   const library = q("#planner-library");
-  const drillViews = {
-    entities: { title: "Search chats", panel: q("#planner-chat-search-panel"), opener: q("#planner-search-nav") },
-  };
+  const drillViews = {};
   const showLibraryView = (view, focus = false) => {
     const previous = drillViews[library.dataset.view];
     library.dataset.view = view;
@@ -2052,12 +2125,23 @@ function wirePlanner() {
     if (focus) (drillViews[view] ? q("#planner-drill-back") : previous?.opener)?.focus();
   };
   Object.entries(drillViews).forEach(([view, { opener }]) => opener.addEventListener("click", () => showLibraryView(view, true)));
+  // Search opens in place: the nav row becomes the field, and results stand in for the project list below it.
   const chatSearch = /** @type {HTMLInputElement} */ (q("#planner-chat-search"));
+  const searchRow = q("#planner-search-nav");
+  const setChatSearch = (open, focus = true) => {
+    library.classList.toggle("is-searching", open);
+    searchRow.hidden = open;
+    q("#planner-nav-search").hidden = !open;
+    q("#planner-chat-search-results").hidden = !open;
+    if (open) { chatSearch.value = ""; renderChatSearch(""); chatSearch.focus(); }
+    else if (focus) searchRow.focus();
+  };
   chatSearch.addEventListener("input", () => renderChatSearch(chatSearch.value));
-  chatSearch.addEventListener("keydown", (event) => { if (event.key === "Escape") { event.preventDefault(); showLibraryView("home", true); } });
-  q("#planner-search-nav").addEventListener("click", () => { chatSearch.value = ""; renderChatSearch(""); chatSearch.focus(); });
+  chatSearch.addEventListener("keydown", (event) => { if (event.key === "Escape") { event.preventDefault(); setChatSearch(false); } });
+  searchRow.addEventListener("click", () => setChatSearch(true));
+  q("#planner-nav-search-close").addEventListener("click", () => setChatSearch(false));
   q("#planner-chat-search-results").addEventListener("click", (event) => {
-    if (event.target instanceof Element && event.target.closest(".planner-chat-search-row")) showLibraryView("home");
+    if (event.target instanceof Element && event.target.closest(".planner-chat-search-row")) setChatSearch(false, false);
   });
   q("#planner-drill-back").append(icon("chevron"));
   q("#planner-drill-back").addEventListener("click", () => showLibraryView("home", true));
@@ -2108,7 +2192,6 @@ function wirePlanner() {
     state.browseContext = context;
     state.discoveryMeta = meta;
     typeMap?.setMeta(meta);
-    askEntities?.setMeta(meta);
     // Sections are grouped by this graph's entity types.
     if (changedMeta && planner.classList.contains("questions-open")) questionBrowser?.render();
     renderHome();
@@ -2126,7 +2209,7 @@ function wirePlanner() {
     composer.focus();
   });
   ui.open?.addEventListener("click", () => setPlannerMode(true));
-  ui.close?.addEventListener("click", () => setPlannerMode(false));
+  ui.close?.addEventListener("click", () => { announceSnapshot(); setPlannerMode(false); });
   ui.graphSelect?.addEventListener("change", () => window.setTimeout(syncGraphEntry, 0));
   const contextIcons = { map: "layers", diagram: "network", entities: "entity", followups: "route" };
   qa("[data-context-tab]").forEach((button) => {
@@ -2172,9 +2255,13 @@ function wirePlanner() {
     getQuestions: questionsFor,
     getOrder: entityMapOrder,
     markFor: (type) => typeMark(type, state.discoveryMeta),
-    onChoose: (item, personalized) => { setQuestionsPage(false); chooseCatalogQuestion(item, personalized); },
-    onActiveChange: (type) => askEntities?.setActive(type),
-    onRender: (types) => askEntities?.setAvailable(types),
+    onChoose: (item, personalized, anchor) => {
+      // A question with values to fill opens the side sheet; any other goes straight to chat.
+      if (!questionParameters(item.template || item.question).length) { setQuestionsPage(false); chooseCatalogQuestion(item, personalized); return; }
+      const entity = state.browseContext.entity;
+      questionSheet.open({ ...item, anchor }, new Map(entity ? (item.bound || []).map((name) => [name, { entity }]) : []));
+      questionBrowser.setSelected(item);
+    },
   });
   slotPicker = new PlannerSlotPicker({
     getContext: () => ({ definitions: state.catalog?.definitions, meta: graphBrowser?.meta || state.discoveryMeta }),
@@ -2190,7 +2277,20 @@ function wirePlanner() {
       else composer.focus();
     },
   });
-  askEntities = new PlannerTypeMap({ panel: q("#planner-ask-entities-panel"), onNavigate: (type) => questionBrowser.scrollToType(type), fullCounts: true });
+  const sheetPicker = new PlannerSlotPicker({
+    getContext: () => ({ definitions: state.catalog?.definitions, meta: graphBrowser?.meta || state.discoveryMeta }),
+    loadEntities: (type) => graphBrowser.entitiesForType(type),
+    onPick: (field, entity) => questionSheet.fill(field, entity),
+  });
+  questionSheet = new PlannerQuestionSheet({
+    root: q("#planner-questions-page .qb-sheet"),
+    typesFor: placeholderTypes,
+    markFor: (type) => typeMark(type, graphBrowser?.meta || state.discoveryMeta),
+    describe: (name) => String(state.catalog?.definitions?.[name] || ""),
+    openPicker: (field) => sheetPicker.open(field),
+    onAsk: askCatalogQuestion,
+    onClose: () => { sheetPicker.close(); questionBrowser.setSelected(null); },
+  });
   diagram = new PlannerDiagram({ onSelect: selectEntity, layerForNode: entityLayer });
 }
 

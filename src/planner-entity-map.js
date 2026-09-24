@@ -40,6 +40,7 @@ const SHAPES = {
 };
 
 const compact = new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 });
+const LAYER_NAMES = { BUSINESS: "Business", API: "API", RUNTIME: "Runtime" };
 
 export function entityTypeLabel(type) {
   return KINDS[type]?.[0] || String(type || "Entity").replaceAll("-", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -127,16 +128,10 @@ function questionText(text) {
 
 /** Sigma's chat Entity map: browse entity types, then pick one of its catalog questions. */
 export class PlannerTypeMap {
-  constructor({ panel, getQuestions = null, onChoose = null, onNavigate = null, fullCounts = false }) {
+  constructor({ panel, getQuestions = null, onChoose = null }) {
     this.panel = panel;
     this.getQuestions = getQuestions;
     this.onChoose = onChoose;
-    // With onNavigate the tree is a table of contents: a type jumps to its section elsewhere instead of listing its questions.
-    this.onNavigate = onNavigate;
-    this.fullCounts = fullCounts;
-    this.active = "";
-    /** @type {Set<string> | null} */
-    this.available = null;
     this.meta = null;
     this.type = "";
     this.rows = [];
@@ -157,96 +152,63 @@ export class PlannerTypeMap {
     this.panel.scrollTop = 0;
   }
 
-  /** The table-of-contents entry being read; a collapsed type lights its nearest visible ancestor. */
-  setActive(type) {
-    if (type === this.active) return;
-    this.active = type;
-    this.markActive(true);
-  }
-
-  /** Types that have a section to jump to; the rest stay in the tree for structure but are dimmed. */
-  setAvailable(types) {
-    this.available = types ? new Set(types) : null;
-    this.render();
-  }
-
   render() {
-    this.panel.replaceChildren(this.type && this.meta && !this.onNavigate ? this.questionView() : this.treeView());
-    this.markActive(false);
+    this.panel.replaceChildren(this.type && this.meta ? this.questionView() : this.treeView());
   }
 
-  markActive(reveal) {
-    const items = /** @type {HTMLElement[]} */ ([...this.panel.querySelectorAll(".planner-type-row")]);
-    const shown = (type) => items.find((item) => item.dataset.type === type);
-    const ancestors = this.rows.find((row) => row.type === this.active)?.ancestors || [];
-    const target = shown(this.active) || [...ancestors].reverse().map(shown).find(Boolean);
-    for (const item of items) {
-      item.classList.toggle("is-active", item === target);
-      const entry = item.querySelector(".planner-type-entry");
-      if (item === target) entry?.setAttribute("aria-current", "location");
-      else entry?.removeAttribute("aria-current");
-    }
-    if (!reveal || !target) return;
-    // Keep the lit entry in view, as a long table of contents does.
-    const box = this.panel.getBoundingClientRect();
-    const rect = target.getBoundingClientRect();
-    const offset = rect.top < box.top + 8 ? rect.top - box.top - 8 : rect.bottom > box.bottom - 8 ? rect.bottom - box.bottom + 8 : 0;
-    if (offset) this.panel.scrollBy({ top: offset, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-  }
-
+  /** Entity types grouped under their layer, as the graph view's entity tree shows them. */
   treeView() {
     if (!this.meta?.counts) return element("p", "planner-type-empty", "Loading entity types…");
     const tree = element("div", "planner-type-tree");
-    tree.setAttribute("role", "tree");
     tree.setAttribute("aria-label", "Entity map");
-    const items = [];
-    const lightGuides = (type = "", depth = 0) => items.forEach((item) => {
-      const lit = Boolean(type) && item.dataset.ancestors.split(" ").includes(type);
-      item.classList.toggle("guide-lit", lit);
-      if (lit) item.style.setProperty("--guide-index", String(depth));
-    });
     this.rows = buildEntityMapRows(Object.keys(this.meta.counts), this.meta.relationshipSchema);
-    for (const row of this.rows) {
-      if (row.ancestors.some((ancestor) => this.collapsed.has(ancestor))) continue;
-      const label = entityTypeLabel(row.type);
-      const unavailable = Boolean(this.available && !this.available.has(row.type));
-      const item = element("div", `planner-type-row${unavailable ? " is-unavailable" : ""}`);
-      item.dataset.type = row.type;
-      item.setAttribute("role", "treeitem");
-      item.setAttribute("aria-level", String(row.depth + 1));
-      item.style.setProperty("--depth", String(row.depth));
-      item.dataset.ancestors = row.ancestors.join(" ");
-      if (row.hasChildren) {
-        const expanded = !this.collapsed.has(row.type);
-        item.setAttribute("aria-expanded", String(expanded));
-        const toggle = button("planner-type-toggle");
-        toggle.setAttribute("aria-expanded", String(expanded));
-        toggle.setAttribute("aria-label", `${expanded ? "Collapse" : "Expand"} ${label}`);
-        toggle.append(icon("chevron"));
-        toggle.addEventListener("click", () => {
-          if (expanded) this.collapsed.add(row.type);
-          else this.collapsed.delete(row.type);
-          this.render();
-        });
-        item.append(toggle);
-      } else item.append(element("span", "planner-type-toggle"));
-      const entry = button("planner-type-entry");
-      entry.title = !this.onNavigate ? `Questions about ${label}` : unavailable ? `No questions start from ${label}` : `Go to ${label} questions`;
-      entry.disabled = unavailable;
-      const total = this.meta.counts[row.type] || 0;
-      const count = element("span", "planner-type-count", this.fullCounts ? total.toLocaleString() : compact.format(total));
-      count.title = total.toLocaleString();
-      entry.append(typeMark(row.type, this.meta), element("span", "planner-type-label", label), count);
-      entry.addEventListener("click", () => {
-        if (this.onNavigate) this.onNavigate(row.type);
-        else this.show(row.type);
+    const ordered = this.rows.map((row) => row.type);
+    const layers = this.meta.layers || {};
+    const groups = Object.entries(LAYER_NAMES).map(([layer, name]) => ({ layer, name, types: ordered.filter((type) => (layers[layer] || []).includes(type)) }));
+    const grouped = new Set(groups.flatMap((group) => group.types));
+    groups.push({ layer: "OTHER", name: "Other", types: ordered.filter((type) => !grouped.has(type)) });
+    for (const { layer, name, types } of groups.filter((group) => group.types.length)) {
+      const expanded = !this.collapsed.has(layer);
+      const group = element("div", "entity-group");
+      // The layer takes its first type's colour in every theme, for its mark and guide line.
+      group.setAttribute("style", typeMark(types[0], this.meta).getAttribute("style") || "");
+      const folder = button("entity-folder planner-type-row");
+      folder.style.setProperty("--depth", "0");
+      folder.setAttribute("aria-expanded", String(expanded));
+      const toggle = element("span", "planner-type-toggle");
+      toggle.append(icon("chevron"));
+      const mark = element("span", "folder-mark");
+      mark.append(icon("layers"));
+      const total = types.reduce((sum, type) => sum + (this.meta.counts[type] || 0), 0);
+      const count = element("span", "planner-type-count", compact.format(total));
+      count.title = `${total.toLocaleString()} entities`;
+      const entry = element("span", "planner-type-entry");
+      entry.append(mark, element("span", "planner-type-label", `${name} layer`), count);
+      folder.append(toggle, entry);
+      folder.addEventListener("click", () => {
+        if (expanded) this.collapsed.add(layer);
+        else this.collapsed.delete(layer);
+        this.render();
       });
-      item.addEventListener("mouseenter", () => lightGuides(row.type, row.depth));
-      item.append(entry);
-      tree.append(item);
-      items.push(item);
+      const children = element("div", "entity-children");
+      children.hidden = !expanded;
+      for (const type of types) {
+        const label = entityTypeLabel(type);
+        const item = element("div", "planner-type-row");
+        item.style.setProperty("--depth", "1");
+        const typeEntry = button("planner-type-entry");
+        typeEntry.title = `Questions about ${label}`;
+        const size = this.meta.counts[type] || 0;
+        const typeCount = element("span", "planner-type-count", compact.format(size));
+        typeCount.title = size.toLocaleString();
+        typeEntry.append(typeMark(type, this.meta), element("span", "planner-type-label", label), typeCount);
+        typeEntry.addEventListener("click", () => this.show(type));
+        item.append(element("span", "planner-type-toggle"), typeEntry);
+        children.append(item);
+      }
+      group.append(folder, children);
+      tree.append(group);
     }
-    tree.addEventListener("mouseleave", () => lightGuides());
     return tree;
   }
 
