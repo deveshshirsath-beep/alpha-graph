@@ -54,7 +54,7 @@ body.planner-mode > #app > .workspace {
 
 [data-theme="light"] .planner-shell {
   --planner-side-bg: #fff;
-  --planner-content-bg: #f5f5f2;
+  --planner-content-bg: #fbfbfa;
   --planner-section-bg: #f3f4f1;
   --ui-border: #c9cec7;
   --line: #dfe2dc;

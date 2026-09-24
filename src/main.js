@@ -1879,6 +1879,8 @@ function wireControls() {
     // click immediately dismiss the newly opened, cached entity suggestions.
     if (!target?.closest(".condition-entity-wrap, .select-menu")) $$(".condition-suggestions").forEach((panel) => { panel.hidden = true; });
   });
+  // Single-key shortcuts never fire while typing, including in the chat composer (a contenteditable box).
+  const typing = (target) => target instanceof HTMLElement && (target.isContentEditable || Boolean(target.closest("input, textarea, select, [role=combobox]")));
   document.addEventListener("keydown", (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
       event.preventDefault();
@@ -1887,9 +1889,9 @@ function wireControls() {
     } else if (event.key === "Escape") {
       clearSelection();
       $("#shortcut-modal").hidden = true;
-    } else if (event.key.toLowerCase() === "f" && !(event.target instanceof Element && event.target.closest("input, select, [role=combobox]"))) {
+    } else if (event.key.toLowerCase() === "f" && !typing(event.target)) {
       fitVisibleGraph();
-    } else if (event.key === "?" && !(event.target instanceof Element && event.target.closest("input, select, [role=combobox]"))) {
+    } else if (event.key === "?" && !typing(event.target)) {
       $("#shortcut-modal").hidden = false;
     }
   });

@@ -162,13 +162,15 @@
 #app .stage-header { position: absolute; z-index: 8; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 12px; height: var(--stage-bar); padding: 0 20px; border-bottom: 1px solid var(--nav-stroke); border-top-left-radius: 15px; background: var(--panel); }
 [data-theme="light"] #app .stage-header { background: #fff; }
 #app .stage-header[hidden], #app .stage-header-eyebrow[hidden] { display: none; }
-#app .stage-crumbs { display: flex; align-items: center; gap: 6px; min-width: 0; }
+/* Mixed sizes share one text baseline, so the crumbs read as one line. */
+#app .stage-crumbs { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
 #app .stage-crumb-root { flex: 0 0 auto; margin: 0; color: var(--text); font-family: var(--ui-font); font-size: 14px; font-weight: 500; letter-spacing: 0; line-height: 20px; white-space: nowrap; }
 #app .stage-crumb-sep { flex: 0 0 auto; color: var(--ui-secondary); font-size: 13px; opacity: .7; }
 #app .stage-crumb { min-width: 0; overflow: hidden; color: var(--ui-secondary); font-size: 13px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
 /* The snapshot is a quiet inline dropdown: text with a caret until hovered. */
 #app .stage-crumbs .select-control { flex: 0 0 auto; width: auto; margin: 0 -2px 0 -6px; }
-#app .stage-crumbs .select-control .select-trigger { height: 28px; min-height: 28px; gap: 4px; padding: 0 6px; border-radius: 7px; background: transparent; color: var(--ui-secondary); font-size: 13px; font-weight: 400; }
+#app .stage-crumbs .select-control .select-trigger { height: 28px; min-height: 28px; gap: 4px; padding: 0 6px; border-radius: 7px; background: transparent; color: var(--ui-secondary); font-size: 13px; font-weight: 400; line-height: 20px; }
+#app .stage-crumbs .select-control .select-chevron { align-self: center; }
 #app .stage-crumbs .select-control .select-trigger:is(:hover, [aria-expanded="true"]) { background: var(--ui-hover); color: var(--text); }
 #app .stage-crumbs .select-control .select-trigger > .ui-icon:first-child { display: none; }
 #app .stage-header-eyebrow { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; height: 26px; margin-left: 4px; padding: 0 10px 0 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); font-size: .75rem; font-weight: 600; line-height: 1rem; white-space: nowrap; }

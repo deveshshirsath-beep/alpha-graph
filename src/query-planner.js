@@ -69,6 +69,7 @@ const state = {
   browseContext: { type: "", entity: null, relationship: "" },
   discoveryMeta: null,
   promptEntities: [],
+  thinkingStep: 0,
 };
 
 let typeMap;
@@ -1643,7 +1644,7 @@ function renderMessage(message) {
     renderMarkdown(narrative, resultNarrative(message, tables[0]));
     const results = document.createElement("div");
     renderApiTables(results, message);
-    content.append(narrative, results);
+    content.append(thinkingSteps(THINKING_STEPS.length), narrative, results);
     renderAnswerExtras(content, message);
     renderAnswerActions(content, message);
     renderFollowupPills(content, message);
@@ -1731,20 +1732,47 @@ function renderActiveChat() {
   window.requestAnimationFrame(() => { ui.chatScroll.scrollTop = hasMessages ? ui.chatScroll.scrollHeight : 0; });
 }
 
-/** Sigma's thinking state while the planner reads the graph. */
+const THINKING_STEPS = ["Thinking", "Querying the graph", "Establishing relationships", "Building the answer"];
+const THINKING_STEP_MS = 850;
+
+/** Figma's KG / Thinking: the steps an answer goes through. Finished steps are checked and muted; the current one spins. */
+function thinkingSteps(active) {
+  const list = document.createElement("div");
+  list.className = "planner-steps";
+  THINKING_STEPS.slice(0, active + 1).forEach((label, index) => {
+    const done = index < active;
+    const row = document.createElement("div");
+    row.className = `planner-step ${done ? "is-done" : "is-active"}`;
+    const text = document.createElement("span");
+    text.textContent = label;
+    row.append(icon(done ? "check" : "circle-notch"), text);
+    list.append(row);
+  });
+  return list;
+}
+
+/** The live steps while a question runs; the request timer moves them on. */
 function thinkingMessage() {
   const row = document.createElement("div");
   row.className = "planner-thinking";
   row.setAttribute("role", "status");
-  const dots = document.createElement("span");
-  dots.className = "thinking-dots";
-  dots.setAttribute("aria-hidden", "true");
-  dots.append(...[0, 1, 2].map(() => document.createElement("i")));
-  const label = document.createElement("span");
-  label.textContent = `Reading ${/** @type {HTMLSelectElement | null} */ (ui.graphSelect)?.selectedOptions?.[0]?.textContent || "the graph"}…`;
-  row.append(dots, label);
+  row.setAttribute("aria-label", `${THINKING_STEPS[state.thinkingStep] || "Thinking"}…`);
+  row.append(thinkingSteps(state.thinkingStep));
   return row;
 }
+
+function pause(ms, signal) {
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(resolve, ms);
+    signal.addEventListener("abort", () => { window.clearTimeout(timer); reject(new DOMException("Query cancelled", "AbortError")); }, { once: true });
+  });
+}
+
+const normalizeQuestion = (text) => String(text).toLowerCase().replace(/\s+/g, " ").replace(/[\s?.!]+$/, "").trim();
+/** Answers already worked out for the sample and demo chats: asking one of their questions again replays it. */
+const STAGED_ANSWERS = new Map();
+for (const item of SAMPLE_PROJECTS.flatMap((sample) => sample.chats)) if (item.answer) STAGED_ANSWERS.set(normalizeQuestion(item.question), item.answer);
+for (const turn of DEMO_CHAT.turns) STAGED_ANSWERS.set(normalizeQuestion(turn.question), turn.answer);
 
 async function persistChat(workspaceId, projectId, chat, graphId) {
   chat.updatedAt = now();
@@ -1856,10 +1884,29 @@ async function runQuestion(question, { replace = [] } = {}) {
   ui.run.setAttribute("aria-label", "Running query");
   q("#planner-cancel").hidden = false;
   ui.composerStatus.textContent = "";
+  state.thinkingStep = 0;
+  const stepTimer = window.setInterval(() => {
+    if (state.thinkingStep >= THINKING_STEPS.length - 1) return;
+    state.thinkingStep += 1;
+    ui.messages.querySelector(".planner-thinking")?.replaceWith(thinkingMessage());
+  }, THINKING_STEP_MS);
 
   try {
     await persist();
-    const payload = await plannerApi.answer(graphId, text, selectedEntityIds, controller.signal);
+    // Every answer shows its working: the steps play through before it lands, however fast the reply comes.
+    const minimum = pause(THINKING_STEP_MS * THINKING_STEPS.length, controller.signal);
+    const staged = STAGED_ANSWERS.get(normalizeQuestion(text));
+    if (staged) {
+      await minimum;
+      if (replace.length) chat.messages = chat.messages.filter((item) => !replace.includes(item.id));
+      chat.messages.push(sampleReply(staged, userMessage, graphId, now()));
+      await persist();
+      return;
+    }
+    const request = plannerApi.answer(graphId, text, selectedEntityIds, controller.signal);
+    request.catch(() => {});
+    await minimum;
+    const payload = await request;
     if (controller.signal.aborted) throw new DOMException("Query cancelled", "AbortError");
     const graph = normalizeGraph(payload.matchedGraph);
     const assistant = {
@@ -1880,6 +1927,7 @@ async function runQuestion(question, { replace = [] } = {}) {
     chat.messages.push(assistant);
     await persist();
   } finally {
+    window.clearInterval(stepTimer);
     ui.run.disabled = false;
     ui.run.classList.remove("loading");
     ui.run.setAttribute("aria-label", "Run query");

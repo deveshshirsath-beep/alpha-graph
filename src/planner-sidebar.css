@@ -2,7 +2,7 @@
 #app #planner-workspace { --planner-rail-width: 0px; background: var(--planner-side-bg); }
 
 /* Center section sits inset on the sidebar color with sigma's rounded corner. */
-#app .planner-conversation { border-top: 1px solid var(--line); border-left: 1px solid var(--line); border-top-left-radius: 16px; }
+#app .planner-conversation { border-top: 1px solid var(--nav-stroke); border-left: 1px solid var(--nav-stroke); border-top-left-radius: 16px; }
 #app .planner-panel-resizer-left::before { background: transparent; }
 #app #planner-workspace.library-collapsed .planner-conversation { border-left: 0; border-top-left-radius: 0; }
 

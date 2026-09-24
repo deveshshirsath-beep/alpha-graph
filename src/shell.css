@@ -3,13 +3,15 @@
 
 #app .sidebar-switch { flex-shrink: 0; padding: 1rem; }
 #app .sidebar > .sidebar-switch { position: sticky; top: 0; z-index: 20; background: var(--panel); }
-#app .mode-switch { --switch-collapsed: 3.25rem; --switch-duration: 460ms; --switch-ease: cubic-bezier(.22, 1, .36, 1); --switch-track: color-mix(in srgb, var(--panel) 95%, var(--text)); position: relative; display: grid; grid-template-columns: var(--switch-collapsed) calc(100% - var(--switch-collapsed)); padding: 2px; border: 1px solid var(--ui-border); border-radius: 12px; background: var(--switch-track); transition: grid-template-columns var(--switch-duration) var(--switch-ease); }
+#app .mode-switch { --switch-collapsed: 3.25rem; --switch-duration: 460ms; --switch-ease: cubic-bezier(.22, 1, .36, 1); --switch-track: color-mix(in srgb, var(--panel) 95%, var(--text)); position: relative; display: grid; grid-template-columns: var(--switch-collapsed) calc(100% - var(--switch-collapsed)); padding: 2px; border: 1px solid var(--nav-stroke); border-radius: 12px; background: var(--switch-track); transition: grid-template-columns var(--switch-duration) var(--switch-ease); }
 [data-theme="light"] #app .mode-switch { --switch-track: #f3f4f1; }
-/* Floating side cards share this nav's stroke, captured where the nav reads it so every theme and panel matches. */
-#app :is(.planner-shell, main.workspace) { --nav-stroke: var(--ui-border); }
+/* One outline colour everywhere: the line under the top nav. Every card, tab and panel edge uses it, in every theme. */
+#app .planner-shell { --nav-stroke: color-mix(in srgb, var(--planner-content-bg) 88%, var(--text)); }
+[data-theme="light"] #app .planner-shell { --nav-stroke: #d9ddd6; }
+#app main.workspace { --nav-stroke: var(--stage-line); }
 #app .mode-switch[data-active="chat"] { grid-template-columns: calc(100% - var(--switch-collapsed)) var(--switch-collapsed); }
 /* Sigma's sliding thumb: one surface that travels between the options. */
-#app .mode-switch::before { content: ""; box-sizing: border-box; position: absolute; z-index: 0; top: 2px; bottom: 2px; left: 2px; width: calc(100% - 4px - var(--switch-collapsed)); border: 1px solid var(--ui-border); border-radius: 10px; background: var(--panel); box-shadow: 0 1px 2px rgba(18, 35, 66, .05); transform: translateX(var(--switch-collapsed)); transition: transform var(--switch-duration) var(--switch-ease); }
+#app .mode-switch::before { content: ""; box-sizing: border-box; position: absolute; z-index: 0; top: 2px; bottom: 2px; left: 2px; width: calc(100% - 4px - var(--switch-collapsed)); border: 1px solid var(--nav-stroke); border-radius: 10px; background: var(--panel); box-shadow: 0 1px 2px rgba(18, 35, 66, .05); transform: translateX(var(--switch-collapsed)); transition: transform var(--switch-duration) var(--switch-ease); }
 #app .mode-switch[data-active="chat"]::before { transform: none; }
 #app .mode-switch-option { position: relative; z-index: 1; min-width: 0; height: 3.375rem; display: flex; align-items: center; gap: .5rem; padding: 0 .625rem; overflow: hidden; border: 0; border-radius: 10px; background: transparent; color: var(--ui-secondary); cursor: pointer; text-align: left; transition: color 240ms ease; }
 #app .mode-switch-option.active { cursor: default; }
@@ -37,7 +39,7 @@ body:not(.planner-mode) #app main.workspace > :is(.stage, .query-dock) { animati
 
 /* Graph mode matches the chat module: white sidebar, inset rounded canvas in the chat color, sigma's dot grid. */
 #app main.workspace { --canvas-bg: var(--bg); --stage-line: color-mix(in srgb, var(--canvas-bg) 88%, var(--text)); --canvas-dot: color-mix(in srgb, var(--canvas-bg) 86%, var(--text)); background: var(--panel); }
-[data-theme="light"] #app main.workspace { --canvas-bg: #f5f5f2; --stage-line: #d9ddd6; background: #fff; }
+[data-theme="light"] #app main.workspace { --canvas-bg: #fbfbfa; --stage-line: #d9ddd6; background: #fff; }
 [data-theme="light"] #app main.workspace > .sidebar { --panel: #fff; --side-bg: #fff; }
 /* The graph columns sit on the same surface as the chat sidebar, not a lighter one. */
 #app main.workspace > :is(.sidebar, .query-dock, .panel-resizer) { --side-bg: var(--panel); }
