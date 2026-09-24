@@ -64,15 +64,24 @@ body.sidebar-collapsed #app .stage-title { left: 60px; max-width: calc(100% - 11
   #app .planner-submit-wrap { margin-left: auto; }
 }
 
+/* Desktop widths: the side panels give way before the conversation does. A dragged width still applies up to each cap,
+   and a collapsed panel still collapses, because the collapsed rules are more specific. */
+@media (max-width: 1599px) {
+  #app .planner-shell { --library-column: min(var(--planner-library-width), 300px); --context-column: min(var(--planner-context-width), 400px); }
+}
+@media (max-width: 1439px) {
+  #app .planner-shell { --library-column: min(var(--planner-library-width), 280px); --context-column: min(var(--planner-context-width), 360px); }
+}
 @media (max-width: 1240px) {
   #app .planner-shell { --planner-rail-width: 64px; }
 }
 @media (max-width: 1050px) {
   #app .workspace, body.sidebar-collapsed #app .workspace { --query-column: 0px; --query-divider: 0px; }
 }
-@media (max-width: 1040px) {
+/* Below 1300px there is no room for three columns: the right panel starts collapsed and opens over the conversation. */
+@media (max-width: 1299px) {
   #app .planner-shell { --context-column: 0px; --context-divider: 0px; }
-  #app .planner-context { position: absolute; top: 0; right: 0; bottom: 0; width: min(var(--planner-context-width), calc(100% - var(--planner-rail-width))); }
+  #app .planner-context { position: absolute; z-index: 35; top: 0; right: 0; bottom: 0; width: min(400px, calc(100% - var(--planner-rail-width))); box-shadow: -18px 0 45px var(--shadow-color); }
 }
 @media (max-width: 780px) {
   #app .planner-shell { --planner-rail-width: 56px; --library-column: 0px; --library-divider: 0px; height: calc(100% - max(54px, 3.375rem)); }

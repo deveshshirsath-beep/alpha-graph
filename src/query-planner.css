@@ -582,7 +582,7 @@ body.planner-mode #app :is(.search-dropdown-option small, .search-dropdown-headi
 @media (max-width: 1240px) {
   .planner-shell { --planner-library-width: 300px; grid-template-columns: 64px var(--planner-library-width) 1px minmax(300px, 1fr) 1px var(--planner-context-width); }
 }
-@media (max-width: 1040px) {
+@media (max-width: 1299px) {
   .planner-shell { grid-template-columns: 64px 290px 1px minmax(400px, 1fr); }
   .planner-panel-resizer-right { display: none; }
   .planner-context { position: fixed; z-index: 35; top: 78px; right: 0; bottom: 0; width: min(480px, calc(100vw - 64px)); box-shadow: -18px 0 45px var(--shadow-color); }

@@ -2131,8 +2131,8 @@ function switchContextTab(target) {
 
 function initializePlannerPanelResizing() {
   const settings = [
-    { element: ui.libraryResizer, property: "--planner-library-width", key: "atlas-planner-library-width", initial: 340, min: 270, max: 500, direction: 1, shared: true },
-    { element: ui.contextResizer, property: "--planner-context-width", key: "atlas-planner-context-width", initial: 480, min: 440, max: 640, direction: -1 },
+    { element: ui.libraryResizer, property: "--planner-library-width", key: "atlas-planner-library-width", initial: 340, min: 240, max: 500, direction: 1, shared: true },
+    { element: ui.contextResizer, property: "--planner-context-width", key: "atlas-planner-context-width", initial: 480, min: 320, max: 640, direction: -1 },
   ];
   const setWidth = (setting, width, persist = false) => {
     const safeWidth = Math.max(setting.min, Math.min(setting.max, Math.round(width)));
@@ -2190,7 +2190,7 @@ function initializePlannerPanelResizing() {
 
 
 function wirePlanner() {
-  for (const [side, label, breakpoint] of [["library", "sidebar", 780], ["context", "evidence explorer", 1040]]) {
+  for (const [side, label, breakpoint] of [["library", "sidebar", 780], ["context", "evidence explorer", 1299]]) {
     // Sigma's sidebar has no desktop collapse, so an old saved "collapsed" state must not strand it closed.
     if (side === "library") try { localStorage.removeItem("atlas-planner-library-visibility"); } catch { /* Optional preference. */ }
     workspaceFocus.register(connectPanelToggle({
