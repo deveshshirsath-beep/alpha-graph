@@ -94,13 +94,11 @@
 
           <header id="stage-header" class="stage-header" hidden>
             <nav class="stage-crumbs" aria-label="Graph location">
-              <h2 id="stage-header-title" class="stage-crumb-root"></h2>
+              <button id="stage-back" class="stage-back" type="button" aria-label="Back to the full graph" title="Back to the full graph" hidden><svg data-icon="arrow-left"></svg></button>
+              <button id="stage-header-title" class="stage-crumb-root" type="button" disabled></button>
               <span class="stage-crumb-sep" aria-hidden="true">/</span>
               <select id="stage-snapshot" aria-label="Graph snapshot" data-icon="database"><option>Loading…</option></select>
-              <span class="stage-crumb-sep" aria-hidden="true">/</span>
-              <span id="stage-header-detail" class="stage-crumb"></span>
             </nav>
-            <span id="stage-header-eyebrow" class="stage-header-eyebrow" hidden><svg data-icon="chat-teardrop-dots"></svg><span id="stage-header-chat">From chat</span></span>
           </header>
           <div class="view-switcher">
             <div class="view-options" role="radiogroup" aria-label="Graph layout">
@@ -261,7 +259,7 @@
                     <button id="planner-question-bank" class="planner-bank-button" type="button" title="Browse every catalog question"><svg data-icon="book-open-text"></svg><span>Question bank</span></button>
                     <span id="planner-prompt-context" class="planner-prompt-context" hidden><span id="planner-prompt-context-label"></span><button id="planner-prompt-context-clear" type="button" aria-label="Remove this entity from the question" title="Remove"><svg data-icon="x"></svg></button></span>
                   </div>
-                  <div class="planner-submit-wrap"><button id="planner-cancel" type="button" hidden>Cancel</button><button id="planner-run" type="submit" aria-label="Run query" title="Run query"><svg data-icon="arrow-up"></svg></button></div>
+                  <div class="planner-submit-wrap"><button id="planner-cancel" type="button" hidden>Cancel</button><button id="planner-voice" type="button" aria-label="Voice input" title="Voice input"><svg data-icon="waveform"></svg></button><button id="planner-run" type="submit" aria-label="Run query" title="Run query"><svg data-icon="arrow-up"></svg></button></div>
                 </div>
               </div>
               <div class="planner-composer-meta"><span id="planner-composer-status" role="status"></span></div>

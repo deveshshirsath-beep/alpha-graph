@@ -35,10 +35,10 @@
 /* Architecture layers: three cards, icon beside a name over its count. */
 #app .layer-tabs { display: grid; grid-template-columns: repeat(var(--layer-columns, 3), minmax(0, 1fr)); gap: 8px; }
 #app .layer-tab { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 2px; height: auto; min-height: 58px; padding: 10px 10px; border: 1px solid var(--nav-stroke); border-radius: 10px; background: var(--panel); box-shadow: none; text-align: left; transition: background-color .15s ease, border-color .15s ease; }
-#app .layer-tab { display: grid; grid-template-columns: 3px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 9px; row-gap: 2px; align-items: center; }
+#app .layer-tab { display: grid; grid-template-columns: 2px minmax(0, 1fr); grid-template-rows: auto auto; column-gap: 9px; row-gap: 2px; align-items: center; }
 #app .layer-tab :is(span, small) { align-self: flex-start; margin: 0; text-align: left; }
 /* A thin rounded bar in the layer's colour runs down the card's left edge, inset like the text. */
-#app .layer-mark { grid-column: 1; grid-row: 1 / -1; align-self: stretch; width: 3px; height: auto; border-radius: 999px; background: var(--layer-color, var(--accent)); }
+#app .layer-mark { grid-column: 1; grid-row: 1 / -1; align-self: stretch; width: 2px; height: auto; border-radius: 999px; background: var(--layer-color, var(--accent)); }
 #app .layer-tab > span:not(.layer-mark) { grid-column: 2; grid-row: 1; }
 #app .layer-tab > small { grid-column: 2; grid-row: 2; }
 #app .layer-tab span { max-width: 100%; overflow: hidden; color: var(--text); font-size: .8125rem; font-weight: 600; line-height: 1.125rem; text-overflow: ellipsis; white-space: nowrap; }
@@ -56,7 +56,7 @@
 #app .entity-group { --guide-color: color-mix(in srgb, var(--layer-color, var(--line)) 42%, transparent); }
 #app #controls-panel .entity-children .planner-type-row::before { background: repeating-linear-gradient(to right, var(--guide-color) 0 1px, transparent 1px var(--indent)); }
 #app #controls-panel .entity-folder[aria-expanded="true"] > .planner-type-toggle::after { background: var(--guide-color); }
-#app .entity-folder[aria-expanded="true"] .planner-type-label { font-weight: 650; }
+#app .entity-folder[aria-expanded="true"] .planner-type-label { font-weight: 500; }
 #app .entity-children { margin: 0; padding: 0; }
 #app .entity-children::before { display: none; }
 #app .tree-joint { display: none; }

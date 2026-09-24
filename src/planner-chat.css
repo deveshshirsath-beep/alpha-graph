@@ -38,7 +38,8 @@
 #app .planner-composer-card:focus-within { --composer-warm: color-mix(in srgb, #f9ab00 55%, var(--ui-border)); --composer-cool: color-mix(in srgb, var(--accent) 60%, var(--ui-border)); --composer-wash: 6%; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 7%, transparent), 0 6px 28px rgba(18, 35, 66, .08); }
 @keyframes planner-composer-drift { to { background-position: 260% 0, 260% 0; } }
 #app .planner-prompt-input { position: relative; min-height: 28px; max-height: 200px; overflow-y: auto; outline: 0; color: var(--text); font-size: 16px; line-height: 28px; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
-#app .planner-prompt-input.is-empty::before { content: attr(data-placeholder); position: absolute; inset: 0 0 auto 0; color: var(--ui-secondary); pointer-events: none; }
+/* The placeholder sits in Figma's muted grey, a step lighter than secondary text, in every theme. */
+#app .planner-prompt-input.is-empty::before { content: attr(data-placeholder); position: absolute; inset: 0 0 auto 0; color: color-mix(in srgb, var(--text) 42%, transparent); pointer-events: none; }
 /* Sigma's mention tokens: outlined while empty, filled once an entity is chosen. */
 #app .mention { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; height: 26px; margin: 0 1px; padding: 0 6px 0 8px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent); font-size: .9375rem; font-weight: 500; line-height: 1; vertical-align: 1px; cursor: pointer; user-select: none; }
 #app .mention:hover, #app .mention.is-open { background: color-mix(in srgb, var(--accent) 18%, transparent); }
@@ -66,7 +67,33 @@
 #app .planner-prompt-context button .ui-icon { width: 12px; height: 12px; flex-basis: 12px; }
 #app #planner-run { width: 34px; height: 34px; min-height: 34px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: var(--text); color: var(--planner-card-bg); cursor: pointer; transition: opacity .15s ease; }
 #app #planner-run .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
-#app .planner-composer:has(.planner-prompt-input.is-empty) #planner-run { opacity: .35; }
+/* Voice input (Figma 211:76960): an empty composer offers the microphone in place of send. */
+#app #planner-voice { width: 34px; height: 34px; min-height: 34px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 999px; background: var(--text); color: var(--planner-card-bg); cursor: pointer; }
+#app #planner-voice .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .planner-composer:has(.planner-prompt-input.is-empty) #planner-run,
+#app .planner-composer:not(:has(.planner-prompt-input.is-empty)) #planner-voice { display: none; }
+/* Recording: the composer becomes one row of cancel, a dotted waveform around a playhead, stop and send. */
+#app .planner-composer-card.is-recording { justify-content: center; padding: 16px 10px 16px 16px; }
+#app .planner-composer-card.is-recording > :not(.composer-voice) { display: none; }
+#app .composer-voice { display: flex; align-items: center; gap: 12px; width: 100%; animation: voice-in 240ms cubic-bezier(.22, 1, .36, 1); }
+#app .composer-voice[hidden] { display: none; }
+#app :is(.voice-cancel, .voice-stop, .voice-send) { display: grid; flex: 0 0 34px; place-items: center; width: 34px; height: 34px; padding: 0; border: 0; cursor: pointer; transition: background-color .15s ease; }
+#app :is(.voice-cancel, .voice-stop) { background: color-mix(in srgb, var(--text) 3.5%, transparent); color: var(--ui-secondary); }
+#app :is(.voice-cancel, .voice-stop):hover { background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); }
+#app .voice-cancel { border-radius: 999px; }
+#app .voice-cancel .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .voice-stop { border-radius: 8px; }
+#app .voice-stop span { width: 12px; height: 12px; border-radius: 2px; background: var(--text); }
+#app .voice-send { border-radius: 999px; background: var(--text); color: var(--planner-card-bg); }
+#app .voice-send .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .voice-wave { display: flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 4px; min-width: 0; height: 34px; overflow: hidden; }
+#app .voice-wave i { flex: 0 0 2px; width: 2px; height: 2px; border-radius: 999px; background: color-mix(in srgb, var(--text) 22%, transparent); transition: height 90ms linear, background-color 160ms ease; }
+#app .voice-wave i.is-peak { flex-basis: 3px; width: 3px; height: 3px; background: color-mix(in srgb, var(--text) 55%, transparent); }
+#app .voice-wave i.is-loud { background: var(--text); }
+#app .voice-wave b { flex: 0 0 2px; width: 2px; height: 14px; border-radius: 2px; background: var(--text); animation: voice-playhead 1.2s ease-in-out infinite; }
+@keyframes voice-playhead { 50% { opacity: .4; } }
+@keyframes voice-in { from { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { #app .voice-wave b, #app .composer-voice { animation: none; } #app .voice-wave i { transition: none; } }
 #app .planner-composer-meta { min-height: 0; padding: 6px 4px 0; color: var(--ui-secondary); font-size: 12px; }
 #app .planner-composer-meta:has(#planner-composer-status:empty) { display: none; }
 @media (prefers-reduced-motion: reduce) { #app .planner-composer-card { animation: none; } }
@@ -148,17 +175,25 @@
 #app .planner-server-pagination { border-top: 0; padding: 4px 0 0; font-size: 13px; }
 #app .planner-server-pagination button { height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: var(--ui-secondary); font-size: 13px; font-weight: 500; }
 #app .planner-server-pagination button:hover:not(:disabled) { background: var(--ui-hover); color: var(--text); }
-/* Figma KG / Thinking: the steps an answer goes through. Live while a question runs, then kept, checked and muted, above the answer. */
-#app .planner-steps { display: grid; justify-items: start; gap: 10px; margin: 0 0 20px; }
+/* Figma KG / Thinking: the steps an answer goes through. Live while a question runs, then kept, checked and muted, above the answer.
+   Steps change in place: a new one opens its own height, the finished one eases to a muted check, and the answer fades up after. */
+#app .planner-steps { display: grid; justify-items: start; margin: 0 0 20px; }
 #app .planner-thinking .planner-steps { margin: 0; }
-#app .planner-step { display: flex; align-items: center; gap: 10px; color: var(--text); font-size: 14px; font-weight: 400; line-height: 20px; }
+#app .planner-step { display: flex; align-items: center; gap: 10px; height: 20px; color: var(--text); font-size: 14px; font-weight: 400; line-height: 20px; transition: color 360ms ease; }
+#app .planner-step + .planner-step { margin-top: 10px; }
 #app .planner-step .ui-icon { width: 14px; height: 14px; flex: 0 0 14px; }
 #app .planner-step.is-done { color: color-mix(in srgb, var(--text) 45%, transparent); }
-#app .planner-step.is-active { animation: planner-step-in 260ms ease; }
-#app .planner-step.is-active .ui-icon { animation: planner-step-spin 900ms linear infinite; }
+#app .planner-step.is-active .ui-icon { animation: planner-step-spin 800ms linear infinite; will-change: transform; }
+#app .planner-step.is-entering { overflow: hidden; animation: planner-step-open 380ms cubic-bezier(.22, 1, .36, 1) both; }
+#app :is(.planner-step.just-done, .planner-message.is-fresh .planner-step:last-child) .ui-icon { animation: planner-step-check 320ms cubic-bezier(.22, 1, .36, 1) both; }
+#app .planner-message.is-fresh .planner-message-content > :not(.planner-steps) { animation: planner-answer-in 520ms cubic-bezier(.22, 1, .36, 1) both; }
 @keyframes planner-step-spin { to { transform: rotate(360deg); } }
-@keyframes planner-step-in { from { opacity: 0; transform: translateY(3px); } }
-@media (prefers-reduced-motion: reduce) { #app .planner-step.is-active, #app .planner-step.is-active .ui-icon { animation: none; } }
+@keyframes planner-step-open { from { height: 0; margin-top: 0; opacity: 0; transform: translateY(-3px); } }
+@keyframes planner-step-check { from { opacity: 0; transform: scale(.55); } }
+@keyframes planner-answer-in { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) {
+  #app .planner-step, #app .planner-step .ui-icon, #app .planner-message.is-fresh .planner-message-content > * { animation: none !important; transition: none; }
+}
 
 #app .planner-composer-dock { padding: 0 24px 20px; border-top: 0; background: transparent; box-shadow: none; }
 

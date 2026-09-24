@@ -159,22 +159,25 @@
 /* Canvas header: one breadcrumb row across the top of the canvas (dataset / snapshot / what shows now).
    The canvas, the query card and the entity sheet all start below it. */
 #app .workspace { --stage-bar: 44px; }
-#app .stage-header { position: absolute; z-index: 8; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 12px; height: var(--stage-bar); padding: 0 20px; border-bottom: 1px solid var(--nav-stroke); border-top-left-radius: 15px; background: var(--panel); }
+#app .stage-header { position: absolute; z-index: 8; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 12px; height: var(--stage-bar); padding: 0 16px; border-bottom: 1px solid var(--nav-stroke); border-top-left-radius: 15px; background: var(--panel); }
 [data-theme="light"] #app .stage-header { background: #fff; }
-#app .stage-header[hidden], #app .stage-header-eyebrow[hidden] { display: none; }
-/* Mixed sizes share one text baseline, so the crumbs read as one line. */
-#app .stage-crumbs { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-#app .stage-crumb-root { flex: 0 0 auto; margin: 0; color: var(--text); font-family: var(--ui-font); font-size: 14px; font-weight: 500; letter-spacing: 0; line-height: 20px; white-space: nowrap; }
-#app .stage-crumb-sep { flex: 0 0 auto; color: var(--ui-secondary); font-size: 13px; opacity: .7; }
-#app .stage-crumb { min-width: 0; overflow: hidden; color: var(--ui-secondary); font-size: 13px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; font-variant-numeric: tabular-nums; }
-/* The snapshot is a quiet inline dropdown: text with a caret until hovered. */
-#app .stage-crumbs .select-control { flex: 0 0 auto; width: auto; margin: 0 -2px 0 -6px; }
-#app .stage-crumbs .select-control .select-trigger { height: 28px; min-height: 28px; gap: 4px; padding: 0 6px; border-radius: 7px; background: transparent; color: var(--ui-secondary); font-size: 13px; font-weight: 400; line-height: 20px; }
-#app .stage-crumbs .select-control .select-chevron { align-self: center; }
-#app .stage-crumbs .select-control .select-trigger:is(:hover, [aria-expanded="true"]) { background: var(--ui-hover); color: var(--text); }
+#app .stage-header[hidden] { display: none; }
+/* Figma 469:59364: the parent crumb is muted and regular, the current snapshot dark and medium. Mixed sizes share one baseline. */
+#app .stage-crumbs { display: flex; align-items: baseline; min-width: 0; }
+#app .stage-crumb-sep { flex: 0 0 auto; margin: 0 2px; color: var(--ui-secondary); font-size: 13px; opacity: .7; }
+/* The root crumb and the back arrow return to the full graph; at the full graph the root is plain text. */
+#app .stage-crumb-root { flex: 0 0 auto; margin: 0; padding: 2px 5px; border: 0; border-radius: 6px; background: transparent; color: var(--ui-secondary); cursor: pointer; font-family: var(--ui-font); font-size: 14px; font-weight: 400; letter-spacing: 0; line-height: 20px; white-space: nowrap; transition: background-color .15s ease, color .15s ease; }
+#app .stage-crumb-root:not(:disabled):hover { background: var(--ui-hover); color: var(--text); }
+#app .stage-crumb-root:disabled { cursor: default; color: var(--ui-secondary); opacity: 1; }
+#app .stage-back { display: grid; place-items: center; flex: 0 0 auto; align-self: center; width: 26px; height: 26px; margin: 0 2px 0 -4px; padding: 0; border: 0; border-radius: 7px; background: transparent; color: var(--ui-secondary); cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+#app .stage-back:hover { background: var(--ui-hover); color: var(--text); }
+#app .stage-back[hidden] { display: none; }
+#app .stage-back .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
+#app .stage-crumbs .select-control { flex: 0 0 auto; width: auto; }
+#app .stage-crumbs .select-control .select-trigger { height: 28px; min-height: 28px; gap: 4px; padding: 0 4px; border-radius: 7px; background: transparent; color: var(--text); font-size: 14px; font-weight: 500; line-height: 20px; }
+#app .stage-crumbs .select-control .select-trigger:is(:hover, [aria-expanded="true"]) { background: var(--ui-hover); }
 #app .stage-crumbs .select-control .select-trigger > .ui-icon:first-child { display: none; }
-#app .stage-header-eyebrow { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 6px; height: 26px; margin-left: 4px; padding: 0 10px 0 8px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); font-size: .75rem; font-weight: 600; line-height: 1rem; white-space: nowrap; }
-#app .stage-header-eyebrow .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
+#app .stage-crumbs .select-control .select-chevron { align-self: center; width: 16px; height: 16px; flex-basis: 16px; color: var(--text); }
 #app .stage #sigma-container { top: var(--stage-bar); }
 #app .graph-panel-reopen-left, #app .graph-panel-reopen-right { top: 7px; }
 @media (min-width: 1051px) {

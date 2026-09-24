@@ -60,7 +60,8 @@
 #app select optgroup,
 #app .theme-switch button[aria-pressed="true"],
 #app .header-stats strong,
-#app .entity-folder[aria-expanded="true"] .planner-type-label { font-weight: var(--weight-strong); }
+/* An open layer reads at medium weight, not bold, in the graph tree and the chat entity map alike. */
+#app .entity-folder[aria-expanded="true"] .planner-type-label { font-weight: 500; }
 
 /* ── Radius: 7, 9, 14 and 22 rounded onto the scale ───────────────────────── */
 #app .feature-tour-button,

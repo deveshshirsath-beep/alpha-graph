@@ -66,10 +66,11 @@ const CONNECTION_PAGE_SIZE = 25;
 let visibleConnectionCount = CONNECTION_PAGE_SIZE;
 let hoveredNode = null;
 let focusedNeighborhood = null;
-let focusedLabel = "";
 /** The answer snapshot the canvas was opened from, if it came from chat. */
 let chatSnapshot = null;
-let visibleEntityCount = 0;
+/** Whether the canvas is filtered to a chat answer's entities, and entities waiting for the graph to finish loading. */
+let snapshotFiltered = false;
+let pendingSnapshotNodes = null;
 let activeLayer = "BUSINESS";
 let layerSelected = true;
 let activeTheme = ["light", "dark", "ocean", "sunset"].includes(document.documentElement.dataset.theme) ? document.documentElement.dataset.theme : "light";
@@ -187,11 +188,9 @@ const els = {
   emptyState: $("#empty-state"),
   toast: $("#toast"),
   stageHeader: $("#stage-header"),
-  stageEyebrow: $("#stage-header-eyebrow"),
   stageTitle: $("#stage-header-title"),
-  stageDetail: $("#stage-header-detail"),
   stageSnapshot: $("#stage-snapshot"),
-  stageChat: $("#stage-header-chat"),
+  stageBack: $("#stage-back"),
 };
 
 const ENTITY_LABELS = {
@@ -499,7 +498,6 @@ function updateCounts() {
     });
   }
   els.emptyState.hidden = nodeCount > 0;
-  visibleEntityCount = nodeCount;
   renderStageHeader();
 }
 
@@ -513,24 +511,86 @@ function datasetLabel(entry) {
 function renderStageHeader() {
   const entry = graphRegistry?.graphs?.find((candidate) => candidate.id === currentGraphId);
   if (!entry) return;
-  const captured = entry.generatedAt ? new Date(entry.generatedAt) : null;
-  const day = captured && !Number.isNaN(captured.valueOf()) ? captured.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
   // The layers the canvas actually draws, whether picked from a layer tab or the entity tree.
   const layers = Object.keys(LAYERS).filter((layer) => LAYERS[layer].some((type) => state.nodeTypes.has(type)));
   const scope = layers.length === Object.keys(LAYERS).length ? "All layers" : layers.length ? `${layers.map(layerLabel).join(" + ")} layer${layers.length > 1 ? "s" : ""}` : "No layers";
-  const view = conditionalNodes ? "Query results" : traversalEdges ? "Traversal" : focusedNeighborhood ? `Neighborhood of ${focusedLabel}` : scope;
-  const count = `${visibleEntityCount.toLocaleString()} ${visibleEntityCount === 1 ? "entity" : "entities"}`;
+  // Anything but the full graph as it first opens offers a way back to it.
+  const atDefault = !chatSnapshot && scope === "All layers" && !conditionalNodes && !traversalEdges && !focusedNeighborhood;
+  els.stageBack.hidden = atDefault;
+  els.stageTitle.disabled = atDefault;
+  els.stageTitle.title = atDefault ? "" : "Back to the full graph";
   els.stageHeader.hidden = false;
   els.stageTitle.textContent = datasetLabel(entry);
-  if (els.stageSnapshot.value !== entry.id) { els.stageSnapshot.value = entry.id; syncDropdowns(); }
-  els.stageDetail.textContent = `${view} · ${count}`;
-  // Opened from a chat answer: the answer's own snapshot rides along as a quiet pill.
-  els.stageEyebrow.hidden = !chatSnapshot;
-  if (chatSnapshot) {
-    els.stageChat.textContent = `From chat · snapshot ${chatSnapshot.code}`;
-    els.stageEyebrow.title = chatSnapshot.captured ? `Captured ${chatSnapshot.captured}` : "";
+  syncSnapshotOptions(entry);
+}
+
+/** A snapshot's short code: its dataset id's hash, the same form the chat gives each answer's snapshot. */
+function snapshotCode(entry) {
+  const tail = String(entry?.id || "").match(/-([0-9a-f]{8})$/i)?.[1];
+  if (tail) return tail.slice(0, 4).toUpperCase();
+  let hash = 0;
+  for (const letter of String(entry?.id || "")) hash = (hash * 31 + letter.charCodeAt(0)) >>> 0;
+  return hash.toString(36).toUpperCase().slice(-4).padStart(4, "0");
+}
+
+/** The breadcrumb's snapshots: the chat answer's own while the canvas shows it, then every dataset snapshot with its date. */
+function syncSnapshotOptions(entry) {
+  const rows = graphRegistry.graphs.map((item) => {
+    const captured = item.generatedAt ? new Date(item.generatedAt) : null;
+    const day = captured && !Number.isNaN(captured.valueOf()) ? captured.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" }) : "";
+    return [item.id, `Snapshot ${snapshotCode(item)}`, `${datasetLabel(item)}${day ? ` · captured ${day}` : ""}`];
+  });
+  if (chatSnapshot) rows.unshift([`chat:${chatSnapshot.code}`, `Snapshot ${chatSnapshot.code}`, `From chat${chatSnapshot.captured ? ` · captured ${chatSnapshot.captured}` : ""}`]);
+  const key = JSON.stringify(rows);
+  if (els.stageSnapshot.dataset.rows !== key) {
+    els.stageSnapshot.dataset.rows = key;
+    els.stageSnapshot.replaceChildren(...rows.map(([value, text, sub]) => {
+      const option = new Option(text, value);
+      option.dataset.sub = sub;
+      return option;
+    }));
   }
-  els.stageHeader.title = day ? `${datasetLabel(entry)}, captured ${day}` : "";
+  const value = chatSnapshot ? `chat:${chatSnapshot.code}` : entry.id;
+  if (els.stageSnapshot.value !== value) els.stageSnapshot.value = value;
+  syncDropdowns();
+}
+
+/** Shows only a chat answer's entities and the relationships between them, fitted to the canvas. */
+async function showSnapshotNodes(nodes) {
+  if (!applicationInitialized) { pendingSnapshotNodes = nodes; return; }
+  const graphId = currentGraphId;
+  const layers = [...new Set(nodes.map((node) => layerForType(String(node.type || "").toUpperCase())))].filter((layer) => LAYERS[layer]);
+  const loaded = await loadGraphView(layers.length ? layers : Object.keys(LAYERS));
+  if (loaded.cancelled || loaded.error || graphId !== currentGraphId || !chatSnapshot) return;
+  const present = new Set(nodes.map((node) => String(node.id)).filter((id) => graph.hasNode(id)));
+  if (!present.size) { renderStageHeader(); return; }
+  conditionalNodes = present;
+  conditionalEdges = null;
+  focusedNeighborhood = null;
+  traversalEdges = null;
+  snapshotFiltered = true;
+  clearSelection(false);
+  updateCounts();
+  updateFilterUI();
+  minimapDirty = true;
+  renderer?.refresh();
+  fitVisibleGraph();
+}
+
+/** Back to the graph as it first opens: every layer, no query, traversal, focus or selection, and no chat snapshot. */
+async function resetGraphView() {
+  chatSnapshot = null;
+  snapshotFiltered = false;
+  window.clearTimeout(traversalAutoRunTimer);
+  traversalRunId += 1;
+  traversalSelections.clear();
+  traversalMeta.clear();
+  $("#traversal-status").textContent = "";
+  conditionalConditions.splice(0);
+  conditionRevision += 1;
+  renderConditionalFilters();
+  updateTraversalUI();
+  await showAllLayers();
 }
 
 function refresh() {
@@ -630,6 +690,7 @@ async function toggleLayer(layer) {
 
 async function showAllLayers() {
   layerSelected = false;
+  snapshotFiltered = false;
   focusedNeighborhood = null;
   traversalEdges = null;
   conditionalNodes = null;
@@ -1084,6 +1145,7 @@ async function applyConditionalFilters() {
     for (const relationship of relationships) state.edgeTypes.add(relationship);
     conditionalNodes = nodes;
     conditionalEdges = edges;
+    snapshotFiltered = false;
     focusedNeighborhood = null;
     traversalEdges = null;
     clearSelection(false);
@@ -1300,7 +1362,6 @@ function clearSelection(refreshRenderer = true) {
 function focusNeighborhood() {
   if (!selectedNode) return;
   focusedNeighborhood = new Set([selectedNode, ...graph.neighbors(selectedNode)]);
-  focusedLabel = String(graph.getNodeAttribute(selectedNode, "label") || selectedNode);
   updateCounts();
   updateFilterUI();
   fitVisibleGraph();
@@ -1910,8 +1971,12 @@ let queryPanelToggle = null;
 function wireWorkspaceShell() {
   $$('[data-panel-icon]').forEach(button => button.replaceChildren(icon(button.dataset.panelIcon)));
   // Chat says which answer's snapshot it opened the canvas from, or that it opened it plainly.
+  for (const button of [els.stageBack, els.stageTitle]) button.addEventListener("click", () => resetGraphView());
   window.addEventListener("atlas:snapshot", (event) => {
     chatSnapshot = /** @type {CustomEvent} */ (event).detail || null;
+    if (chatSnapshot?.nodes?.length) { showSnapshotNodes(chatSnapshot.nodes); return; }
+    // Arriving without an answer drops any answer filter left from before, so the canvas never shows it unlabelled.
+    if (snapshotFiltered) { snapshotFiltered = false; showAllLayers(); return; }
     renderStageHeader();
   });
   const sidebar = $(".sidebar");
@@ -2034,7 +2099,6 @@ async function start() {
   if (graphRegistry.formatVersion !== 10 || !Array.isArray(graphRegistry.graphs) || !graphRegistry.graphs.length) throw new Error("Invalid or empty graph registry");
 
   els.graphSelect.replaceChildren();
-  els.stageSnapshot.replaceChildren();
   for (const entry of graphRegistry.graphs) {
     const option = document.createElement("option");
     option.value = entry.id;
@@ -2047,12 +2111,6 @@ async function start() {
       option.title = `${entry.sourceName} · ${option.dataset.sub}`;
     }
     els.graphSelect.append(option);
-    // The breadcrumb lists the same snapshots by when they were captured.
-    const snapshot = document.createElement("option");
-    snapshot.value = entry.id;
-    snapshot.textContent = option.dataset.sub ? `Snapshot · ${option.dataset.sub.replace(/^Captured /, "")}` : "Snapshot";
-    snapshot.dataset.sub = option.textContent;
-    els.stageSnapshot.append(snapshot);
   }
 
   const openGraph = async (graphId) => {
@@ -2194,6 +2252,7 @@ async function start() {
       els.graphSelect.disabled = false;
       pendingViewRequests.get(data.requestId)?.({ layers: data.layers });
       pendingViewRequests.delete(data.requestId);
+      if (pendingSnapshotNodes) { const nodes = pendingSnapshotNodes; pendingSnapshotNodes = null; showSnapshotNodes(nodes); }
       if (!els.loadingPanel.classList.contains("complete")) {
         finishGraphLoadTimer({ catalogNodes: graphMeta.totalNodes, loadedNodes: graph.order, loadedEdges: graph.size, layers: data.layers.length });
         requestAnimationFrame(() => {
@@ -2207,8 +2266,11 @@ async function start() {
 
   // Switching snapshot in the breadcrumb is the same as choosing that dataset in the top bar.
   els.stageSnapshot.addEventListener("change", () => {
-    if (els.stageSnapshot.value === els.graphSelect.value) return;
-    els.graphSelect.value = els.stageSnapshot.value;
+    const value = els.stageSnapshot.value;
+    if (value.startsWith("chat:")) return;
+    // This dataset's own snapshot is the full graph; another dataset's switches to it, as the top bar does.
+    if (value === currentGraphId) { resetGraphView(); return; }
+    els.graphSelect.value = value;
     els.graphSelect.dispatchEvent(new Event("change", { bubbles: true }));
   });
   els.graphSelect.addEventListener("change", async (event) => {

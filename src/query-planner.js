@@ -16,6 +16,7 @@ import { PlannerQuestionSheet } from "./planner-question-sheet.js";
 import { followSidebarWidth, shareSidebarWidth } from "./sidebar-width.js";
 import { PlannerSlotPicker } from "./planner-slot-picker.js";
 import { createComposer } from "./planner-composer.js";
+import { createVoiceInput } from "./planner-voice.js";
 import { SAMPLE_PROJECTS } from "./planner-samples.js";
 import { DEMO_CHAT } from "./planner-demo.js";
 import { workspaceFocus } from "./workspace-focus.js";
@@ -70,6 +71,9 @@ const state = {
   discoveryMeta: null,
   promptEntities: [],
   thinkingStep: 0,
+  /** The question whose new answer should glide into view on the next render, and that answer. */
+  revealReplyTo: "",
+  freshMessageId: "",
 };
 
 let typeMap;
@@ -1628,6 +1632,7 @@ function renderMessage(message) {
     header.append(time);
   }
   article.dataset.messageId = message.id || "";
+  if (message.id && message.id === state.freshMessageId) article.classList.add("is-fresh");
   if (message.replyTo) article.dataset.replyTo = message.replyTo;
   const content = document.createElement("div");
   content.className = "planner-message-content";
@@ -1731,26 +1736,63 @@ function renderActiveChat() {
     q("#planner-diagram-empty span").textContent = "Run a question to explore its returned graph.";
   }
   scrollToLatestOnOpen = planner.hidden && hasMessages;
-  window.requestAnimationFrame(() => { ui.chatScroll.scrollTop = hasMessages ? ui.chatScroll.scrollHeight : 0; });
+  window.requestAnimationFrame(() => {
+    const question = state.revealReplyTo ? ui.messages.querySelector(`[data-message-id="${CSS.escape(state.revealReplyTo)}"]`) : null;
+    Object.assign(state, { revealReplyTo: "", freshMessageId: "" });
+    if (question) {
+      // A new answer glides in from its question instead of jumping to its last line.
+      const top = question.getBoundingClientRect().top - ui.chatScroll.getBoundingClientRect().top + ui.chatScroll.scrollTop - 24;
+      ui.chatScroll.scrollTo({ top: Math.max(0, top), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      return;
+    }
+    ui.chatScroll.scrollTop = hasMessages ? ui.chatScroll.scrollHeight : 0;
+  });
 }
 
 const THINKING_STEPS = ["Thinking", "Querying the graph", "Establishing relationships", "Building the answer"];
 const THINKING_STEP_MS = 850;
 
+function stepRow(label, done, entering = false) {
+  const row = document.createElement("div");
+  row.className = `planner-step ${done ? "is-done" : "is-active"}${entering ? " is-entering" : ""}`;
+  const text = document.createElement("span");
+  text.textContent = label;
+  row.append(icon(done ? "check" : "circle-notch"), text);
+  return row;
+}
+
 /** Figma's KG / Thinking: the steps an answer goes through. Finished steps are checked and muted; the current one spins. */
 function thinkingSteps(active) {
   const list = document.createElement("div");
   list.className = "planner-steps";
-  THINKING_STEPS.slice(0, active + 1).forEach((label, index) => {
-    const done = index < active;
-    const row = document.createElement("div");
-    row.className = `planner-step ${done ? "is-done" : "is-active"}`;
-    const text = document.createElement("span");
-    text.textContent = label;
-    row.append(icon(done ? "check" : "circle-notch"), text);
-    list.append(row);
-  });
+  THINKING_STEPS.slice(0, active + 1).forEach((label, index) => list.append(stepRow(label, index < active)));
   return list;
+}
+
+/** Keeps the chat on its last line for a moment while the content there grows, so the view glides with it. */
+function followChatEnd(duration = 420) {
+  const until = performance.now() + duration;
+  const follow = () => {
+    ui.chatScroll.scrollTop = ui.chatScroll.scrollHeight;
+    if (performance.now() < until) window.requestAnimationFrame(follow);
+  };
+  window.requestAnimationFrame(follow);
+}
+
+/** Moves the live steps on in place: the current step settles to a check and the next one opens beneath it. */
+function advanceThinking(step) {
+  const box = ui.messages.querySelector(".planner-thinking");
+  const list = box?.querySelector(".planner-steps");
+  if (!box || !list) return;
+  const current = list.lastElementChild;
+  if (current) {
+    current.classList.remove("is-active", "is-entering");
+    current.classList.add("is-done", "just-done");
+    current.querySelector(".ui-icon")?.replaceWith(icon("check"));
+  }
+  list.append(stepRow(THINKING_STEPS[step], false, true));
+  box.setAttribute("aria-label", `${THINKING_STEPS[step]}…`);
+  followChatEnd();
 }
 
 /** The live steps while a question runs; the request timer moves them on. */
@@ -1800,7 +1842,8 @@ function snapshotInfo(message) {
   const stamp = captured && !Number.isNaN(captured.valueOf())
     ? captured.toLocaleString(undefined, { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })
     : "";
-  return { code, dataset, captured: stamp };
+  const nodes = normalizeGraph(message.result?.matchedGraph).nodes.map((node) => ({ id: String(node.id), type: entityType(node) }));
+  return { code, dataset, captured: stamp, nodes };
 }
 
 /** A stable, readable name for the graph snapshot an answer carries. */
@@ -1890,7 +1933,7 @@ async function runQuestion(question, { replace = [] } = {}) {
   const stepTimer = window.setInterval(() => {
     if (state.thinkingStep >= THINKING_STEPS.length - 1) return;
     state.thinkingStep += 1;
-    ui.messages.querySelector(".planner-thinking")?.replaceWith(thinkingMessage());
+    advanceThinking(state.thinkingStep);
   }, THINKING_STEP_MS);
 
   try {
@@ -1901,7 +1944,9 @@ async function runQuestion(question, { replace = [] } = {}) {
     if (staged) {
       await minimum;
       if (replace.length) chat.messages = chat.messages.filter((item) => !replace.includes(item.id));
-      chat.messages.push(sampleReply(staged, userMessage, graphId, now()));
+      const reply = sampleReply(staged, userMessage, graphId, now());
+      chat.messages.push(reply);
+      Object.assign(state, { revealReplyTo: userMessage.id, freshMessageId: reply.id });
       await persist();
       return;
     }
@@ -1922,6 +1967,7 @@ async function runQuestion(question, { replace = [] } = {}) {
     };
     if (replace.length) chat.messages = chat.messages.filter((item) => !replace.includes(item.id));
     chat.messages.push(assistant);
+    Object.assign(state, { revealReplyTo: userMessage.id, freshMessageId: assistant.id });
     await persist();
   } catch (error) {
     const cancelled = error?.name === "AbortError";
@@ -2294,6 +2340,17 @@ function wirePlanner() {
     runQuestion(question);
   });
   q("#planner-cancel").addEventListener("click", () => state.requestController?.abort());
+  // Speech to text: an empty composer offers the microphone; the words land in the composer, or send straight away.
+  const voice = createVoiceInput({
+    card: /** @type {HTMLElement} */ (q(".planner-composer-card", ui.form)),
+    onStatus: (text) => { ui.composerStatus.textContent = text; },
+    onDone: (text, send) => {
+      if (text) composer.setTemplate(text, () => null);
+      composer.focus();
+      if (text && send) ui.form.requestSubmit();
+    },
+  });
+  q("#planner-voice").addEventListener("click", () => voice.start());
   initializePlannerPanelResizing();
   typeMap = new PlannerTypeMap({
     panel: q("#planner-type-map-panel"),
