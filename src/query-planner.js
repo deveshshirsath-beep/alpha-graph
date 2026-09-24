@@ -668,7 +668,7 @@ function sampleReply(answer, user, graphId, createdAt) {
   const narrative = [answer.narrative, answer.bullets.map((text) => `- ${text}`).join("\n")].join("\n\n");
   const presentation = { schemaVersion: "1.0", narrative, profile: { show_tables: true, show_diagrams: true }, tables: [{ ...answer.table, totalRows: answer.table.rows.length }], chips: answer.chips, note: answer.note, reasoning: answer.reasoning };
   const matchedGraph = { ...answer.graph, rootNodeIds: sampleRootIds(answer) };
-  return { id: makeId("message"), role: "assistant", replyTo: user.id, content: narrative, createdAt, graphId, result: { status: "answered", graphId, presentation, matchedGraph, followUpQuestions: answer.followUps } };
+  return { id: makeId("message"), role: "assistant", replyTo: user.id, content: narrative, createdAt, graphId, result: { status: "answered", graphId, presentation, matchedGraph, followUpQuestions: answer.followUps, followUpsOnly: Boolean(answer.chain) } };
 }
 
 /** Sigma-style demo projects, added once per browser next to whatever the user already has. */
@@ -1451,7 +1451,9 @@ function renderFollowupPills(host, message) {
   if (newest && newest.id !== message.id) return;
   const graph = normalizeGraph(message.result?.matchedGraph);
   if (!graph.nodes.length || isScalarCount(message.result)) return;
-  const questions = [...new Set([...(message.result?.followUpQuestions || []), ...followUpQuestions(graph)])].slice(0, 4);
+  // A staged demo answer suggests only its next question, so the story never dead-ends on an unstaged one.
+  const questions = message.result?.followUpsOnly ? [...(message.result.followUpQuestions || [])]
+    : [...new Set([...(message.result?.followUpQuestions || []), ...followUpQuestions(graph)])].slice(0, 4);
   if (!questions.length) return;
   const label = document.createElement("p");
   label.className = "answer-followups-label";
