@@ -1741,9 +1741,13 @@ function renderActiveChat() {
     const question = state.revealReplyTo ? ui.messages.querySelector(`[data-message-id="${CSS.escape(state.revealReplyTo)}"]`) : null;
     Object.assign(state, { revealReplyTo: "", freshMessageId: "" });
     if (question) {
-      // A new answer glides in from its question instead of jumping to its last line.
-      const top = question.getBoundingClientRect().top - ui.chatScroll.getBoundingClientRect().top + ui.chatScroll.scrollTop - 24;
-      ui.chatScroll.scrollTo({ top: Math.max(0, top), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+      // A finished answer glides down to its last line, where its follow-ups wait; a late settle is followed unless the reader scrolled away.
+      const behavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+      ui.chatScroll.scrollTo({ top: ui.chatScroll.scrollHeight, behavior });
+      window.setTimeout(() => {
+        const { scrollTop, scrollHeight, clientHeight } = ui.chatScroll;
+        if (scrollHeight - scrollTop - clientHeight < 240) ui.chatScroll.scrollTo({ top: scrollHeight, behavior });
+      }, 650);
       return;
     }
     ui.chatScroll.scrollTop = hasMessages ? ui.chatScroll.scrollHeight : 0;

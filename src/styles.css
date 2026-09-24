@@ -666,7 +666,8 @@ body.sidebar-collapsed .sidebar { width: 0; opacity: 0; pointer-events: none; tr
 [data-theme="ocean"] .graph-picker select, [data-theme="ocean"] .theme-toggle, [data-theme="ocean"] .search-scope, [data-theme="ocean"] .search-box, [data-theme="ocean"] .condition-card { background: #07151b; }
 
 :root[data-theme="sunset"] {
-  --bg: #150d13; --panel: #1b1119; --panel-2: #241620; --line: rgba(255,157,113,.1); --line-strong: rgba(255,157,113,.18);
+  /* Panels share the answer tables' surface: the page colour lifted 4% toward the text, so the two always match. */
+  --bg: #150d13; --panel: color-mix(in srgb, var(--bg) 96%, var(--text)); --panel-2: #241620; --line: rgba(255,157,113,.1); --line-strong: rgba(255,157,113,.18);
   --accent: #ff9d62; --business: #ffc45f; --api: #a678ff; --runtime: #ff5c93; --topbar: rgba(21,13,19,.97);
   --stage-bg: radial-gradient(circle at 53% 48%, #321b2c 0%, #21121d 52%, #130b11 100%); --inspector-bg: rgba(29,15,26,.95);
 }
