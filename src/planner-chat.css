@@ -4,18 +4,17 @@
 /* The mark spins around its white circle, not the image box. */
 #app .planner-hero-mark img { transform-origin: 61.2% 49.8%; }
 #app .chat-greeting { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-#app .chat-title-row { display: flex; align-items: center; gap: 8px; max-width: 100%; color: var(--text); }
-#app .chat-title-icon { width: 22px; height: 22px; flex-basis: 22px; }
+/* Figma 479:60863: the dataset sits in a grey pill that is itself the dataset switch. */
+#app .chat-title-row { display: flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 12px; border: 0; border-radius: 40px; background: color-mix(in srgb, var(--text) 8%, var(--planner-content-bg)); color: var(--text); cursor: pointer; transition: background-color .15s ease; }
+#app .chat-title-row:hover { background: color-mix(in srgb, var(--text) 12%, var(--planner-content-bg)); }
+#app .chat-title-caret { width: 18px; height: 18px; flex: 0 0 18px; color: var(--text); }
+#app .chat-title-icon { width: 22px; height: 22px; flex: 0 0 22px; }
 #app .chat-dataset-name { max-width: 560px; overflow: hidden; color: var(--text); font-family: var(--ui-font); font-size: 16px; font-weight: 600; line-height: 24px; letter-spacing: -.1px; text-overflow: ellipsis; white-space: nowrap; }
 #app .chat-intro { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 620px; text-align: center; }
 #app .planner-empty-chat .chat-intro-title { margin: 0; color: var(--text); font-family: "Libre Baskerville", Georgia, serif; font-size: 30px; font-weight: 500; line-height: 40px; letter-spacing: -.6px; text-wrap: balance; }
-#app .planner-empty-chat .chat-intro p { margin: 0; color: var(--ui-secondary); font-size: .9375rem; line-height: 1.6; text-wrap: pretty; }
-#app .chat-title-switch { width: 32px; height: 32px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--text); cursor: pointer; }
-#app .chat-title-switch:hover { background: var(--planner-hover-bg); }
-#app .chat-title-switch .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
-#app .chat-stats { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 10px 16px; border-block: 1px solid var(--line); color: var(--ui-secondary); font-size: .9375rem; line-height: 1.375rem; white-space: nowrap; }
+#app .chat-stats { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 6px 16px; border-block: 1px solid var(--nav-stroke); color: var(--ui-secondary); font-size: 12px; line-height: 18px; white-space: nowrap; }
 #app .chat-stats > span { display: inline-flex; align-items: center; gap: 8px; }
-#app .chat-stats .ui-icon { width: 18px; height: 18px; flex-basis: 18px; }
+#app .chat-stats .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
 #app .chat-stats .stat-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ui-secondary); }
 
 #app .planner-composer { width: 100%; max-width: 768px; margin: 0 auto; padding: 0; }

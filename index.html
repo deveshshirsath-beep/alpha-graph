@@ -233,14 +233,13 @@
             <section id="planner-empty-chat" class="planner-empty-chat">
               <div class="planner-hero-mark"><img src="/brand/apiwiz-logo.png" alt="" width="40" height="33" /></div>
               <div class="chat-greeting">
-                <div class="chat-title-row">
+                <button id="planner-home-dataset" class="chat-title-row" type="button" aria-haspopup="listbox" title="Change graph dataset">
                   <svg data-icon="folder-open" class="chat-title-icon"></svg>
                   <span id="planner-home-title" class="chat-dataset-name">Graph</span>
-                  <button id="planner-home-dataset" class="chat-title-switch" type="button" aria-label="Change graph dataset" title="Change graph dataset"><svg data-icon="caret-down"></svg></button>
-                </div>
+                  <svg data-icon="caret-down" class="chat-title-caret"></svg>
+                </button>
                 <div class="chat-intro">
                   <h2 class="chat-intro-title">Ask Your API Estate Anything</h2>
-                  <p>Ask about your APIs, dependencies, ownership, or architecture.</p>
                 </div>
                 <div class="chat-stats" aria-label="Graph summary">
                   <span><svg data-icon="tree-structure"></svg><span><span id="planner-stat-nodes">—</span> nodes</span></span>
