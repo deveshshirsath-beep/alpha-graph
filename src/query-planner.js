@@ -19,6 +19,7 @@ import { createComposer } from "./planner-composer.js";
 import { createVoiceInput } from "./planner-voice.js";
 import { SAMPLE_PROJECTS } from "./planner-samples.js";
 import { DEMO_CHAT } from "./planner-demo.js";
+import { fieldImpactAnswer } from "./planner-field-impact.js";
 import { workspaceFocus } from "./workspace-focus.js";
 
 const q = (selector, root = document) => root.querySelector(selector);
@@ -1949,7 +1950,7 @@ async function runQuestion(question, { replace = [] } = {}) {
     await persist();
     // Every answer shows its working: the steps play through before it lands, however fast the reply comes.
     const minimum = pause(THINKING_STEP_MS * THINKING_STEPS.length, controller.signal);
-    const staged = STAGED_ANSWERS.get(normalizeQuestion(text));
+    const staged = STAGED_ANSWERS.get(normalizeQuestion(text)) || fieldImpactAnswer(text);
     if (staged) {
       await minimum;
       if (replace.length) chat.messages = chat.messages.filter((item) => !replace.includes(item.id));
