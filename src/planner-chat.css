@@ -1,41 +1,49 @@
 /* Chat module center after sigma: home, composer, suggestions, answers and the Questions page, on Alpha's tokens. */
-#app .planner-landing { display: flex; flex-direction: column; align-items: center; gap: 36px; padding: 56px 56px 32px; }
-#app .planner-empty-chat { width: auto; padding: 0; gap: 36px; }
+#app .planner-landing { display: flex; flex-direction: column; align-items: center; gap: 48px; padding: 56px 56px 32px; }
+#app .planner-empty-chat { width: auto; padding: 0; gap: 28px; }
 /* The mark spins around its white circle, not the image box. */
 #app .planner-hero-mark img { transform-origin: 61.2% 49.8%; }
-#app .chat-greeting { display: flex; flex-direction: column; align-items: center; gap: 20px; }
+#app .chat-greeting { display: flex; flex-direction: column; align-items: center; gap: 28px; width: 100%; max-width: 670px; }
 /* Figma 479:60863: the dataset sits in a grey pill that is itself the dataset switch. */
 #app .chat-title-row { display: flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 12px; border: 0; border-radius: 40px; background: color-mix(in srgb, var(--text) 8%, var(--planner-content-bg)); color: var(--text); cursor: pointer; transition: background-color .15s ease; }
 #app .chat-title-row:hover { background: color-mix(in srgb, var(--text) 12%, var(--planner-content-bg)); }
 #app .chat-title-caret { width: 18px; height: 18px; flex: 0 0 18px; color: var(--text); }
 #app .chat-title-icon { width: 22px; height: 22px; flex: 0 0 22px; }
-#app .chat-dataset-name { max-width: 560px; overflow: hidden; color: var(--text); font-family: var(--ui-font); font-size: 16px; font-weight: 600; line-height: 24px; letter-spacing: -.1px; text-overflow: ellipsis; white-space: nowrap; }
+#app .chat-dataset-name { max-width: 560px; overflow: hidden; color: var(--text); font-family: var(--ui-font); font-size: 16px; font-weight: 400; line-height: 24px; letter-spacing: -.1px; text-overflow: ellipsis; white-space: nowrap; }
 #app .chat-intro { display: flex; flex-direction: column; align-items: center; gap: 10px; max-width: 620px; text-align: center; }
-#app .planner-empty-chat .chat-intro-title { margin: 0; color: var(--text); font-family: "Libre Baskerville", Georgia, serif; font-size: 30px; font-weight: 500; line-height: 40px; letter-spacing: -.6px; text-wrap: balance; }
-#app .chat-stats { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 6px 16px; border-block: 1px solid var(--nav-stroke); color: var(--ui-secondary); font-size: 12px; line-height: 18px; white-space: nowrap; }
+#app .planner-empty-chat .chat-intro-title { margin: 0; color: var(--text); font-family: "Libre Baskerville", Georgia, serif; font-size: 30px; font-weight: 400; line-height: 40px; letter-spacing: -.6px; text-wrap: balance; }
+#app .chat-lines { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
+/* A fading rule, Figma's Line 21: full width, transparent at both ends. */
+#app .chat-rule { flex: 0 0 auto; width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--nav-stroke) 50%, transparent); }
+#app .chat-stats { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 6px 16px; color: var(--text); font-size: 14px; line-height: 18px; white-space: nowrap; }
 #app .chat-stats > span { display: inline-flex; align-items: center; gap: 8px; }
 #app .chat-stats .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
-#app .chat-stats .stat-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ui-secondary); }
+#app .chat-stats .stat-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text); }
 
-#app .planner-composer { width: 100%; max-width: 768px; margin: 0 auto; padding: 0; }
-/* The composer keeps its warm-to-accent stroke, muted toward the border colour in every theme,
-   and a faint wash of the same colours drifts slowly through its fill. */
+/* One angle drives a coloured arc of light round a neutral stroke and the glow behind it (Gemini-style). The fill stays flat. */
+@property --composer-angle { syntax: "<angle>"; inherits: true; initial-value: 0deg; }
+@property --composer-strength { syntax: "<percentage>"; inherits: true; initial-value: 65%; }
+/* Clockwise, in gently eased half-turns: the arc breathes faster and slower but never stops (it keeps over 60% of its pace at the slowest point). */
+#app .planner-composer { position: relative; width: 100%; max-width: 768px; margin: 0 auto; padding: 0; animation: composer-orbit 9s cubic-bezier(.4, .25, .6, .75) infinite; }
+/* On first landing the arc sweeps one and a half turns, overshoots a touch and springs back, then hands over to the orbit at rest. */
+#app .planner-composer.is-intro { animation: composer-intro 2.4s cubic-bezier(.22, 1.18, .36, 1); }
+@keyframes composer-orbit { 0% { --composer-angle: 0deg; } 50% { --composer-angle: 180deg; } 100% { --composer-angle: 360deg; } }
+@keyframes composer-intro { from { --composer-angle: -540deg; --composer-strength: 100%; } to { --composer-angle: 0deg; --composer-strength: 65%; } }
 #app .planner-composer-card {
-  --composer-warm: color-mix(in srgb, #f9ab00 38%, var(--ui-border));
-  --composer-cool: color-mix(in srgb, var(--accent) 42%, var(--ui-border));
-  --composer-wash: 4%;
-  display: flex; flex-direction: column; gap: 16px; padding: 16px; overflow: visible; border: 1px solid transparent; border-radius: 16px;
-  background:
-    linear-gradient(110deg, var(--planner-card-bg), color-mix(in srgb, #f9ab00 var(--composer-wash), var(--planner-card-bg)) 22%, var(--planner-card-bg) 46%, color-mix(in srgb, var(--accent) var(--composer-wash), var(--planner-card-bg)) 72%, var(--planner-card-bg) 96%) padding-box,
-    linear-gradient(110deg, var(--composer-warm), var(--composer-cool) 45%, var(--composer-warm) 90%) border-box;
-  background-size: 260% 100%, 260% 100%;
+  --composer-edge: var(--ui-border);
+  --composer-arc: from var(--composer-angle), var(--composer-edge) 0deg, color-mix(in srgb, #4f8cff var(--composer-strength), var(--composer-edge)) 34deg, color-mix(in srgb, #9b72ff var(--composer-strength), var(--composer-edge)) 68deg, color-mix(in srgb, #ff7a45 var(--composer-strength), var(--composer-edge)) 100deg, var(--composer-edge) 140deg, var(--composer-edge) 360deg;
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; gap: 16px; min-height: 120px; justify-content: space-between; padding: 16px; overflow: visible; border: 1px solid transparent; border-radius: 16px;
+  background: linear-gradient(var(--planner-card-bg), var(--planner-card-bg)) padding-box, conic-gradient(var(--composer-arc)) border-box;
   box-shadow: 0 4px 24px rgba(18, 35, 66, .06);
-  animation: planner-composer-drift 16s linear infinite;
   transition: box-shadow 280ms cubic-bezier(.22, 1, .36, 1);
 }
 #app .planner-composer-card:hover { box-shadow: 0 6px 28px rgba(18, 35, 66, .08); }
-#app .planner-composer-card:focus-within { --composer-warm: color-mix(in srgb, #f9ab00 55%, var(--ui-border)); --composer-cool: color-mix(in srgb, var(--accent) 60%, var(--ui-border)); --composer-wash: 6%; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 7%, transparent), 0 6px 28px rgba(18, 35, 66, .08); }
-@keyframes planner-composer-drift { to { background-position: 260% 0, 260% 0; } }
+#app .planner-composer-card:focus-within { --composer-strength: 90%; box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 7%, transparent), 0 6px 28px rgba(18, 35, 66, .08); }
+/* The glow is the same arc, blurred, on its own layer behind the opaque card: light bleeds out only where the arc is. */
+#app #planner-landing .planner-composer::before { content: ""; position: absolute; z-index: 0; inset: -10px -18px; border-radius: 32px; pointer-events: none; background: conic-gradient(from var(--composer-angle), transparent 0deg, rgba(79, 140, 255, .55) 34deg, rgba(155, 114, 255, .45) 68deg, rgba(255, 122, 69, .5) 100deg, transparent 140deg); filter: blur(26px); opacity: .7; }
+#app #planner-landing .planner-composer.is-intro::before { animation: composer-glow-in 2.4s ease-out; }
+@keyframes composer-glow-in { 0% { opacity: 0; transform: scale(.94); } 40% { opacity: 1; } 100% { opacity: .7; transform: scale(1); } }
 #app .planner-prompt-input { position: relative; min-height: 28px; max-height: 200px; overflow-y: auto; outline: 0; color: var(--text); font-size: 16px; line-height: 28px; white-space: pre-wrap; overflow-wrap: anywhere; cursor: text; }
 /* The placeholder sits in Figma's muted grey, a step lighter than secondary text, in every theme. */
 #app .planner-prompt-input.is-empty::before { content: attr(data-placeholder); position: absolute; inset: 0 0 auto 0; color: color-mix(in srgb, var(--text) 42%, transparent); pointer-events: none; }
@@ -101,7 +109,7 @@
 @media (prefers-reduced-motion: reduce) { #app .voice-wave b, #app .composer-voice { animation: none; } #app .voice-wave i { transition: none; } }
 #app .planner-composer-meta { min-height: 0; padding: 6px 4px 0; color: var(--ui-secondary); font-size: 12px; }
 #app .planner-composer-meta:has(#planner-composer-status:empty) { display: none; }
-@media (prefers-reduced-motion: reduce) { #app .planner-composer-card { animation: none; } }
+@media (prefers-reduced-motion: reduce) { #app .planner-composer, #app #planner-landing .planner-composer::before { animation: none !important; } }
 
 #app .planner-suggestions { display: flex; flex-direction: column; width: 100%; max-width: 754px; margin: 0 auto; }
 #app .planner-suggestions[hidden] { display: none; }
@@ -110,7 +118,7 @@
 #app .suggestion-layer :is(img, svg) { flex: 0 0 auto; width: 61px; height: 48px; }
 #app .suggestion-layer span { min-width: 0; overflow-wrap: anywhere; }
 #app .suggestion-layer:hover { border-color: var(--ui-border); }
-#app .suggestion-layer.active { border-color: var(--nav-stroke); background: var(--planner-hover-bg); }
+#app .suggestion-layer.active { border-color: color-mix(in srgb, var(--ui-secondary) 45%, var(--nav-stroke)); background: var(--planner-card-bg); }
 #app .suggestion-head { margin-top: 20px; padding: 4px 0; border-bottom: 1px solid var(--line); color: var(--ui-secondary); font-size: .8125rem; line-height: 1.25rem; }
 #app .suggestion-list { display: flex; flex-direction: column; margin-top: 8px; }
 #app .suggestion-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 35px; padding: 6px 0; border: 0; border-bottom: 1px solid var(--line); background: transparent; color: var(--ui-secondary); cursor: pointer; font-size: .875rem; line-height: 1.375rem; text-align: left; }

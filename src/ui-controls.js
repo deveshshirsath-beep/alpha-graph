@@ -143,11 +143,12 @@ function enhanceSelect(select) {
   let typeBuffer = '';
   let lastTyped = 0;
   let rows = [];
+  let anchor = trigger;
   const parentScrollPositions = new Map();
 
   const position = () => {
     if (menu.hidden) return;
-    const rect = trigger.getBoundingClientRect();
+    const rect = anchor.getBoundingClientRect();
     const width = Math.min(Math.max(rect.width, 260), 420, window.innerWidth - 16);
     menu.style.width = `${width}px`;
     menu.style.left = `${Math.max(8, Math.min(rect.left, window.innerWidth - width - 8))}px`;
@@ -164,6 +165,7 @@ function enhanceSelect(select) {
     trigger.removeAttribute('aria-activedescendant');
     if (openDropdown === controller) openDropdown = null;
     if (restoreFocus && trigger.isConnected) trigger.focus();
+    anchor = trigger;
   };
   const activate = (index) => {
     if (index < 0 || !rows[index]) return;
@@ -292,6 +294,9 @@ function enhanceSelect(select) {
   select.addEventListener('change', sync);
   const controller = {
     sync, close, position, wrapper, menu,
+    // Opened from a second, standing-in trigger elsewhere on the page (the landing dataset pill):
+    // the menu anchors to that element instead, then returns to its own trigger once closed.
+    openNear(el) { anchor = el || trigger; if (menu.hidden) open(); else close(); },
     onParentScroll(target) {
       const previous = parentScrollPositions.get(target);
       // Focus can enqueue a scroll event before the menu opens. Ignore that
@@ -309,6 +314,11 @@ export function syncDropdowns() {
     if (!select.isConnected) { controller.destroy(); controllers.delete(select); }
     else controller.sync();
   }
+}
+
+/** Toggles an enhanced select's menu anchored to another trigger on the page, e.g. the landing dataset pill standing in for the top bar's. */
+export function toggleSelectNear(select, anchorEl) {
+  controllers.get(select)?.openNear(anchorEl);
 }
 
 export function initializeUIControls() {

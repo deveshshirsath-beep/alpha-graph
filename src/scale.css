@@ -157,3 +157,8 @@
 #app .planner-diagram-toolbar button:hover,
 #app .planner-diagram-controls button:hover { border-color: var(--ui-border); background: var(--ui-hover); color: var(--text); }
 #app :is(.planner-diagram-toolbar, .planner-diagram-controls) button .ui-icon { width: 16px; height: 16px; flex-basis: 16px; color: var(--ui-secondary); }
+
+/* Below 1800px, navigation and panel list items step down from 15px to 13px so the side panels don't read oversized. */
+@media (max-width: 1799px) {
+  #app :is(.planner-nav-row, .planner-project-row, .planner-chat-row, .planner-type-label, .planner-type-question, .select-option, .search-type-suggestion span, :is(.condition-suggestions, .search-result) b) { font-size: .8125rem; line-height: 1.25rem; }
+}

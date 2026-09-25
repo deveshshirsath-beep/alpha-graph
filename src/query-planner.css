@@ -4,7 +4,7 @@ body.planner-mode > #app > .workspace {
   top: 78px;
   left: -110vw;
   width: 100vw;
-  height: calc(100% - max(54px, 3.375rem));
+  height: calc(100% - max(48px, 3rem));
   visibility: hidden;
   pointer-events: none;
 }
@@ -23,7 +23,7 @@ body.planner-mode > #app > .workspace {
   --planner-library-width: 340px;
   --planner-context-width: 480px;
   grid-template-columns: 72px var(--planner-library-width) 1px minmax(440px, 1fr) 1px var(--planner-context-width);
-  height: calc(100% - max(54px, 3.375rem));
+  height: calc(100% - max(48px, 3rem));
   min-height: 0;
   color: var(--text);
   font-family: var(--ui-font);

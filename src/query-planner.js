@@ -4,7 +4,7 @@ import { PlannerDiagram } from "./planner-diagram.js";
 import { chronologicalMessages, messageTimestamp } from "./planner-conversation.js";
 import { PlannerGraphBrowser } from "./planner-graph-browser.js";
 import { bindQuestion, parameterTypes, parseQuestionCatalog, parseQuestionTemplates, questionAnchor, questionParameters, relevantCatalogQuestions } from "./planner-discovery.js";
-import { icon, inlineIllustrations, syncDropdowns } from "./ui-controls.js";
+import { icon, inlineIllustrations, syncDropdowns, toggleSelectNear } from "./ui-controls.js";
 import { attachTourButton, registerTour, waitFor } from "./feature-tour.js";
 import { SearchDropdown } from "./search-dropdown.js";
 import { catalogSearchOptions } from "./search-options.js";
@@ -2258,7 +2258,10 @@ function wirePlanner() {
   qa(".suggestion-layer").forEach((tab) => tab.addEventListener("click", () => { suggestionLayer = tab.dataset.layer || "business"; renderSuggestions(); }));
   q("#planner-suggestions-refresh")?.addEventListener("click", shuffleSuggestions);
   registerChatTours();
-  q("#planner-home-dataset").addEventListener("click", () => /** @type {HTMLElement | null} */ (document.querySelector(".graph-picker .select-trigger"))?.click());
+  const composerForm = q("#planner-query-form");
+  composerForm.classList.add("is-intro");
+  composerForm.addEventListener("animationend", (event) => { if (event.animationName === "composer-intro") composerForm.classList.remove("is-intro"); });
+  q("#planner-home-dataset").addEventListener("click", (event) => toggleSelectNear(/** @type {HTMLSelectElement} */ (document.getElementById("graph-select")), /** @type {HTMLElement} */ (event.currentTarget)));
   q("#planner-question-bank").addEventListener("click", () => setQuestionsPage(true));
   qa(".mode-switch").forEach(group => group.addEventListener("keydown", (event) => {
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
