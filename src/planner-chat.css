@@ -1,9 +1,9 @@
 /* Chat module center after sigma: home, composer, suggestions, answers and the Questions page, on Alpha's tokens. */
-#app .planner-landing { display: flex; flex-direction: column; align-items: center; gap: 48px; padding: 56px 56px 32px; }
-#app .planner-empty-chat { width: auto; padding: 0; gap: 28px; }
+#app .planner-landing { display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 56px 56px 32px; }
+#app .planner-empty-chat { width: auto; padding: 0; gap: 24px; }
 /* The mark spins around its white circle, not the image box. */
 #app .planner-hero-mark img { transform-origin: 61.2% 49.8%; }
-#app .chat-greeting { display: flex; flex-direction: column; align-items: center; gap: 28px; width: 100%; max-width: 670px; }
+#app .chat-greeting { display: flex; flex-direction: column; align-items: center; gap: 24px; width: 100%; max-width: 670px; }
 /* Figma 479:60863: the dataset sits in a grey pill that is itself the dataset switch. */
 #app .chat-title-row { display: flex; align-items: center; gap: 8px; max-width: 100%; padding: 6px 12px; border: 0; border-radius: 40px; background: color-mix(in srgb, var(--text) 8%, var(--planner-content-bg)); color: var(--text); cursor: pointer; transition: background-color .15s ease; }
 #app .chat-title-row:hover { background: color-mix(in srgb, var(--text) 12%, var(--planner-content-bg)); }

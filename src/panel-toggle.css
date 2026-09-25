@@ -84,7 +84,7 @@ body.sidebar-collapsed #app .stage-title { left: 60px; max-width: calc(100% - 11
   #app .planner-context { position: absolute; z-index: 35; top: 0; right: 0; bottom: 0; width: min(400px, calc(100% - var(--planner-rail-width))); padding-left: 1rem; box-shadow: -18px 0 45px var(--shadow-color); }
 }
 @media (max-width: 780px) {
-  #app .planner-shell { --planner-rail-width: 56px; --library-column: 0px; --library-divider: 0px; height: calc(100% - max(48px, 3rem)); }
+  #app .planner-shell { --planner-rail-width: 56px; --library-column: 0px; --library-divider: 0px; height: calc(100% - max(40px, 2.5rem)); }
   #app .planner-conversation { grid-column: 4; }
   #app .planner-library { display: flex; position: absolute; top: 0; bottom: 0; left: var(--planner-rail-width); width: min(var(--planner-library-width), calc(100% - var(--planner-rail-width))); z-index: 35; box-shadow: 12px 0 35px var(--shadow-color); }
   #app .planner-library, #app .planner-context { grid-column: auto; }

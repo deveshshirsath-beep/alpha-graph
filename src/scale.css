@@ -163,3 +163,7 @@
   #app :is(.planner-nav-row, .planner-project-row, .planner-chat-row, .planner-type-label, .planner-type-question, .select-option, .search-type-suggestion span, :is(.condition-suggestions, .search-result) b) { font-size: .875rem; line-height: 1.25rem; }
   #app :is(.planner-nav-row, .planner-project-row, .planner-chat-row, .planner-project-open, .planner-chat-open) { min-height: 2rem; }
 }
+
+/* Top bar: every icon the same 16px in the secondary colour, and the dataset name 14px regular. */
+#app .topbar .header-actions .ui-icon { width: 1rem; height: 1rem; flex-basis: 1rem; color: var(--ui-secondary); }
+#app .topbar .graph-picker .select-trigger .action-label { font-size: .875rem; font-weight: 400; }
