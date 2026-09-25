@@ -76,7 +76,8 @@
 #app .answer-open-graph,
 #app .toast,
 #app .planner-assist { border-radius: var(--radius-xl); }
-.feature-tour-card { border-radius: var(--radius-xl); }
+/* The tour layer lives outside #app, where the radius tokens are not defined, so it carries its own fallback. */
+.feature-tour-card { border-radius: var(--radius-2xl, 16px); }
 
 /* ── Icons: 14 inline · 16 default · 20 prominent. Nothing between. ───────── */
 #app .select-control .select-trigger > .ui-icon,
