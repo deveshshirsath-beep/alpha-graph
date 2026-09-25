@@ -197,7 +197,11 @@
 #app .planner-step + .planner-step { margin-top: 10px; }
 #app .planner-step .ui-icon { width: 14px; height: 14px; flex: 0 0 14px; }
 #app .planner-step.is-done { color: color-mix(in srgb, var(--text) 45%, transparent); }
-#app .planner-step.is-active .ui-icon { animation: planner-step-spin 800ms linear infinite; will-change: transform; }
+/* The live step: a 20px Thinking orb (checks share its 20px slot, so labels line up) and a light sweeping across its label. */
+#app .planner-step .planner-step-orb { flex: 0 0 20px; }
+#app .planner-step > .ui-icon { margin: 0 3px; }
+#app .planner-step.is-active .planner-step-label { background: linear-gradient(90deg, color-mix(in srgb, var(--text) 45%, transparent) 0 35%, var(--text) 50%, color-mix(in srgb, var(--text) 45%, transparent) 65% 100%) 0 0 / 250% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: planner-step-shimmer 2.2s linear infinite; }
+@keyframes planner-step-shimmer { from { background-position: 100% 0; } to { background-position: -150% 0; } }
 #app .planner-step.is-entering { overflow: hidden; animation: planner-step-open 380ms cubic-bezier(.22, 1, .36, 1) both; }
 #app :is(.planner-step.just-done, .planner-message.is-fresh .planner-step:last-child) .ui-icon { animation: planner-step-check 320ms cubic-bezier(.22, 1, .36, 1) both; }
 #app .planner-message.is-fresh .planner-message-content > :not(.planner-steps) { animation: planner-answer-in 520ms cubic-bezier(.22, 1, .36, 1) both; }
@@ -207,6 +211,7 @@
 @keyframes planner-answer-in { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) {
   #app .planner-step, #app .planner-step .ui-icon, #app .planner-message.is-fresh .planner-message-content > * { animation: none !important; transition: none; }
+  #app .planner-step.is-active .planner-step-label { background: none; color: var(--text); }
 }
 
 #app .planner-composer-dock { padding: 0 32px 20px; border-top: 0; background: transparent; box-shadow: none; }

@@ -20,6 +20,7 @@ import { createVoiceInput } from "./planner-voice.js";
 import { SAMPLE_PROJECTS } from "./planner-samples.js";
 import { DEMO_CHAT } from "./planner-demo.js";
 import { fieldImpactAnswer } from "./planner-field-impact.js";
+import { createThinkingOrb } from "./thinking-orb.js";
 import { workspaceFocus } from "./workspace-focus.js";
 
 const q = (selector, root = document) => root.querySelector(selector);
@@ -1762,12 +1763,16 @@ function renderActiveChat() {
 const THINKING_STEPS = ["Thinking", "Querying the graph", "Establishing relationships", "Building the answer"];
 const THINKING_STEP_MS = 850;
 
+/** Each live step gets the Thinking orb whose motion names what it does; finished steps settle to a check. */
+const STEP_ORBS = { "Thinking": "breathing", "Querying the graph": "searching", "Establishing relationships": "connecting", "Building the answer": "composing" };
+
 function stepRow(label, done, entering = false) {
   const row = document.createElement("div");
   row.className = `planner-step ${done ? "is-done" : "is-active"}${entering ? " is-entering" : ""}`;
   const text = document.createElement("span");
+  text.className = "planner-step-label";
   text.textContent = label;
-  row.append(icon(done ? "check" : "circle-notch"), text);
+  row.append(done ? icon("check") : createThinkingOrb({ state: STEP_ORBS[label] || "working", size: 20, label: `${label}…`, className: "planner-step-orb" }), text);
   return row;
 }
 
@@ -1798,7 +1803,7 @@ function advanceThinking(step) {
   if (current) {
     current.classList.remove("is-active", "is-entering");
     current.classList.add("is-done", "just-done");
-    current.querySelector(".ui-icon")?.replaceWith(icon("check"));
+    current.querySelector(".planner-step-orb, .ui-icon")?.replaceWith(icon("check"));
   }
   list.append(stepRow(THINKING_STEPS[step], false, true));
   box.setAttribute("aria-label", `${THINKING_STEPS[step]}…`);
@@ -2087,7 +2092,7 @@ function followUpQuestions(graph) {
   ];
 }
 
-function renderFollowups(graph) {
+function renderFollowups(graph, source = null) {
   ui.followups.replaceChildren();
   if (!graph.nodes.length) {
     ui.followups.append(illustratedEmpty(
@@ -2097,7 +2102,10 @@ function renderFollowups(graph) {
     ));
     return;
   }
-  followUpQuestions(graph).forEach((question) => {
+  // A staged demo answer offers only its own next questions here too, so the side panel never leads off the story.
+  const owner = source && (activeChat()?.messages || []).find((item) => item.result?.matchedGraph === source);
+  const questions = owner?.result?.followUpsOnly ? owner.result.followUpQuestions || [] : followUpQuestions(graph);
+  questions.forEach((question) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "planner-followup";
@@ -2123,7 +2131,7 @@ function renderMatchedGraph(value) {
   state.selectedEntityIds = state.promptEntities.map(entity => String(entity.id));
   diagram?.setGraph(graph);
   renderEntityTree(graph);
-  renderFollowups(graph);
+  renderFollowups(graph, value);
 }
 
 function switchContextTab(target) {

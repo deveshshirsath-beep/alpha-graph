@@ -970,3 +970,7 @@ body.sidebar-collapsed .workspace { grid-template-columns: 58px 0 minmax(0, 1fr)
   .stage-title { display: grid; }
   .stage-title small, .control-label, .layout-controls button { display: none; }
 }
+
+/* The graph loader: a 64px Thinking orb; dimmed when loading fails. */
+.loading-panel .loading-orb { flex: 0 0 auto; }
+.loading-panel.error .loading-orb { opacity: .4; }

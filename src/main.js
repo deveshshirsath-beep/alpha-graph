@@ -16,6 +16,7 @@ import { attachTourButton, registerTour, setSelect, startTour, waitFor } from ".
 import { registerAppTour } from "./app-tour.js";
 import { PlannerSlotPicker } from "./planner-slot-picker.js";
 import { createRangeSlider } from "./range-slider.js";
+import { createThinkingOrb } from "./thinking-orb.js";
 import "./fonts.css";
 import "./styles.css";
 import "./workspace-polish.css";
@@ -751,6 +752,23 @@ function syncRelationshipRow(row) {
   row.classList.toggle("is-muted", !input.checked);
 }
 
+/** Relationship rows and their paths, so hiding an entity type also hides the relationships that touch it. */
+let relationshipGroups = [];
+
+function syncRelationshipVisibility() {
+  const visible = (type) => state.nodeTypes.has(type);
+  for (const { group, paths } of relationshipGroups) {
+    if (!paths.length) continue;
+    let live = 0;
+    for (const { line, source, target } of paths) {
+      const shown = visible(source) && visible(target);
+      line.hidden = !shown;
+      if (shown) live += 1;
+    }
+    group.hidden = live === 0;
+  }
+}
+
 function updateFilterUI() {
   $$("#type-filters input").forEach((input) => {
     input.checked = state.nodeTypes.has(input.value);
@@ -767,6 +785,7 @@ function updateFilterUI() {
     const selected = types.filter((type) => state.nodeTypes.has(type)).length;
     folder.querySelector(".folder-selected").textContent = `${selected}/${types.length}`;
   });
+  syncRelationshipVisibility();
 }
 
 function renderEntityTree() {
@@ -869,6 +888,7 @@ function makeFilters() {
   renderLayerTabs();
   renderEntityTree();
   els.edgeFilters.replaceChildren();
+  relationshipGroups = [];
   const recommendedTypes = RELATIONSHIP_RULES.map((rule) => rule[1]);
   const edgeTypes = [...new Set([...Object.keys(graphMeta.edgeCounts), ...recommendedTypes])]
     .map((type) => [type, graphMeta.edgeCounts[type] || 0])
@@ -921,8 +941,11 @@ function makeFilters() {
     pane.className = "relationship-paths";
     pane.id = paneId;
     pane.hidden = true;
+    const entry = { group, paths: [] };
+    relationshipGroups.push(entry);
     for (const path of paths) {
       const line = document.createElement("div");
+      entry.paths.push({ line, source: path.source, target: path.target });
       line.className = "relationship-path planner-type-row";
       line.style.setProperty("--depth", "1");
       line.innerHTML = `<span class="planner-type-toggle"></span><span class="planner-type-entry"><span class="planner-type-label">${escapeHtml(entityTypeLabel(path.source))} \u2192 ${escapeHtml(entityTypeLabel(path.target))}</span><span class="planner-type-count">${formatNumber.format(path.count)}</span></span>`;
@@ -938,6 +961,7 @@ function makeFilters() {
     els.edgeFilters.append(group);
     syncRelationshipRow(row);
   }
+  syncRelationshipVisibility();
   renderConditionalFilters();
 }
 
@@ -1972,6 +1996,8 @@ function wireWorkspaceShell() {
   $$('[data-panel-icon]').forEach(button => button.replaceChildren(icon(button.dataset.panelIcon)));
   // The top bar's "?" tours the whole app, ready from the first moment; the ? key still opens the keyboard shortcuts.
   registerAppTour();
+  // Loading a graph takes seconds, long enough for a Thinking orb (libraries.dev) in place of the old orbit spinner.
+  document.querySelector("#loading-panel .loader-orbit")?.replaceWith(createThinkingOrb({ state: "working", size: 64, label: "Loading the graph…", className: "loading-orb" }));
   $("#open-tour").addEventListener("click", () => startTour("atlas"));
   // Chat says which answer's snapshot it opened the canvas from, or that it opened it plainly.
   for (const button of [els.stageBack, els.stageTitle]) button.addEventListener("click", () => resetGraphView());

@@ -100,3 +100,6 @@
 #app .condition-entity-input:focus { background: var(--panel); box-shadow: inset 0 0 0 1px var(--field-focus); }
 #app .condition-entity-input.entity-selected { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
 #app .condition-entity-wrap { border-radius: 10px; }
+
+/* A relationship whose source or target entity type is hidden goes with it. */
+#app :is(.relationship-group, .relationship-path)[hidden] { display: none; }
