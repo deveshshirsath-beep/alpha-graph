@@ -50,7 +50,6 @@ export function templateRoute(template) {
   return match ? `${entityTypeLabel(match[1])} → ${entityTypeLabel(match[2])}` : "";
 }
 
-const plural = (count, noun) => `${count.toLocaleString()} ${noun}${count === 1 ? "" : "s"}`;
 const keyOf = (item) => `${item.template || item.question}\u0000${item.question}`;
 
 function cell(className) {
@@ -60,8 +59,9 @@ function cell(className) {
 }
 
 /**
- * The Questions page: layer cards over one table of the catalog.
- * Search and the two column filters narrow the same rows, and each control only offers values that still have questions.
+ * The Questions page: one table of the catalog.
+ * Search lives on the Question column head and the two filters on their own column heads; they narrow the same rows,
+ * and each filter only offers values that still have questions.
  */
 export class PlannerQuestionBrowser {
   constructor({ root, getQuestions, getOrder, onChoose, onClearFilter = null, markFor = null }) {
@@ -71,15 +71,14 @@ export class PlannerQuestionBrowser {
     this.markFor = markFor;
     this.onChoose = onChoose;
     this.onClearFilter = onClearFilter;
-    /** The chosen layer; none shows every layer. */
-    this.layer = "";
     this.query = "";
     this.entityType = "";
     this.questionType = "";
     this.filter = null;
     this.selected = "";
-    this.layerCards = /** @type {HTMLButtonElement[]} */ ([...root.querySelectorAll(".qb-layer")]);
-    this.search = /** @type {HTMLInputElement} */ (root.querySelector(".qb-search input"));
+    this.searchBox = /** @type {HTMLElement} */ (root.querySelector(".qb-search"));
+    this.searchToggle = /** @type {HTMLButtonElement} */ (root.querySelector(".qb-search-toggle"));
+    this.search = /** @type {HTMLInputElement} */ (this.searchBox.querySelector("input"));
     this.entitySelect = /** @type {HTMLSelectElement} */ (root.querySelector(".qb-entity-filter"));
     this.typeSelect = /** @type {HTMLSelectElement} */ (root.querySelector(".qb-type-filter"));
     this.body = /** @type {HTMLElement} */ (root.querySelector(".qb-table tbody"));
@@ -88,13 +87,12 @@ export class PlannerQuestionBrowser {
     this.count = /** @type {HTMLElement} */ (root.querySelector(".qb-count"));
     this.clear = /** @type {HTMLButtonElement} */ (root.querySelector(".qb-clear"));
     this.filterBar = /** @type {HTMLElement} */ (root.querySelector(".qb-filter"));
-    this.layerCards.forEach((card) => card.addEventListener("click", () => {
-      const layer = card.dataset.layer || "";
-      // Choosing the chosen layer again clears it.
-      this.layer = this.layer === layer ? "" : layer;
-      this.render();
-    }));
+    this.searchToggle.addEventListener("click", () => this.openSearch());
+    this.searchBox.querySelector(".qb-search-close")?.addEventListener("click", () => this.closeSearch(true));
     this.search.addEventListener("input", () => { this.query = this.search.value.trim().toLowerCase(); this.render(); });
+    this.search.addEventListener("keydown", (event) => { if (event.key === "Escape") { event.stopPropagation(); this.closeSearch(true); } });
+    // An empty search folds back into the column name once focus leaves it.
+    this.search.addEventListener("blur", () => { if (!this.search.value) this.closeSearch(); });
     this.entitySelect.addEventListener("change", () => { this.entityType = this.entitySelect.value; this.render(); });
     this.typeSelect.addEventListener("change", () => { this.questionType = this.typeSelect.value; this.render(); });
     this.clear.addEventListener("click", () => this.reset());
@@ -105,9 +103,25 @@ export class PlannerQuestionBrowser {
     this.render();
   }
 
+  /** The Question column head turns into the search field. */
+  openSearch() {
+    this.searchToggle.hidden = true;
+    this.searchBox.hidden = false;
+    this.search.focus();
+  }
+
+  closeSearch(clear = false) {
+    if (clear && this.search.value) { this.search.value = ""; this.query = ""; this.render(); }
+    const hadFocus = this.searchBox.contains(document.activeElement);
+    this.searchBox.hidden = true;
+    this.searchToggle.hidden = false;
+    if (hadFocus) this.searchToggle.focus();
+  }
+
   reset() {
-    this.layer = this.query = this.entityType = this.questionType = "";
+    this.query = this.entityType = this.questionType = "";
     this.search.value = "";
+    this.closeSearch();
     if (this.filter) { this.filter = null; this.onClearFilter?.(); }
     this.render();
   }
@@ -125,19 +139,12 @@ export class PlannerQuestionBrowser {
       text: `${choice.item.question.replace(/[{}_]/g, " ")} ${entityTypeLabel(choice.anchor || "")} ${questionTypeLabel(choice.item.category)}`.toLowerCase(),
     }));
     /** Every filter except the one named, so a control lists what the others leave. */
-    const passes = (choice, skip = "") => (skip === "layer" || !this.layer || choice.item.layer === this.layer)
-      && (skip === "entity" || !this.entityType || choice.anchor === this.entityType)
+    const passes = (choice, skip = "") => (skip === "entity" || !this.entityType || choice.anchor === this.entityType)
       && (skip === "type" || !this.questionType || choice.item.category === this.questionType)
       && (!this.query || choice.text.includes(this.query));
     const rows = choices.filter((choice) => passes(choice))
       .sort((a, b) => (rank.get(a.anchor) ?? Infinity) - (rank.get(b.anchor) ?? Infinity) || String(a.anchor).localeCompare(String(b.anchor)));
 
-    for (const card of this.layerCards) {
-      const layer = card.dataset.layer || "";
-      card.setAttribute("aria-pressed", String(this.layer === layer));
-      const small = card.querySelector(".qb-layer-count");
-      if (small) small.textContent = plural(choices.filter((choice) => choice.item.layer === layer && passes(choice, "layer")).length, "question");
-    }
     const entityTypes = [...new Set(choices.filter((choice) => choice.anchor && passes(choice, "entity")).map((choice) => choice.anchor))]
       .sort((a, b) => (rank.get(a) ?? Infinity) - (rank.get(b) ?? Infinity) || a.localeCompare(b));
     const questionTypes = [...new Set(choices.filter((choice) => passes(choice, "type")).map((choice) => choice.item.category))]
@@ -145,11 +152,14 @@ export class PlannerQuestionBrowser {
     this.options(this.entitySelect, "All entity types", entityTypes, entityTypeLabel, this.entityType);
     this.options(this.typeSelect, "All question types", questionTypes, questionTypeLabel, this.questionType);
     syncDropdowns();
+    // A filtered column head shows its value in the accent colour instead of the column name.
+    this.entitySelect.closest("th")?.classList.toggle("is-filtered", Boolean(this.entityType));
+    this.typeSelect.closest("th")?.classList.toggle("is-filtered", Boolean(this.questionType));
 
     this.renderFilter();
     this.body.replaceChildren(...rows.map((choice) => this.row(choice)));
     this.empty.hidden = rows.length > 0;
-    const filtered = this.layer || this.query || this.entityType || this.questionType || this.filter;
+    const filtered = this.query || this.entityType || this.questionType || this.filter;
     this.count.textContent = filtered ? `${rows.length.toLocaleString()} of ${choices.length.toLocaleString()}` : choices.length.toLocaleString();
     this.clear.hidden = !filtered;
     this.scroller.scrollTop = 0;

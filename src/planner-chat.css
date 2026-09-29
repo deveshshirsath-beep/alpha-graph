@@ -225,44 +225,37 @@
 #app .planner-questions-page[hidden] { display: none; }
 #app .qb-main { display: flex; flex-direction: column; gap: 12px; flex: 1 1 auto; min-width: 0; min-height: 0; padding: 32px 32px 24px; container: questions / inline-size; }
 
-/* Layer cards (Figma 461:54452): the chat's art at 88x69 beside a 20px name and its count. One layer at a time; the chosen card is outlined. */
-#app .qb-layers { display: flex; flex-wrap: wrap; gap: 12px; flex: 0 0 auto; }
-#app .qb-layer { display: flex; align-items: center; gap: 16px; min-width: 322px; padding: 10px 24px 10px 10px; border: 1px solid var(--nav-stroke); border-radius: 14px; background: var(--planner-card-bg); color: var(--text); cursor: pointer; text-align: left; transition: border-color .15s ease, box-shadow .15s ease; }
-/* The art keeps its own proportions at any size. */
-#app .qb-layer :is(img, svg.illustration) { flex: 0 0 auto; width: 104px; height: auto; aspect-ratio: 61 / 48; }
-#app .qb-layer-copy { display: grid; row-gap: 2px; min-width: 0; }
-#app .qb-layer-copy > span { color: var(--text); font-size: 16px; font-weight: 500; line-height: 22px; white-space: nowrap; }
-#app .qb-layer-count { color: var(--ui-secondary); font-size: 14px; font-weight: 400; line-height: 20px; font-variant-numeric: tabular-nums; white-space: nowrap; }
-#app .qb-layer:hover { border-color: var(--ui-border); }
-#app .qb-layer[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-@container questions (max-width: 1040px) { #app .qb-layer { min-width: 0; } }
-@container questions (max-width: 700px) {
-  #app .qb-layer { gap: 10px; padding-right: 16px; }
-  #app .qb-layer :is(img, svg.illustration) { width: 56px; }
-  #app .qb-layer-copy { row-gap: 2px; }
-  #app .qb-layer-copy > span { font-size: 15px; }
-  #app .qb-layer-count { font-size: 13px; }
-}
-
-/* The table card: its own header (title and count on the left, filters and search on the right), a sticky column row, then the questions. */
+/* The table card (Figma 509:68026): a title row, a sticky column row whose heads carry the search and the two filters, then the questions. */
 #app .qb-table-card { --qb-field: color-mix(in srgb, var(--text) 3.5%, transparent); display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; overflow: hidden; border: 1px solid var(--nav-stroke); border-radius: 14px; background: var(--planner-card-bg); box-shadow: 0 1px 2px rgba(18, 35, 66, .04); }
-#app .qb-table-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 12px; border-bottom: 1px solid var(--line); }
-#app .qb-heading { display: grid; flex: 1 1 0; gap: 2px; min-width: 180px; padding: 0 4px; }
-#app .qb-title { display: flex; align-items: baseline; gap: 8px; margin: 0; color: var(--text); font-family: var(--ui-font); font-size: 16px; font-weight: 600; letter-spacing: -.5px; line-height: 28px; }
-#app .qb-title .qb-count { display: inline-flex; align-items: center; height: 22px; margin: 0; padding: 0 8px; border: 0; border-radius: 999px; background: var(--qb-field); color: var(--ui-secondary); font: 500 12px/1 var(--ui-font); letter-spacing: 0; transform: none; font-variant-numeric: tabular-nums; }
-#app .qb-subtitle { margin: 0; overflow: hidden; color: var(--ui-secondary); font-size: 14px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
-#app .qb-table-head .select-control { flex: 0 1 auto; width: auto; min-width: 0; }
-#app .qb-table-head .select-control .select-trigger { height: 36px; min-height: 36px; max-width: 280px; gap: 8px; padding: 0 8px 0 10px; border-radius: 10px; background: var(--qb-field); color: var(--text); font-size: 14px; font-weight: 500; }
-#app .qb-table-head .select-control .select-trigger:is(:hover:not(:disabled), [aria-expanded="true"]) { background: var(--control-fill-hover); }
-#app .qb-table-head .select-control .select-trigger > .ui-icon:first-child { width: 16px; height: 16px; flex-basis: 16px; color: var(--ui-secondary); }
+#app .qb-table-head { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px; border-bottom: 1px solid var(--line); }
+#app .qb-heading { display: grid; flex: 1 1 0; gap: 2px; min-width: 180px; }
+#app .qb-title { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--text); font-family: var(--ui-font); font-size: 18px; font-weight: 600; letter-spacing: -.3px; line-height: 26px; }
+#app .qb-title .qb-count { display: inline-flex; align-items: center; height: 22px; margin: 0; padding: 0 8px; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--ui-secondary); font: 400 13px/20px var(--ui-font); letter-spacing: 0; transform: none; font-variant-numeric: tabular-nums; }
+#app .qb-subtitle { margin: 0; overflow: hidden; color: var(--ui-secondary); font-size: 13px; line-height: 20px; text-overflow: ellipsis; white-space: nowrap; }
 #app .select-trigger .select-trigger-label { flex: 0 0 auto; color: var(--ui-secondary); font-weight: 400; }
-#app .qb-search { display: flex; align-items: center; gap: 8px; flex: 0 1 180px; min-width: 140px; height: 36px; padding: 0 12px; border-radius: 10px; background: var(--qb-field); color: var(--ui-secondary); cursor: text; transition: background-color .15s ease, box-shadow .15s ease; }
-#app .qb-search:hover:not(:focus-within) { background: var(--control-fill-hover); }
-#app .qb-search:focus-within { box-shadow: 0 0 0 1px var(--field-focus); }
-#app .qb-search .ui-icon { width: 16px; height: 16px; flex-basis: 16px; }
-#app .qb-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 14px; }
+/* Column heads: "Question" opens the search in place; "Entity type" and "Question type" are the filters. */
+#app .qb-th { display: flex; align-items: center; gap: 4px; min-width: 0; height: 100%; }
+#app .qb-search-toggle { display: inline-flex; align-items: center; gap: 4px; height: 28px; margin-left: -6px; padding: 0 6px; border: 0; border-radius: 8px; background: transparent; color: inherit; cursor: pointer; font: inherit; }
+#app .qb-search-toggle:hover { background: var(--ui-hover); color: var(--text); }
+#app .qb-search-toggle[hidden] { display: none; }
+#app .qb-search-toggle .ui-icon, #app .qb-th .select-chevron { width: 14px; height: 14px; flex: 0 0 14px; }
+#app .qb-search { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; height: 30px; margin-left: -8px; padding: 0 4px 0 8px; border-radius: 8px; background: var(--planner-card-bg); box-shadow: 0 0 0 1px var(--field-focus); color: var(--ui-secondary); cursor: text; }
+#app .qb-search[hidden] { display: none; }
+#app .qb-search .ui-icon { width: 14px; height: 14px; flex-basis: 14px; }
+#app .qb-search input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; outline: 0; background: transparent; color: var(--text); font-size: 13px; font-weight: 400; }
 #app .qb-search input::placeholder { color: var(--ui-secondary); }
 #app .qb-search input::-webkit-search-cancel-button { display: none; }
+#app .qb-search-close { display: grid; place-items: center; width: 22px; height: 22px; padding: 0; border: 0; border-radius: 6px; background: transparent; color: var(--ui-secondary); cursor: pointer; }
+#app .qb-search-close:hover { background: var(--ui-hover); color: var(--text); }
+#app .qb-th .select-control { flex: 0 1 auto; width: auto; min-width: 0; margin-left: -6px; }
+#app .qb-th .select-control .select-trigger { width: auto; height: 28px; min-height: 28px; max-width: 100%; gap: 4px; padding: 0 6px; border: 0; border-radius: 8px; background: transparent; box-shadow: none; color: var(--ui-secondary); font-size: 13px; font-weight: 400; }
+#app .qb-th .select-control .select-trigger:is(:hover:not(:disabled), [aria-expanded="true"]) { background: var(--ui-hover); color: var(--text); }
+#app .qb-th .select-control .select-trigger > .ui-icon:first-child { display: none; }
+#app .qb-th .select-trigger .select-trigger-label { color: inherit; }
+/* Unfiltered, a head reads as its column name; filtered, it shows the chosen value in the accent colour. */
+#app th:not(.is-filtered) .qb-th .select-trigger .action-label { display: none; }
+#app th.is-filtered .qb-th .select-trigger .select-trigger-label { display: none; }
+#app th.is-filtered .qb-th .select-trigger { color: var(--accent); font-weight: 500; }
 #app .qb-filter { display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 4px 0 12px; border-radius: 999px; background: color-mix(in srgb, var(--accent) 10%, transparent); color: var(--accent); font-size: .8125rem; font-weight: 500; white-space: nowrap; }
 #app .qb-filter[hidden], #app .qb-clear[hidden] { display: none; }
 #app .qb-filter button { width: 24px; height: 24px; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: inherit; cursor: pointer; }
@@ -275,7 +268,7 @@
 #app .qb-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; font-size: 15px; line-height: 22px; }
 #app .qb-col-entity { width: 200px; }
 #app .qb-col-type { width: 220px; }
-#app .qb-table th { position: sticky; top: 0; z-index: 1; height: 40px; padding: 0 16px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--text) 3%, var(--planner-card-bg)); color: var(--ui-secondary); font-size: 13px; font-weight: 500; line-height: 20px; text-align: left; white-space: nowrap; }
+#app .qb-table th { position: sticky; top: 0; z-index: 1; height: 40px; padding: 0 16px; border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--text) 3%, var(--planner-card-bg)); color: var(--ui-secondary); font-size: 13px; font-weight: 400; line-height: 20px; text-align: left; white-space: nowrap; }
 #app .qb-table td { padding: 14px 16px; border-bottom: 1px solid var(--line); color: var(--text); vertical-align: middle; transition: background-color .12s ease; }
 #app .qb-table tbody tr { cursor: pointer; }
 #app .qb-table tbody tr:last-child td { border-bottom: 0; }

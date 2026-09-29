@@ -282,11 +282,6 @@
           <div id="planner-composer-dock" class="planner-composer-dock" hidden></div>
           <section id="planner-questions-page" class="planner-questions-page" aria-labelledby="planner-questions-title" hidden>
             <div class="qb-main">
-              <div class="qb-layers" role="group" aria-label="Filter by layer">
-                <button class="qb-layer" type="button" aria-pressed="false" data-layer="business"><img src="/illustrations/concerns/business.svg" alt="" width="61" height="48" data-inline-svg /><span class="qb-layer-copy"><span>Business layer</span><small class="qb-layer-count"></small></span></button>
-                <button class="qb-layer" type="button" aria-pressed="false" data-layer="api"><img src="/illustrations/concerns/api.svg" alt="" width="61" height="48" data-inline-svg /><span class="qb-layer-copy"><span>API layer</span><small class="qb-layer-count"></small></span></button>
-                <button class="qb-layer" type="button" aria-pressed="false" data-layer="runtime"><img src="/illustrations/concerns/runtime.svg" alt="" width="61" height="48" data-inline-svg /><span class="qb-layer-copy"><span>Runtime layer</span><small class="qb-layer-count"></small></span></button>
-              </div>
               <div class="qb-table-card">
                 <header class="qb-table-head">
                   <div class="qb-heading">
@@ -295,14 +290,22 @@
                   </div>
                   <div class="qb-filter" hidden></div>
                   <button class="qb-clear" type="button" hidden>Clear filters</button>
-                  <select class="qb-entity-filter" aria-label="Entity type" data-label="Entity"><option value="">All entity types</option></select>
-                  <select class="qb-type-filter" aria-label="Question type" data-label="Question" data-icon="question"><option value="">All question types</option></select>
-                  <label class="qb-search"><svg data-icon="magnifying-glass"></svg><input type="search" placeholder="Search questions" aria-label="Search questions" autocomplete="off" /></label>
                 </header>
                 <div class="qb-table-scroll">
                   <table class="qb-table">
                     <colgroup><col /><col class="qb-col-entity" /><col class="qb-col-type" /></colgroup>
-                    <thead><tr><th scope="col">Question</th><th scope="col">Entity type</th><th scope="col">Question type</th></tr></thead>
+                    <thead>
+                      <tr>
+                        <th scope="col">
+                          <div class="qb-th qb-th-question">
+                            <button class="qb-search-toggle" type="button" aria-label="Search questions" title="Search questions"><span>Question</span><svg data-icon="magnifying-glass"></svg></button>
+                            <label class="qb-search" hidden><svg data-icon="magnifying-glass"></svg><input type="search" placeholder="Search questions" aria-label="Search questions" autocomplete="off" /><button class="qb-search-close" type="button" aria-label="Close search" title="Close search"><svg data-icon="x"></svg></button></label>
+                          </div>
+                        </th>
+                        <th scope="col"><div class="qb-th"><select class="qb-entity-filter" aria-label="Entity type" data-label="Entity type"><option value="">All entity types</option></select></div></th>
+                        <th scope="col"><div class="qb-th"><select class="qb-type-filter" aria-label="Question type" data-label="Question type" data-icon="question"><option value="">All question types</option></select></div></th>
+                      </tr>
+                    </thead>
                     <tbody></tbody>
                   </table>
                   <div class="qb-empty" hidden><strong>No questions match</strong><span>Try another search, or clear the filters.</span></div>
