@@ -52,3 +52,51 @@ export class NodeGradientProgram extends NodeCircleProgram {
     };
   }
 }
+
+// Constellation V1 shading: a bright core with a soft halo that fades out,
+// so dense regions read as glowing particle clouds.
+const GLOW_FRAGMENT_SHADER = /* glsl */ `
+precision highp float;
+
+varying vec4 v_color;
+varying vec2 v_diffVector;
+varying float v_radius;
+
+uniform float u_correctionRatio;
+
+const vec4 transparent = vec4(0.0, 0.0, 0.0, 0.0);
+
+void main(void) {
+  float d = length(v_diffVector) / max(v_radius, 0.0001);
+
+  #ifdef PICKING_MODE
+  if (d > 0.55)
+    gl_FragColor = transparent;
+  else
+    gl_FragColor = v_color;
+  #else
+  if (d > 1.0) {
+    gl_FragColor = transparent;
+    return;
+  }
+  // Dark themes mark colours with alpha just under 1: there the glow adds
+  // light, so overlapping particles brighten instead of hiding each other.
+  bool additive = v_color.a < 0.99;
+  float core = 1.0 - smoothstep(0.24, 0.4, d);
+  float halo = pow(1.0 - d, 2.4) * 0.45;
+  float hot = 1.0 - smoothstep(0.0, 0.2, d);
+  vec3 color = mix(v_color.rgb, vec3(1.0), hot * 0.5);
+  float alpha = clamp(core + halo, 0.0, 1.0);
+  gl_FragColor = additive ? vec4(color * alpha * 0.8, alpha * 0.55) : vec4(color * alpha, alpha);
+  #endif
+}
+`;
+
+export class NodeGlowProgram extends NodeCircleProgram {
+  getDefinition() {
+    return {
+      ...super.getDefinition(),
+      FRAGMENT_SHADER_SOURCE: GLOW_FRAGMENT_SHADER,
+    };
+  }
+}

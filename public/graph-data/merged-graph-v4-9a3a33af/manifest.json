@@ -1,9 +1,9 @@
 {
-  "formatVersion": 11,
-  "sourceFingerprint": "307d10d3f9c2173f3429f6f4f6467af560b2349f78ab872055149f157a589c67",
+  "formatVersion": 12,
+  "sourceFingerprint": "9cc0d4e2c37f4f0e30b286f732ff280f2e4938d146f6892644f8708fcb6d79d0",
   "sourceName": "merged-graph-v4.json",
   "name": "merged-graph-v4",
-  "generatedAt": "2026-09-22T04:47:17.182Z",
+  "generatedAt": "2026-09-29T15:49:51.431Z",
   "sourceDigest": "238f085984e212d31a1c42e8a6a0448c6257eff0452c9b12804b63953e0749a3",
   "meta": {
     "generatedAt": "2026-08-31T02:06:27.325201+00:00",
@@ -98,6 +98,178 @@
       "BUSINESS",
       "API",
       "RUNTIME"
+    ],
+    "planes": [
+      {
+        "index": 0,
+        "layer": "BUSINESS",
+        "types": [
+          "BUSINESS-AREA",
+          "BUSINESS-DOMAIN",
+          "SERVICE-DOMAIN"
+        ],
+        "count": 393,
+        "label": "Business area + 2 more",
+        "cx": 0,
+        "cy": 4712.821933511708,
+        "half": 650,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 1,
+        "layer": "BUSINESS",
+        "types": [
+          "BUSINESS-CAPABILITY",
+          "TEAMS"
+        ],
+        "count": 406,
+        "label": "Business capability · Teams",
+        "cx": 0,
+        "cy": 4048.4532711753704,
+        "half": 656.9666539304048,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 2,
+        "layer": "API",
+        "types": [
+          "APPLICATION",
+          "API"
+        ],
+        "count": 1868,
+        "label": "Application · API",
+        "cx": 0,
+        "cy": 3270.6272790512985,
+        "half": 983.6980287874546,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 3,
+        "layer": "API",
+        "types": [
+          "API-VERSION"
+        ],
+        "count": 1842,
+        "label": "API version",
+        "cx": 0,
+        "cy": 2382.7327947719773,
+        "half": 980.6975132105484,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 4,
+        "layer": "API",
+        "types": [
+          "ENDPOINT"
+        ],
+        "count": 1842,
+        "label": "Endpoint",
+        "cx": 0,
+        "cy": 1495.8584857888045,
+        "half": 980.6975132105484,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 5,
+        "layer": "API",
+        "types": [
+          "HTTP-METHOD",
+          "SECURITY",
+          "EXPOSURE",
+          "PCI",
+          "PII",
+          "GATEWAY",
+          "MICROSERVICE",
+          "WORKFLOW",
+          "QUERY-PARAMETER",
+          "PATH-PARAMETER"
+        ],
+        "count": 1286,
+        "label": "HTTP method + 9 more",
+        "cx": 0,
+        "cy": 635.1367233393489,
+        "half": 903.7782586996146,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 6,
+        "layer": "API",
+        "types": [
+          "HEADER"
+        ],
+        "count": 7810,
+        "label": "Header",
+        "cx": 0,
+        "cy": -330.7259528697491,
+        "half": 1289.9354948565556,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 7,
+        "layer": "API",
+        "types": [
+          "STATUS-CODE"
+        ],
+        "count": 1978,
+        "label": "Status code",
+        "cx": 0,
+        "cy": -1327.9259204928521,
+        "half": 995.946762858453,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 8,
+        "layer": "API",
+        "types": [
+          "SCHEMA"
+        ],
+        "count": 3909,
+        "label": "Schema",
+        "cx": 0,
+        "cy": -2274.750108905517,
+        "half": 1141.7714383552675,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 9,
+        "layer": "API",
+        "types": [
+          "FIELD",
+          "CONSUMER"
+        ],
+        "count": 53035,
+        "label": "Field · Consumer",
+        "cx": 0,
+        "cy": -3460.952397946308,
+        "half": 1700,
+        "shear": 0.32,
+        "squash": 0.34
+      },
+      {
+        "index": 10,
+        "layer": "RUNTIME",
+        "types": [
+          "OPERATION",
+          "DATABASE",
+          "EVENT"
+        ],
+        "count": 1946,
+        "label": "Operation + 2 more",
+        "cx": 0,
+        "cy": -4596.387165729008,
+        "half": 992.4551993608832,
+        "shear": 0.32,
+        "squash": 0.34
+      }
     ],
     "relationshipSchema": [
       {
@@ -775,17 +947,17 @@
     "API": {
       "file": "nodes-api-c8e5998f.json.gz",
       "nodes": 73570,
-      "uncompressedBytes": 49720347
+      "uncompressedBytes": 68466023
     },
     "BUSINESS": {
       "file": "nodes-business-8eb6a764.json.gz",
       "nodes": 799,
-      "uncompressedBytes": 473125
+      "uncompressedBytes": 670825
     },
     "RUNTIME": {
       "file": "nodes-runtime-645e4fc5.json.gz",
       "nodes": 1946,
-      "uncompressedBytes": 1843394
+      "uncompressedBytes": 2339010
     }
   },
   "edgeChunks": [

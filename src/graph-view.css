@@ -237,3 +237,13 @@
 #app #query-panel .link-button.clear-button { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 8px; border-radius: 8px; background: var(--control-fill); color: var(--text); font-size: .8125rem; font-weight: 500; }
 #app #query-panel .link-button.clear-button:hover:not(:disabled) { background: var(--control-fill-hover); }
 #app #query-panel .link-button.clear-button .ui-icon { width: 14px; height: 14px; flex-basis: 14px; color: var(--ui-secondary); }
+
+/* Organizational planes: a hint beside the view switch, or the focused plane with a way back. */
+/* Absolutely placed beside the switch so it never shifts the centred switch itself. */
+#app .plane-hint { position: absolute; left: calc(100% + 8px); top: 50%; transform: translateY(-50%); white-space: nowrap; display: inline-flex; align-items: center; gap: 8px; height: 42px; padding: 0 12px; border-radius: 14px; background: var(--panel); color: var(--ui-secondary); font-size: .8125rem; line-height: 1.125rem; box-shadow: 0 0 0 1px rgba(5, 5, 5, .06), 0 4px 12px -2px rgba(18, 35, 66, .12); }
+:root:not([data-theme="light"]) #app .plane-hint { box-shadow: 0 0 0 1px rgba(255, 255, 255, .08), 0 4px 12px -2px rgba(0, 0, 0, .45); }
+#app .plane-hint[hidden] { display: none; }
+#app .plane-hint:has(button) { padding-left: 4px; }
+#app .plane-hint button { height: 34px; padding: 0 10px; border: 0; border-radius: 10px; background: color-mix(in srgb, var(--text) 8%, transparent); color: var(--text); font: inherit; font-weight: 500; cursor: pointer; }
+#app .plane-hint button:hover { background: color-mix(in srgb, var(--text) 12%, transparent); }
+#app .plane-hint span { color: var(--text); }

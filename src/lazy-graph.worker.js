@@ -14,7 +14,7 @@ function resolveChunkUrl(manifestUrl, filename) {
 }
 
 function validateManifest(manifest) {
-  if (!manifest || manifest.formatVersion !== 11 || !manifest.meta || !manifest.catalogChunks || !manifest.layerChunks || !Array.isArray(manifest.edgeChunks)) {
+  if (!manifest || manifest.formatVersion !== 12 || !manifest.meta || !manifest.catalogChunks || !manifest.layerChunks || !Array.isArray(manifest.edgeChunks)) {
     throw new Error("Invalid graph chunk manifest");
   }
   return manifest;

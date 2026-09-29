@@ -8,8 +8,8 @@ import { prepare } from "../src/graph.worker.js";
 import { graphSources } from "./graph-source.mjs";
 
 const gzipAsync = promisify(gzip);
-const CHUNK_FORMAT_VERSION = 11;
-const REGISTRY_FORMAT_VERSION = 10;
+const CHUNK_FORMAT_VERSION = 12;
+const REGISTRY_FORMAT_VERSION = 11;
 const outputUrl = new URL("../public/graph-data/", import.meta.url);
 const temporaryUrl = new URL("../public/graph-data.tmp/", import.meta.url);
 const slug = (value) => String(value).toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "graph";

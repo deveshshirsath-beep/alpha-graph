@@ -1,6 +1,8 @@
 import Graph from "graphology";
 import Sigma from "sigma";
-import { NodeGradientProgram } from "./rendering.js";
+import { NodeGlowProgram, NodeGradientProgram } from "./rendering.js";
+import { drawPlanes, planeAtPoint, planeCorners } from "./graph-planes.js";
+import { ParticleLayer, parseColor } from "./v1-particles.js";
 import { drawGraphNodeHover, graphLabelPalette } from "./graph-labels.js";
 import { captureException, initializeObservability, startTimer, trackEvent } from "./observability.js";
 import { escapeHtml, safeCssColor } from "./sanitize.js";
@@ -82,6 +84,45 @@ let conditionalNodes = null;
 let conditionalEdges = null;
 let currentLayout = "donut";
 let layoutAnimation = null;
+/** The Organizational plane shown on its own, or null for the whole stack. */
+let isolatedPlane = null;
+let hoveredPlane = null;
+let planeContext = null;
+/** Screen pixels per graph unit at the fitted zoom; caps node sizes so neighbours never overlap. */
+let pixelsPerUnit = 0;
+let rotationFrame = 0;
+let rotationPausedUntil = 0;
+/** Constellation V1 is a disc seen from slightly above, turning about its centre. */
+let v1Angle = 0;
+const V1_ELEVATION_SIN = 0.38;
+const V1_ELEVATION_COS = Math.sqrt(1 - V1_ELEVATION_SIN ** 2);
+const V1_CAMERA_DISTANCE = 3.2 * 3400;
+/**
+ * Organizational tilt by zoom. Zoomed out, the planes are steeply tilted and a
+ * click picks a whole plane; zooming in opens them up so single entities can
+ * be picked. maxRatio is the largest camera ratio each level is used at.
+ */
+const PLANE_HALF = 1000;
+const PLANE_LEVELS = [
+  { squash: 0.34, shear: 0.32, maxRatio: 1 },
+  { squash: 0.56, shear: 0.2, maxRatio: 0.5 },
+  { squash: 0.82, shear: 0.08, maxRatio: 0.2 },
+];
+let planeLevel = 0;
+let planeLevelTimer = 0;
+/** The focused plane's back arrow, drawn on the canvas next to its name. */
+let planeBackButton = null;
+let planeBackHovered = false;
+/** V1 particles drawn on the GPU; sigma keeps only hubs, labels and highlighted nodes. */
+let particleLayer = null;
+let particleIds = [];
+let particleDisc = new Float32Array(0);
+let particleSignature = "";
+let v1SigmaNodes = [];
+let particleHoverFrame = 0;
+/** The GPU particle under the pointer; drawn on an overlay so hovering never re-processes the graph. */
+let hoveredParticle = null;
+let particleHoverContext = null;
 let minimapDirty = true;
 const minimapBase = document.createElement("canvas");
 const traversalSelections = new Set();
@@ -171,6 +212,7 @@ const V2_ENTITY_COLORS = {
   DATABASE: ["#922924", "#702c2c", "#2ba78b", "#d84b94"],
   EVENT: ["#ff5050", "#b73b3b", "#68b76e", "#c966bf"],
 };
+const V1_LABEL_TYPES = new Set(["BUSINESS-AREA", "BUSINESS-DOMAIN", "APPLICATION", "DATABASE", "EVENT"]);
 const DENSE_ANCHOR_TYPES = new Set(["BUSINESS-AREA", "BUSINESS-DOMAIN", "APPLICATION", "API", "SCHEMA", "DATABASE", "EVENT"]);
 
 const els = {
@@ -265,6 +307,7 @@ function sampleForType(type) {
 }
 
 function isNodeVisible(node, attributes = graph.getNodeAttributes(node)) {
+  if (isolatedPlane !== null && currentLayout === "hierarchy" && attributes.plane !== isolatedPlane) return false;
   if (conditionalNodes) return conditionalNodes.has(node);
   if (!state.nodeTypes.has(attributes.entityType)) return false;
   if (focusedNeighborhood && !focusedNeighborhood.has(node)) return false;
@@ -277,7 +320,8 @@ function isEdgeVisible(edge, attributes, source, target) {
   return state.edgeTypes.has(attributes.relationshipType) && isNodeVisible(source) && isNodeVisible(target);
 }
 
-function forEachVisibleCandidate(callback) {
+function forEachVisibleCandidate(visit) {
+  const callback = isolatedPlane !== null && currentLayout === "hierarchy" ? (node, attributes) => { if (attributes.plane === isolatedPlane) visit(node, attributes); } : visit;
   if (conditionalNodes) {
     for (const node of conditionalNodes) callback(node, graph.getNodeAttributes(node));
     return;
@@ -305,6 +349,18 @@ function nodeReducer(node, data) {
   const denseAnchor = DENSE_ANCHOR_TYPES.has(data.entityType);
   const densityScale = graph.order > 50000 ? (denseAnchor ? 0.92 : 0.31) : graph.order > 12000 ? (denseAnchor ? 0.96 : 0.56) : graph.order > 4000 ? 0.76 : 1;
   result.size = Math.max(denseAnchor ? 2.5 : 0.66, data.size * densityScale);
+  if (currentLayout === "constellation-v1") {
+    // Glowing particles: the halo takes up the outer part of each disc.
+    result.type = "glow";
+    result.size = V1_LABEL_TYPES.has(data.entityType) ? result.size * 2.2 : Math.min(2.4, Math.max(1.1, result.size * 1.4));
+    if (activeTheme !== "light") result.color = glowColor(result.color);
+    // Particles all look alike in size, so only the top-level hubs carry labels.
+    if (!V1_LABEL_TYPES.has(data.entityType)) result.label = "";
+  } else {
+    // Each layout gives every entity a slot; staying inside it keeps neighbours apart at the fitted zoom.
+    const slot = currentLayout === "hierarchy" ? (isolatedPlane !== null ? data.planeFlatSlot : data.planeFlatSlot * planeSlotScale()) : data.donutSlot;
+    if (pixelsPerUnit && Number.isFinite(slot)) result.size = Math.max(0.75, Math.min(result.size, slot * pixelsPerUnit * 0.92));
+  }
 
   if (traversalSelections.has(node)) {
     result.size = Math.max(data.size * 1.65, 8);
@@ -331,7 +387,25 @@ function nodeReducer(node, data) {
     result.forceLabel = true;
     result.zIndex = 2;
   }
+  if (currentLayout === "constellation-v1") {
+    // Plain particles go to the GPU layer; sigma draws hubs and anything highlighted.
+    if (particleLayer && !V1_LABEL_TYPES.has(data.entityType) && !(result.zIndex >= 2)) {
+      result.particle = true;
+      result.hidden = true;
+    } else result.size *= data.v1Scale || 1;
+  }
   return result;
+}
+
+const glowColors = new Map();
+/** The same colour with alpha just under 1, which the glow shader reads as "add light". */
+function glowColor(color) {
+  if (!glowColors.has(color)) {
+    const value = /^#([0-9a-f]{6})$/i.exec(color || "");
+    const number = value ? parseInt(value[1], 16) : 0x72b5ff;
+    glowColors.set(color, `rgba(${number >> 16}, ${(number >> 8) & 255}, ${number & 255}, 0.98)`);
+  }
+  return glowColors.get(color);
 }
 
 function edgeReducer(edge, data) {
@@ -343,6 +417,12 @@ function edgeReducer(edge, data) {
     return result;
   }
 
+  // Constellation V1 is a particle field turning in perspective: edges would
+  // have to be re-projected every frame and read as noise, so they stay hidden.
+  if (currentLayout === "constellation-v1") {
+    result.hidden = true;
+    return result;
+  }
   if (traversalEdges) {
     result.hidden = true;
     result.zIndex = 2;
@@ -355,6 +435,10 @@ function edgeReducer(edge, data) {
     }
   } else {
     result.color = activeTheme === "light" ? "#e5e7ea" : activeTheme === "ocean" ? "#15343d" : activeTheme === "sunset" ? "#3b2632" : "#1d2024";
+    // Between stacked planes thousands of lines run in parallel and merge into
+    // a solid column, so they are drawn barely above the background there.
+    // (Sigma's edge shader ignores alpha, so these are solid tones near each background.)
+    if (currentLayout === "hierarchy" && isolatedPlane === null) result.color = activeTheme === "light" ? "#eef0f2" : activeTheme === "ocean" ? "#10262e" : activeTheme === "sunset" ? "#291b24" : "#131519";
     result.size = graph.order > 50000 ? 0.16 : activeTheme === "light" ? 0.38 : 0.3;
   }
   return result;
@@ -380,6 +464,7 @@ function setLayoutSwitch(mode) {
 function changeVisualizationMode(mode) {
   setLayoutSwitch(mode);
   morphLayout(mode);
+  renderPlaneHint();
 }
 
 function edgeHash(value) {
@@ -628,54 +713,250 @@ function ensureCatalogTypes(types) {
   return new Promise((resolve) => pendingCatalogRequests.set(requestId, resolve));
 }
 
+/**
+ * Constellation V1 in perspective: turn the disc by v1Angle about its centre,
+ * look at it from slightly above, and shrink what is farther away. v1Z lifts
+ * particles off the disc into the wave field.
+ */
+function projectV1(attributes, angle = v1Angle) {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  const x = attributes.v1X * cos - attributes.v1Y * sin;
+  const depth = attributes.v1X * sin + attributes.v1Y * cos;
+  const scale = V1_CAMERA_DISTANCE / (V1_CAMERA_DISTANCE + depth * V1_ELEVATION_COS);
+  return { x: x * scale, y: (depth * V1_ELEVATION_SIN + (attributes.v1Z || 0) * V1_ELEVATION_COS) * scale, scale };
+}
+
+/** Keeps a sigma-drawn node at its projected V1 position for the current turn. */
+function syncV1Node(node) {
+  if (!graph.hasNode(node)) return;
+  const attributes = graph.getNodeAttributes(node);
+  const point = projectV1(attributes);
+  attributes.x = point.x;
+  attributes.y = point.y;
+  attributes.v1Scale = point.scale;
+}
+
+/** Graph → viewport as three numbers per axis, read from sigma so pan and zoom match. */
+function viewportAffine() {
+  const origin = renderer.graphToViewport({ x: 0, y: 0 });
+  const unitX = renderer.graphToViewport({ x: 1000, y: 0 });
+  const unitY = renderer.graphToViewport({ x: 0, y: 1000 });
+  return {
+    origin,
+    ax: { x: (unitX.x - origin.x) / 1000, y: (unitX.y - origin.y) / 1000 },
+    ay: { x: (unitY.x - origin.x) / 1000, y: (unitY.y - origin.y) / 1000 },
+  };
+}
+
+/** Rebuilds the particle buffers when what they show changes (filters, selection, theme …). */
+function syncParticles() {
+  const signature = [currentLayout, activeTheme, selectedNode, graph.order, [...state.nodeTypes].join(), conditionalNodes?.size ?? -1, focusedNeighborhood?.size ?? -1, traversalSelections.size, traversalEdges?.size ?? -1].join("|");
+  if (signature === particleSignature) return;
+  particleSignature = signature;
+  const ids = [];
+  const sigmaNodes = [];
+  const disc = [];
+  const colors = [];
+  const sizes = [];
+  graph.forEachNode((node, attributes) => {
+    const style = nodeReducer(node, attributes);
+    if (style.particle) {
+      ids.push(node);
+      disc.push(attributes.v1X, attributes.v1Y, attributes.v1Z || 0);
+      // The most numerous types are fainter, so dense bands read as haze
+      // and the rarer, structural particles stand out.
+      const color = parseColor(style.color);
+      const count = graphMeta?.counts?.[attributes.entityType] || 0;
+      color[3] = Math.round(color[3] * (count > 20000 ? 0.5 : count > 5000 ? 0.72 : 1));
+      colors.push(...color);
+      sizes.push(style.size);
+    } else if (!style.hidden) sigmaNodes.push(node);
+  });
+  particleIds = ids;
+  particleDisc = new Float32Array(disc);
+  v1SigmaNodes = sigmaNodes;
+  particleLayer.setData({ disc: particleDisc, color: new Uint8Array(colors), size: new Float32Array(sizes), count: ids.length });
+}
+
+function drawParticles() {
+  if (!particleLayer) return;
+  if (currentLayout !== "constellation-v1") {
+    if (particleIds.length) {
+      particleIds = [];
+      particleSignature = "";
+      particleLayer.setData({ disc: new Float32Array(0), color: new Uint8Array(0), size: new Float32Array(0), count: 0 });
+    }
+    particleLayer.clear();
+    return;
+  }
+  syncParticles();
+  const { width, height } = renderer.getDimensions();
+  const { origin, ax, ay } = viewportAffine();
+  const pixelRatio = window.devicePixelRatio || 1;
+  particleLayer.resize(width, height, pixelRatio);
+  particleLayer.draw({
+    angle: v1Angle,
+    sinE: V1_ELEVATION_SIN,
+    cosE: V1_ELEVATION_COS,
+    distance: V1_CAMERA_DISTANCE,
+    affineX: [(ax.x * 2) / width, (ay.x * 2) / width, (origin.x * 2) / width - 1],
+    affineY: [(-ax.y * 2) / height, (-ay.y * 2) / height, 1 - (origin.y * 2) / height],
+    sizeScale: pixelRatio / Math.sqrt(renderer.getCamera().getState().ratio),
+    additive: activeTheme !== "light",
+  });
+}
+
+function drawParticleHover() {
+  if (!particleHoverContext) return;
+  const { width, height } = renderer.getDimensions();
+  particleHoverContext.clearRect(0, 0, width, height);
+  if (currentLayout !== "constellation-v1" || !hoveredParticle || !graph.hasNode(hoveredParticle)) return;
+  const attributes = graph.getNodeAttributes(hoveredParticle);
+  const point = projectV1(attributes);
+  const { origin, ax, ay } = viewportAffine();
+  const style = nodeReducer(hoveredParticle, attributes);
+  drawGraphNodeHover(particleHoverContext, {
+    x: origin.x + ax.x * point.x + ay.x * point.y,
+    y: origin.y + ax.y * point.x + ay.y * point.y,
+    size: (style.size * point.scale) / Math.sqrt(renderer.getCamera().getState().ratio),
+    label: attributes.label,
+  }, renderer.getSettings(), activeTheme);
+}
+
+/** The GPU particle under a viewport point, found by projecting on the CPU only when asked. */
+function particleAt(point, radius = 7) {
+  if (currentLayout !== "constellation-v1" || !particleIds.length) return null;
+  const { origin, ax, ay } = viewportAffine();
+  const cos = Math.cos(v1Angle);
+  const sin = Math.sin(v1Angle);
+  let best = null;
+  let bestDistance = radius * radius;
+  for (let index = 0; index < particleIds.length; index += 1) {
+    const discX = particleDisc[index * 3];
+    const discY = particleDisc[index * 3 + 1];
+    const x = discX * cos - discY * sin;
+    const depth = discX * sin + discY * cos;
+    const scale = V1_CAMERA_DISTANCE / (V1_CAMERA_DISTANCE + depth * V1_ELEVATION_COS);
+    const graphX = x * scale;
+    const graphY = (depth * V1_ELEVATION_SIN + particleDisc[index * 3 + 2] * V1_ELEVATION_COS) * scale;
+    const dx = origin.x + ax.x * graphX + ay.x * graphY - point.x;
+    const dy = origin.y + ax.y * graphX + ay.y * graphY - point.y;
+    const distance = dx * dx + dy * dy;
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      best = particleIds[index];
+    }
+  }
+  return best;
+}
+
+function planeLevelForRatio(ratio) {
+  return PLANE_LEVELS.reduce((level, entry, index) => (ratio <= entry.maxRatio ? index : level), 0);
+}
+
+/** The Organizational planes stacked in one column, tilted for a zoom level. Bigger planes take more height. */
+function stackedPlanes(level = planeLevel) {
+  const planes = graphMeta?.planes || [];
+  const { squash, shear } = PLANE_LEVELS[level];
+  const gap = PLANE_HALF * 0.22;
+  const height = planes.reduce((sum, plane) => sum + plane.half * 2 * squash, 0) + gap * Math.max(0, planes.length - 1);
+  let cursor = height / 2;
+  return planes.map((plane) => {
+    const cy = cursor - plane.half * squash;
+    cursor -= plane.half * 2 * squash + gap;
+    return { ...plane, flatCx: plane.cx, flatCy: plane.cy, cx: 0, cy, squash, shear };
+  });
+}
+
+/** How much of a node's flat slot survives the tilt, allowing for the zoom the level is used at. */
+function planeSlotScale(level = planeLevel) {
+  const { squash, shear, maxRatio } = PLANE_LEVELS[level];
+  const trace = 1 + shear ** 2 + squash ** 2;
+  const minStretch = Math.sqrt((trace - Math.sqrt(trace ** 2 - 4 * squash ** 2)) / 2);
+  return minStretch / Math.sqrt(maxRatio);
+}
+
+/** Recomputes every node's stacked position for a tilt level. */
+function applyPlaneGeometry(level = planeLevel) {
+  const planes = stackedPlanes(level);
+  graph.forEachNode((_node, attributes) => {
+    const plane = planes[attributes.plane];
+    if (!plane) return;
+    const u = attributes.planeFlatX - plane.flatCx;
+    const v = attributes.planeFlatY - plane.flatCy;
+    attributes.hierarchyX = plane.cx + u + v * plane.shear;
+    attributes.hierarchyY = plane.cy + v * plane.squash;
+  });
+}
+
+/** Planes as currently drawn: flat for the isolated one, otherwise the tilted stack. */
+function visiblePlanes() {
+  if (!graphMeta?.planes?.length) return [];
+  if (isolatedPlane !== null) return graphMeta.planes.filter((plane) => plane.index === isolatedPlane);
+  return stackedPlanes().filter((plane) => plane.types.some((type) => state.nodeTypes.has(type) && loadedTypes().has(type)));
+}
+
+/**
+ * Re-tilts the stack when zoom crosses a level, keeping the point at the
+ * centre of the screen in place while the planes open up or close.
+ */
+function changePlaneLevel(level) {
+  if (!renderer || level === planeLevel || currentLayout !== "hierarchy" || isolatedPlane !== null) return;
+  const { width, height } = renderer.getDimensions();
+  const center = renderer.viewportToGraph({ x: width / 2, y: height / 2 });
+  const before = stackedPlanes(planeLevel);
+  if (!before.length) return;
+  const anchorPlane = before.reduce((best, plane) => (Math.abs(plane.cy - center.y) < Math.abs(best.cy - center.y) ? plane : best));
+  const v = (center.y - anchorPlane.cy) / anchorPlane.squash;
+  const u = center.x - anchorPlane.cx - v * anchorPlane.shear;
+  planeLevel = level;
+  applyPlaneGeometry(level);
+  const after = stackedPlanes(level)[anchorPlane.index];
+  const anchorAfter = { x: after.cx + u + v * after.shear, y: after.cy + v * after.squash };
+  const framed = (point) => renderer.viewportToFramedGraph(renderer.graphToViewport(point));
+  const camera = renderer.getCamera();
+  const startState = camera.getState();
+  const from = framed(center);
+  const to = framed(anchorAfter);
+  renderPlaneHint();
+  morphLayout("hierarchy", {
+    force: true,
+    fit: false,
+    onFrame: (eased) => camera.setState({ ...startState, x: startState.x + (to.x - from.x) * eased, y: startState.y + (to.y - from.y) * eased }),
+  });
+}
+
+/** Puts every node at its position in the current layout, without animating. */
+function snapToLayout() {
+  graph.forEachNode((node, attributes) => {
+    const target = layoutTarget(currentLayout, attributes);
+    attributes.x = target.x;
+    attributes.y = target.y;
+  });
+}
+
+/** Where a node sits in a layout. Isolated planes lie flat; the other planes stay put. */
+function layoutTarget(mode, attributes) {
+  if (mode === "constellation-v1" && Number.isFinite(attributes.v1X)) {
+    const point = projectV1(attributes);
+    attributes.v1Scale = point.scale;
+    return point;
+  }
+  let prefix = mode === "hierarchy" ? "hierarchy" : mode === "constellation-v1" ? "v1" : "semantic";
+  if (mode === "hierarchy" && isolatedPlane !== null && attributes.plane === isolatedPlane) prefix = "planeFlat";
+  const x = attributes[`${prefix}X`];
+  const y = attributes[`${prefix}Y`];
+  return { x: Number.isFinite(x) ? x : attributes.semanticX, y: Number.isFinite(y) ? y : attributes.semanticY };
+}
+
 function applyLayerDonutLayout(layer, shouldFit = true) {
   if (!renderer || !LAYERS[layer]?.length || !graph.order) return;
   if (layoutAnimation) cancelAnimationFrame(layoutAnimation);
   layoutAnimation = null;
-
-  const groups = LAYERS[layer]
-    .map((type) => ({
-      type,
-      nodes: graph.filterNodes((node, attributes) => attributes.layer === layer && attributes.entityType === type).sort((first, second) => first.localeCompare(second)),
-    }))
-    .filter((group) => group.nodes.length);
-  const total = groups.reduce((sum, group) => sum + group.nodes.length, 0);
-  if (!total) return;
-
-  const outerRadius = Math.max(1250, Math.min(3600, 760 + Math.sqrt(total) * 9.2));
-  const innerRadius = outerRadius * (groups.length > 10 ? 0.27 : 0.32);
-  const minimumWeight = total * (groups.length > 10 ? 0.006 : 0.024);
-  const weights = groups.map((group) => Math.max(group.nodes.length, minimumWeight));
-  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
-  const goldenAngle = Math.PI * (3 - Math.sqrt(5));
-  let cumulativeWeight = 0;
-
-  groups.forEach((group, groupIndex) => {
-    const startFraction = cumulativeWeight / totalWeight;
-    cumulativeWeight += weights[groupIndex];
-    const endFraction = cumulativeWeight / totalWeight;
-    const rawInner = Math.sqrt(innerRadius ** 2 + startFraction * (outerRadius ** 2 - innerRadius ** 2));
-    const rawOuter = Math.sqrt(innerRadius ** 2 + endFraction * (outerRadius ** 2 - innerRadius ** 2));
-    const gap = Math.min((rawOuter - rawInner) * 0.2, outerRadius * 0.012);
-    const bandInner = rawInner + gap;
-    const bandOuter = Math.max(bandInner + 1, rawOuter - gap);
-    const phase = ((edgeHash(`${layer}\u0000${group.type}`) % 360) / 180) * Math.PI;
-
-    group.nodes.forEach((node, index) => {
-      const attributes = graph.getNodeAttributes(node);
-      const fraction = (index + 0.5) / group.nodes.length;
-      const radius = Math.sqrt(bandInner ** 2 + fraction * (bandOuter ** 2 - bandInner ** 2));
-      const angleJitter = ((edgeHash(node) % 101) - 50) / 1800;
-      const angle = phase + index * goldenAngle + angleJitter;
-      attributes.layerDonutX = Math.cos(angle) * radius;
-      attributes.layerDonutY = Math.sin(angle) * radius;
-      attributes.x = attributes.layerDonutX;
-      attributes.y = attributes.layerDonutY;
-    });
-  });
-
-  currentLayout = "donut";
-  setLayoutSwitch("donut");
+  // Every layout already keeps each layer in its own region, so a single
+  // layer uses the same positions and the camera frames it.
+  snapToLayout();
   const stage = document.querySelector(".stage");
   stage?.classList.add("layer-donut");
   stage?.setAttribute("data-active-layer", layer);
@@ -1210,7 +1491,19 @@ function fitVisibleGraph() {
   let maxX = -Infinity;
   let minY = Infinity;
   let maxY = -Infinity;
+  const turning = currentLayout === "constellation-v1";
   forEachVisibleCandidate((node, attrs) => {
+    if (turning) {
+      // The disc turns, so frame it at every eighth of a turn; nothing leaves the frame as it rotates.
+      for (let step = 0; step < 8; step += 1) {
+        const point = projectV1(attrs, (step * Math.PI) / 4);
+        minX = Math.min(minX, point.x);
+        maxX = Math.max(maxX, point.x);
+        minY = Math.min(minY, point.y);
+        maxY = Math.max(maxY, point.y);
+      }
+      return;
+    }
     minX = Math.min(minX, attrs.x);
     maxX = Math.max(maxX, attrs.x);
     minY = Math.min(minY, attrs.y);
@@ -1221,12 +1514,68 @@ function fitVisibleGraph() {
     renderer.refresh();
     return;
   }
-  const xPadding = Math.max((maxX - minX) * 0.08, 60);
-  const yPadding = Math.max((maxY - minY) * 0.08, 60);
-  renderer.setCustomBBox({ x: [minX - xPadding, maxX + xPadding], y: [minY - yPadding, maxY + yPadding] });
+  if (currentLayout === "hierarchy" && graphMeta?.planes?.length) {
+    // Fitting shows the whole stack, so it returns to the zoomed-out tilt.
+    if (isolatedPlane === null && planeLevel !== 0) {
+      planeLevel = 0;
+      applyPlaneGeometry(0);
+      snapToLayout();
+      renderPlaneHint();
+      minX = Infinity;
+      maxX = -Infinity;
+      minY = Infinity;
+      maxY = -Infinity;
+      forEachVisibleCandidate((node, attrs) => {
+        minX = Math.min(minX, attrs.x);
+        maxX = Math.max(maxX, attrs.x);
+        minY = Math.min(minY, attrs.y);
+        maxY = Math.max(maxY, attrs.y);
+      });
+    }
+    // Frame the plane outlines too.
+    for (const plane of visiblePlanes()) {
+      for (const corner of planeCorners(plane, isolatedPlane !== null)) {
+        minX = Math.min(minX, corner.x);
+        maxX = Math.max(maxX, corner.x);
+        minY = Math.min(minY, corner.y);
+        maxY = Math.max(maxY, corner.y + (isolatedPlane === null ? 0 : plane.half * 0.2));
+      }
+    }
+    if (isolatedPlane === null) {
+      // Labels sit left of the planes and take about 200 screen pixels; turn
+      // that into graph units for a frame that also fits the planes' width.
+      const labelPixels = 200 * textScale();
+      const { width } = renderer.getDimensions();
+      minX -= ((maxX - minX) * labelPixels) / Math.max(1, width - labelPixels);
+    }
+  }
+  // V1 is framed tightly so the disc fills the canvas; other views keep a margin.
+  const margin = turning ? 0.04 : 0.08;
+  const xPadding = Math.max((maxX - minX) * margin, 60);
+  const yPadding = Math.max((maxY - minY) * margin, 60);
+  minX -= xPadding;
+  maxX += xPadding;
+  minY -= yPadding;
+  maxY += yPadding;
+  renderer.setCustomBBox({ x: [minX, maxX], y: [minY, maxY] });
   minimapDirty = true;
   renderer.refresh();
-  renderer.getCamera().animatedReset({ duration: 650 });
+  // Node sizes are capped by pixels per graph unit at the fitted zoom, which
+  // only settles once sigma has applied the new bounding box.
+  if (updatePixelsPerUnit()) renderer.refresh();
+  const camera = renderer.getCamera();
+  camera.animate({ x: 0.5, y: 0.5, ratio: 1, angle: 0 }, { duration: 650 });
+}
+
+/** Returns true when the fitted scale changed enough to resize nodes. */
+function updatePixelsPerUnit() {
+  const cameraState = { x: 0.5, y: 0.5, ratio: 1, angle: 0 };
+  const origin = renderer.graphToViewport({ x: 0, y: 0 }, { cameraState });
+  const unit = renderer.graphToViewport({ x: 1000, y: 0 }, { cameraState });
+  const next = Math.hypot(unit.x - origin.x, unit.y - origin.y) / 1000;
+  const changed = !pixelsPerUnit || Math.abs(next - pixelsPerUnit) / pixelsPerUnit > 0.01;
+  pixelsPerUnit = next;
+  return changed;
 }
 
 /** Moves the camera so a node sits in the middle of the canvas the entity sheet leaves visible. */
@@ -1379,6 +1728,7 @@ function renderInspectorConnections(node) {
 
 function clearSelection(refreshRenderer = true) {
   selectedNode = null;
+  hoveredParticle = null;
   els.inspector.classList.remove("open");
   els.inspector.setAttribute("aria-hidden", "true");
   if (refreshRenderer) renderer?.refresh();
@@ -1571,24 +1921,27 @@ function clearTraversal() {
   selectLayer(activeLayer);
 }
 
-function morphLayout(mode) {
-  if (!renderer || mode === currentLayout) return;
+function morphLayout(mode, { force = false, fit = true, onFrame = null } = {}) {
+  if (!renderer || (mode === currentLayout && !force)) return;
   if (layoutAnimation) cancelAnimationFrame(layoutAnimation);
-  const useLayerDonut = mode === "donut" && loadedLayers.size === 1 && loadedLayers.has(activeLayer);
-  const targetPrefix = mode === "hierarchy" ? "hierarchy" : mode === "constellation-v1" ? "v1" : useLayerDonut ? "layerDonut" : "semantic";
+  if (mode !== "hierarchy") setIsolatedPlane(null);
   const stage = document.querySelector(".stage");
-  stage?.classList.toggle("layer-donut", useLayerDonut);
+  stage?.classList.toggle("layer-donut", mode === "donut" && loadedLayers.size === 1 && loadedLayers.has(activeLayer));
+  stage?.setAttribute("data-layout", mode);
+  const previousLayout = currentLayout;
+  currentLayout = mode;
   const items = [];
   graph.forEachNode((node, attrs) => {
-    const targetX = Number.isFinite(attrs[`${targetPrefix}X`]) ? attrs[`${targetPrefix}X`] : attrs.semanticX;
-    const targetY = Number.isFinite(attrs[`${targetPrefix}Y`]) ? attrs[`${targetPrefix}Y`] : attrs.semanticY;
+    const { x: targetX, y: targetY } = layoutTarget(mode, attrs);
     if (isNodeVisible(node, attrs)) items.push({ node, attrs, startX: attrs.x, startY: attrs.y, targetX, targetY });
     else {
       attrs.x = targetX;
       attrs.y = targetY;
     }
   });
-  currentLayout = mode;
+  if (previousLayout === "constellation-v1" && mode !== "constellation-v1") stopRotation();
+  // Node sizes depend on the layout's slots, so recompute them before animating.
+  renderer.refresh();
   const duration = items.length > 20000 ? 360 : 650;
   const start = performance.now();
   stage?.classList.add("layout-morphing");
@@ -1599,16 +1952,138 @@ function morphLayout(mode) {
       item.attrs.x = item.startX + (item.targetX - item.startX) * eased;
       item.attrs.y = item.startY + (item.targetY - item.startY) * eased;
     }
+    onFrame?.(eased);
     renderer.refresh({ skipIndexation: true, partialGraph: { nodes: items.map((item) => item.node) } });
     if (raw < 1) layoutAnimation = requestAnimationFrame(tick);
     else {
       layoutAnimation = null;
       stage?.classList.remove("layout-morphing");
       minimapDirty = true;
-      fitVisibleGraph();
+      if (fit) fitVisibleGraph();
+      else renderer.refresh();
+      if (mode === "constellation-v1") startRotation();
     }
   };
   layoutAnimation = requestAnimationFrame(tick);
+}
+
+/** Constellation V1 turns slowly around its centre. Dragging, zooming or reduced motion pauses it. */
+function startRotation() {
+  if (rotationFrame || !renderer || currentLayout !== "constellation-v1") return;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const turnSeconds = 180;
+  let last = performance.now();
+  const step = (time) => {
+    rotationFrame = requestAnimationFrame(step);
+    const elapsed = Math.min(250, time - last);
+    // About 30 frames a second is smooth at this speed and halves the work.
+    if (elapsed < 32) return;
+    last = time;
+    if (time < rotationPausedUntil || document.hidden || layoutAnimation || selectedNode) return;
+    v1Angle = (v1Angle + (elapsed / 1000) * ((Math.PI * 2) / turnSeconds)) % (Math.PI * 2);
+    if (particleLayer) {
+      // The GPU turns the particles; sigma only moves its few hubs and labels.
+      const nodes = new Set(v1SigmaNodes);
+      if (hoveredNode) nodes.add(hoveredNode);
+      for (const node of nodes) syncV1Node(node);
+      renderer.refresh({ skipIndexation: true, partialGraph: { nodes: [...nodes] } });
+    } else {
+      graph.forEachNode((node) => syncV1Node(node));
+      renderer.refresh();
+    }
+  };
+  rotationFrame = requestAnimationFrame(step);
+}
+
+function stopRotation() {
+  if (rotationFrame) cancelAnimationFrame(rotationFrame);
+  rotationFrame = 0;
+}
+
+function pauseRotation() {
+  rotationPausedUntil = performance.now() + 2500;
+}
+
+/** Shows one Organizational plane on its own, laid flat, or returns to the stack with null. */
+function setIsolatedPlane(index) {
+  if (index === isolatedPlane) return;
+  isolatedPlane = index;
+  planeBackHovered = false;
+  planeBackButton = null;
+  $("#sigma-container").style.cursor = "";
+  hoveredPlane = null;
+  renderPlaneHint();
+  if (!renderer || currentLayout !== "hierarchy") return;
+  clearSelection(false);
+  if (index === null) {
+    planeLevel = 0;
+    applyPlaneGeometry(0);
+  }
+  morphLayout("hierarchy", { force: true });
+}
+
+function onPlaneBackButton(point) {
+  const button = planeBackButton;
+  return Boolean(button && isolatedPlane !== null && point.x >= button.x && point.x <= button.x + button.width && point.y >= button.y && point.y <= button.y + button.height);
+}
+
+function planeTheme() {
+  const light = activeTheme === "light";
+  return {
+    back: light ? "#ffffff" : "#1c2230",
+    backHover: light ? "#eeeaff" : "#2a3350",
+    fill: light ? "rgba(92, 104, 132, 0.035)" : "rgba(210, 225, 255, 0.03)",
+    fillActive: light ? "rgba(93, 75, 224, 0.06)" : "rgba(150, 170, 255, 0.07)",
+    grid: light ? "rgba(92, 104, 132, 0.09)" : "rgba(210, 225, 255, 0.07)",
+    border: light ? "rgba(52, 60, 80, 0.45)" : "rgba(220, 230, 255, 0.35)",
+    borderActive: light ? "rgba(93, 75, 224, 0.85)" : "rgba(190, 200, 255, 0.85)",
+    label: light ? "#3c4250" : "#c9d1e4",
+    labelActive: light ? "#4a3bc4" : "#e3e6ff",
+    muted: light ? "#7a8190" : "#8d96aa",
+  };
+}
+
+function drawPlaneLayer() {
+  if (!renderer || !planeContext) return;
+  const planes = graphMeta?.planes || [];
+  if (currentLayout !== "hierarchy" || layoutAnimation || !planes.length) {
+    const { width, height } = renderer.getDimensions();
+    planeContext.clearRect(0, 0, width, height);
+    return;
+  }
+  planeBackButton = drawPlanes(planeContext, renderer, visiblePlanes(), { isolated: isolatedPlane, hovered: hoveredPlane, backHovered: planeBackHovered, colors: planeTheme(), scale: textScale() }).backButton;
+}
+
+let loadedTypeCache = { order: -1, types: new Set() };
+function loadedTypes() {
+  if (loadedTypeCache.order !== graph.order) {
+    const types = new Set();
+    graph.forEachNode((_node, attributes) => types.add(attributes.entityType));
+    loadedTypeCache = { order: graph.order, types };
+  }
+  return loadedTypeCache.types;
+}
+
+function planeUnderPointer(event) {
+  if (!renderer || currentLayout !== "hierarchy" || !graphMeta?.planes?.length) return null;
+  return planeAtPoint(visiblePlanes(), renderer.viewportToGraph({ x: event.x, y: event.y }), isolatedPlane);
+}
+
+function renderPlaneHint() {
+  const hint = $("#plane-hint");
+  if (!hint) return;
+  const plane = graphMeta?.planes?.find((item) => item.index === isolatedPlane);
+  hint.hidden = currentLayout !== "hierarchy";
+  hint.replaceChildren();
+  if (plane) {
+    const back = document.createElement("button");
+    back.type = "button";
+    back.textContent = "All planes";
+    back.addEventListener("click", () => setIsolatedPlane(null));
+    const label = document.createElement("span");
+    label.textContent = plane.label;
+    hint.append(back, label);
+  } else hint.textContent = planeLevel === 0 ? "Click a plane to focus it · zoom in to pick entities" : "Click an entity to select it · click empty plane space to focus the plane";
 }
 
 function drawMinimap() {
@@ -1627,13 +2102,32 @@ function drawMinimap() {
     base.clearRect(0, 0, width, height);
     const paths = new Map();
     const samples = new Map();
+    // Frame every visible node, even ones outside the canvas's fitted box
+    // (the plane column), keeping the graph's proportions.
+    let x0 = Infinity;
+    let x1 = -Infinity;
+    let y0 = Infinity;
+    let y1 = -Infinity;
+    const points = [];
     forEachVisibleCandidate((node, attrs) => {
       const data = renderer.getNodeDisplayData(node);
       if (!data) return;
-      if (!paths.has(attrs.entityType)) paths.set(attrs.entityType, new Path2D());
-      paths.get(attrs.entityType).rect(data.x * width, (1 - data.y) * height, 1.35, 1.35);
-      if (!samples.has(attrs.entityType)) samples.set(attrs.entityType, attrs);
+      points.push([data.x, data.y, attrs]);
+      x0 = Math.min(x0, data.x);
+      x1 = Math.max(x1, data.x);
+      y0 = Math.min(y0, data.y);
+      y1 = Math.max(y1, data.y);
     });
+    if (Number.isFinite(x0)) {
+      const scale = Math.min((width - 8) / Math.max(1e-6, x1 - x0), (height - 8) / Math.max(1e-6, y1 - y0));
+      minimapFrame = { x0, y1, scale, offsetX: (width - (x1 - x0) * scale) / 2, offsetY: (height - (y1 - y0) * scale) / 2 };
+    }
+    for (const [x, y, attrs] of points) {
+      if (!paths.has(attrs.entityType)) paths.set(attrs.entityType, new Path2D());
+      const point = minimapPoint(x, y);
+      paths.get(attrs.entityType).rect(point.x, point.y, 1.35, 1.35);
+      if (!samples.has(attrs.entityType)) samples.set(attrs.entityType, attrs);
+    }
     for (const [type, path] of paths) {
       base.fillStyle = themeColor(samples.get(type));
       base.globalAlpha = 0.72;
@@ -1644,15 +2138,21 @@ function drawMinimap() {
   context.setTransform(1, 0, 0, 1, 0, 0);
   context.clearRect(0, 0, canvas.width, canvas.height);
   context.drawImage(minimapBase, 0, 0);
-  const topLeft = renderer.viewportToFramedGraph({ x: 0, y: 0 });
-  const bottomRight = renderer.viewportToFramedGraph(renderer.getDimensions());
-  const x = Math.min(topLeft.x, bottomRight.x) * canvas.width;
-  const y = (1 - Math.max(topLeft.y, bottomRight.y)) * canvas.height;
-  const rectWidth = Math.abs(bottomRight.x - topLeft.x) * canvas.width;
-  const rectHeight = Math.abs(bottomRight.y - topLeft.y) * canvas.height;
+  const topLeft = minimapPoint(...Object.values(renderer.viewportToFramedGraph({ x: 0, y: 0 })));
+  const bottomRight = minimapPoint(...Object.values(renderer.viewportToFramedGraph(renderer.getDimensions())));
+  context.setTransform(2, 0, 0, 2, 0, 0);
   context.strokeStyle = activeTheme === "light" ? "#5d4be0" : "#d9ffff";
-  context.lineWidth = 2;
-  context.strokeRect(x, y, rectWidth, rectHeight);
+  context.lineWidth = 1;
+  context.strokeRect(Math.min(topLeft.x, bottomRight.x), Math.min(topLeft.y, bottomRight.y), Math.abs(bottomRight.x - topLeft.x), Math.abs(bottomRight.y - topLeft.y));
+}
+
+/** Minimap mapping: framed graph coordinates ↔ minimap pixels (190 × 110). */
+let minimapFrame = { x0: 0, y1: 1, scale: 110, offsetX: 40, offsetY: 0 };
+function minimapPoint(x, y) {
+  return { x: minimapFrame.offsetX + (x - minimapFrame.x0) * minimapFrame.scale, y: minimapFrame.offsetY + (minimapFrame.y1 - y) * minimapFrame.scale };
+}
+function minimapToFramed(x, y) {
+  return { x: minimapFrame.x0 + (x - minimapFrame.offsetX) / minimapFrame.scale, y: minimapFrame.y1 - (y - minimapFrame.offsetY) / minimapFrame.scale };
 }
 
 function showToast(message) {
@@ -1930,7 +2430,8 @@ function wireControls() {
   $$(".view-option").forEach((option) => option.addEventListener("click", () => changeVisualizationMode(option.dataset.layout)));
   $("#minimap-canvas").addEventListener("click", (event) => {
     const rect = /** @type {HTMLCanvasElement} */ (event.currentTarget).getBoundingClientRect();
-    renderer.getCamera().animate({ x: (event.clientX - rect.left) / rect.width, y: 1 - (event.clientY - rect.top) / rect.height }, { duration: 450 });
+    const target = minimapToFramed(((event.clientX - rect.left) / rect.width) * 190, ((event.clientY - rect.top) / rect.height) * 110);
+    renderer.getCamera().animate(target, { duration: 450 });
   });
   els.searchScope.addEventListener("change", async (event) => {
     const type = /** @type {HTMLSelectElement} */ (event.currentTarget).value;
@@ -1975,6 +2476,7 @@ function wireControls() {
     } else if (event.key === "Escape") {
       clearSelection();
       $("#shortcut-modal").hidden = true;
+      if (isolatedPlane !== null && !typing(event.target)) setIsolatedPlane(null);
     } else if (event.key.toLowerCase() === "f" && !typing(event.target)) {
       fitVisibleGraph();
     } else if (event.key === "?" && !typing(event.target)) {
@@ -2057,18 +2559,100 @@ function initializeRenderer() {
     allowInvalidContainer: false,
     minCameraRatio: 0.005,
     maxCameraRatio: 4,
-    nodeProgramClasses: { gradient: NodeGradientProgram },
+    nodeProgramClasses: { gradient: NodeGradientProgram, glow: NodeGlowProgram },
   });
+  try {
+    particleLayer = new ParticleLayer(renderer.createCanvas("particles", { beforeLayer: "nodes" }));
+  } catch (error) {
+    // Without a second WebGL context, sigma draws every V1 particle itself (slower turning).
+    particleLayer = null;
+    captureException(error, { source: "v1-particles" });
+  }
+  renderer.on("afterRender", drawParticles);
+  renderer.createCanvasContext("particleHover", { beforeLayer: "hovers" });
+  particleHoverContext = renderer.getCanvases().particleHover.getContext("2d");
+  renderer.on("afterRender", drawParticleHover);
+  renderer.createCanvasContext("planes", { beforeLayer: "edges" });
+  planeContext = renderer.getCanvases().planes.getContext("2d");
+  renderer.on("afterRender", drawPlaneLayer);
   renderer.createCanvasContext("edgeGlow", { beforeLayer: "nodes" });
   edgeGlowContext = renderer.getCanvases().edgeGlow.getContext("2d");
   renderer.resize(true);
   renderer.on("afterRender", drawConnectionGlow);
   renderer.on("afterRender", drawMinimap);
   renderer.on("clickNode", ({ node, event }) => {
+    // In the plane stack, nodes cover most of each plane, so a click on one focuses its plane.
+    if (currentLayout === "hierarchy" && isolatedPlane === null && planeLevel === 0 && Number.isInteger(graph.getNodeAttribute(node, "plane"))) {
+      setIsolatedPlane(graph.getNodeAttribute(node, "plane"));
+      return;
+    }
     selectNode(node, "pan");
     if (event?.original?.shiftKey) toggleTraversalNode(node);
   });
-  renderer.on("clickStage", () => clearSelection());
+  renderer.on("clickStage", ({ event }) => {
+    const particle = particleAt(event);
+    if (particle) {
+      hoveredParticle = null;
+      syncV1Node(particle);
+      selectNode(particle, "pan");
+      return;
+    }
+    clearSelection();
+    if (currentLayout !== "hierarchy") return;
+    if (onPlaneBackButton(event)) {
+      setIsolatedPlane(null);
+      return;
+    }
+    const plane = planeUnderPointer(event);
+    // In the stack a plane click focuses it; once focused, a click outside it returns to the stack.
+    if (isolatedPlane === null ? plane !== null : plane === null) setIsolatedPlane(plane);
+  });
+  renderer.on("moveBody", ({ event }) => {
+    if (currentLayout === "constellation-v1" && particleLayer) {
+      // Hover a GPU particle: hand it to sigma so it gets the usual hover label.
+      cancelAnimationFrame(particleHoverFrame);
+      particleHoverFrame = requestAnimationFrame(() => {
+        const particle = renderer.getNodeAtPosition(event) ? null : particleAt(event, 5);
+        if (particle === hoveredParticle) return;
+        hoveredParticle = particle;
+        $("#sigma-container").style.cursor = particle || hoveredNode ? "pointer" : "";
+        drawParticleHover();
+      });
+      return;
+    }
+    if (currentLayout !== "hierarchy") return;
+    if (isolatedPlane !== null) {
+      const over = onPlaneBackButton(event);
+      if (over !== planeBackHovered) {
+        planeBackHovered = over;
+        $("#sigma-container").style.cursor = over ? "pointer" : "";
+        drawPlaneLayer();
+      }
+      return;
+    }
+    const node = planeLevel === 0 ? renderer.getNodeAtPosition(event) : null;
+    const plane = node ? graph.getNodeAttribute(node, "plane") ?? null : planeUnderPointer(event);
+    if (plane === hoveredPlane) return;
+    hoveredPlane = plane;
+    $("#sigma-container").style.cursor = plane === null ? "" : "pointer";
+    drawPlaneLayer();
+  });
+  renderer.on("resize", () => { if (updatePixelsPerUnit()) renderer.refresh(); });
+  renderer.getCamera().on("updated", () => {
+    if (currentLayout !== "hierarchy" || isolatedPlane !== null) return;
+    window.clearTimeout(planeLevelTimer);
+    // Wait for the zoom to settle, then open or close the planes.
+    const settle = () => {
+      if (layoutAnimation || renderer.getCamera().isAnimated()) {
+        planeLevelTimer = window.setTimeout(settle, 160);
+        return;
+      }
+      changePlaneLevel(planeLevelForRatio(renderer.getCamera().getState().ratio));
+    };
+    planeLevelTimer = window.setTimeout(settle, 160);
+  });
+  const container = $("#sigma-container");
+  for (const type of ["pointerdown", "wheel", "touchstart"]) container.addEventListener(type, pauseRotation, { passive: true });
   renderer.on("enterNode", ({ node }) => {
     hoveredNode = node;
     document.body.classList.add("node-hovered");
@@ -2125,7 +2709,7 @@ async function start() {
   const registryResponse = await fetch(new URL("/graph-data/index.json", location.href), { credentials: "same-origin" });
   if (!registryResponse.ok) throw new Error(`Graph registry request failed (${registryResponse.status})`);
   graphRegistry = await registryResponse.json();
-  if (graphRegistry.formatVersion !== 10 || !Array.isArray(graphRegistry.graphs) || !graphRegistry.graphs.length) throw new Error("Invalid or empty graph registry");
+  if (graphRegistry.formatVersion !== 11 || !Array.isArray(graphRegistry.graphs) || !graphRegistry.graphs.length) throw new Error("Invalid or empty graph registry");
 
   els.graphSelect.replaceChildren();
   for (const entry of graphRegistry.graphs) {
@@ -2242,6 +2826,8 @@ async function start() {
     if (data.requestId && data.requestId !== activeViewRequestId) return;
     if (data.kind === "view-reset") {
       graph.clear();
+      isolatedPlane = null;
+      hoveredPlane = null;
       loadedLayers = new Set(data.layers);
       if (data.layers.length !== 1) {
         const stage = document.querySelector(".stage");
@@ -2274,8 +2860,12 @@ async function start() {
         setTheme(activeTheme, false);
         applicationInitialized = true;
       }
+      planeLevel = 0;
+      applyPlaneGeometry(0);
+      snapToLayout();
       updateCounts();
       fitVisibleGraph();
+      renderPlaneHint();
       setLoading(100, "Graph ready");
       document.querySelector(".stage")?.classList.remove("data-loading");
       els.graphSelect.disabled = false;
